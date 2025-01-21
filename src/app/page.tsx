@@ -1,5 +1,5 @@
-// Default Home Page (To be modified)
-// 
+export const dynamic = 'force-dynamic';
+
 import Image from "next/image";
 import Dashboard from "@/components/example/SSRComponentExample";
 
