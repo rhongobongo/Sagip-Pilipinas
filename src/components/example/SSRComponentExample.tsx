@@ -20,4 +20,4 @@ export default async function Dashboard() {
         console.error("Error in Dashboard:", error);
         return <p>An error occurred. Please try again later.</p>;
     }
-}
+}   
