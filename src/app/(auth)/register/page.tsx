@@ -1,4 +1,3 @@
-import React from 'react';
 import RegistrationForm from '@/components/(page)/AuthPage/RegistrationForm';
 
 const RegistrationPage: React.FC = () => {

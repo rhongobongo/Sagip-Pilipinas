@@ -1,3 +1,8 @@
-export default function DisasterMap() {
-    return <div>Disaster Map Page</div>;
-}
+const AboutPage: React.FC = () => {
+
+    return (
+        <div>AboutPage</div>
+    )
+};
+
+export default AboutPage;
