@@ -12,11 +12,34 @@ const RegistrationForm: React.FC = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
+    const setUpAccountInFireStore = async (
+        idToken: string,
+    ) => {
+        try {
+            const response = await fetch("/api/registration", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${idToken}`,
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw(errorData);
+            }
+        } catch (e) {
+            console.error("Error in setUpAccountInFireStore:", e);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            await loginWithCredentials(await userCredential.user.getIdToken())
+            await loginWithCredentials(await userCredential.user.getIdToken());
+            await setUpAccountInFireStore(await userCredential.user.getIdToken())
+
         } catch (error) {
             console.log(error);
         }
@@ -25,7 +48,7 @@ const RegistrationForm: React.FC = () => {
     return (
         <div className="flex items-center justify-center h-screen bg-gray-100">
             <form className="w-full max-w-sm bg-white p-6 rounded-lg shadow-md"
-            onSubmit={handleSubmit}>
+                onSubmit={handleSubmit}>
                 <h2 className="text-2xl font-semibold text-center mb-6">Registration</h2>
 
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
