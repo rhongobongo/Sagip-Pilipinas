@@ -1,7 +1,12 @@
+import RequestMap from "@/components/map/RequestMap";
+
 const RequestAidPage: React.FC = () => {
 
     return (
-        <div>RequestAidPage</div>
+        <>
+            <div>RequestAidPage</div>
+            <RequestMap></RequestMap>
+        </>
     )
 };
 
