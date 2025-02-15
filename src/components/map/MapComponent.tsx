@@ -26,10 +26,11 @@ export interface MapRef {
 }
 
 interface MapComponentProps {
-    pins: Pin[];
+    pins?: Pin[];
+    onClick?: (event: google.maps.MapMouseEvent) => void;
 }
 
-const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins }, ref) => {
+const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins = [], onClick }, ref) => {
     const mapRef = useRef<google.maps.Map | null>(null);
 
     const onLoad = (map: google.maps.Map) => {
@@ -58,8 +59,11 @@ const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins }, ref) => {
                 }}
                 onLoad={onLoad}
                 onUnmount={onUnmount}
+                onClick={onClick}
             >
-                {pins.map((pin) => (
+                {
+                pins.length > 0 &&
+                pins.map((pin) => (
                     <Marker
                         key={pin.id}
                         position={{

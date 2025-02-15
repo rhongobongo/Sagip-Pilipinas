@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAuth } from "firebase-admin/auth";
-import { db } from "@/lib/Firebase-Admin";
+import { db, auth } from "@/lib/Firebase-Admin";
 
 export async function POST(req: Request) {
   const authHeader = req.headers.get("Authorization");
@@ -12,14 +11,14 @@ export async function POST(req: Request) {
   const idToken = authHeader.split(" ")[1];
 
   try {
-    const decodedToken = await getAuth().verifyIdToken(idToken);
+    const decodedToken = await auth.verifyIdToken(idToken);
 
 
     if (!decodedToken) {
       return NextResponse.json({ error: "User ID (uid) and email are required." }, { status: 400 });
     }
 
-    const userRef = db.collection("users").doc(decodedToken.uid );
+    const userRef = db.collection("users").doc(decodedToken.uid);
     await userRef.set(
       {
         email: decodedToken.email,
