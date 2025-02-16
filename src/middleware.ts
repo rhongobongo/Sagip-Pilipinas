@@ -8,12 +8,13 @@ import {
     redirectToLogin
 } from "next-firebase-auth-edge";
 
-const PUBLIC_PATHS = ['/', '/about', '/contact-us', '/map', '/request-aid'];
+const PUBLIC_PATHS = ['/', '/about', '/contact-us', '/map', '/request-aid', '/404'];
 const AUTH_PATHS = ['/register', '/login', 'forget-password'];
 
 export default async function middleware(request: NextRequest) {
 
     const adminRegex = /^\/admin(?:\/([a-zA-Z0-9]+))?(?:\/|$)/;
+    const { nextUrl } = request;
 
     return authMiddleware(request, {
         loginPath: '/api/login',
@@ -28,7 +29,6 @@ export default async function middleware(request: NextRequest) {
         enableCustomToken: authConfig.enableCustomToken,
 
         handleValidToken: async ({ token, decodedToken }, headers) => {
-            const { nextUrl } = request;
 
             if (adminRegex.test(nextUrl.pathname)) {
                 const user = await MiddlewareFirebaseAdmin.getUser(decodedToken.uid);
@@ -44,6 +44,9 @@ export default async function middleware(request: NextRequest) {
         },
 
         handleInvalidToken: async (_reason) => {
+            if (adminRegex.test(nextUrl.pathname)) {
+                return NextResponse.redirect(new URL('/404', request.url));
+            }
             return redirectToLogin(request, {
                 path: '/login',
                 publicPaths: [...PUBLIC_PATHS, ...AUTH_PATHS]
