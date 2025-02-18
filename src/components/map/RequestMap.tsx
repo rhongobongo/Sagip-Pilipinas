@@ -3,18 +3,17 @@
 import React, { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { MapRef } from "./MapComponent";
-import { Pin, RequestPin } from "@/types/types";
+import { RequestPin } from "@/types/types";
 
 const DynamicMap = dynamic(() => import("./MapComponent"), { ssr: false });
 
 const RequestMap: React.FC = () => {
-    const [pins, setPins] = useState<Pin[]>([]);
+    const [pins, setPins] = useState<RequestPin[]>([]);
     const mapRef = useRef<MapRef>(null);
 
     const handleMapClick = (event: google.maps.MapMouseEvent) => {
         if (event.latLng) {
-            const newPin: Pin = {
-                id: "Event Ping",
+            const newPin: RequestPin = {
                 coordinates: {
                     latitude: event.latLng.lat(),
                     longitude: event.latLng.lng(),

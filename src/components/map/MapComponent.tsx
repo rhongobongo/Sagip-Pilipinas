@@ -2,7 +2,7 @@
 
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import { Pin } from "@/types/types";
+import type { DefaultPin } from "@/types/types";
 
 const containerStyle = {
     width: "100vw",
@@ -26,7 +26,7 @@ export interface MapRef {
 }
 
 interface MapComponentProps {
-    pins?: Pin[];
+    pins?: DefaultPin[];
     onClick?: (event: google.maps.MapMouseEvent) => void;
 }
 
@@ -62,16 +62,18 @@ const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins = [], onClick
                 onClick={onClick}
             >
                 {
-                pins.length > 0 &&
-                pins.map((pin) => (
-                    <Marker
-                        key={pin.id}
-                        position={{
-                            lat: pin.coordinates.latitude,
-                            lng: pin.coordinates.longitude,
-                        }}
-                    />
-                ))}
+                    pins.length > 0 &&
+                    pins.map((pin) => (
+                        <Marker
+                            key={`${pin.coordinates.latitude}-${pin.coordinates.longitude}`}
+                            position={{
+                                lat: pin.coordinates.latitude,
+                                lng: pin.coordinates.longitude,
+                            }}
+                        />
+                    ))
+                }
+
             </GoogleMap>
         </LoadScript>
     );
