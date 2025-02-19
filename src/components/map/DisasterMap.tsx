@@ -5,22 +5,22 @@ import dynamic from "next/dynamic";
 import { db } from "@/lib/Firebase/Firebase";
 import { onSnapshot, collection, GeoPoint } from "firebase/firestore";
 import { MapRef } from "./MapComponent";
-import { Pin } from "@/types/types";
+import { MainPin } from "@/types/types";
 
 const DynamicMap = dynamic(() => import("./MapComponent"), { ssr: false });
 
 interface DisasterMapProps {
-    pinData: Pin[];
+    pinData: MainPin[];
 }
 
 const DisasterMap: React.FC<DisasterMapProps> = ({ pinData }) => {
 
-    const [pins, setPins] = useState<Pin[]>(pinData);
+    const [pins, setPins] = useState<MainPin[]>(pinData);
     const mapRef = useRef<MapRef>(null);
 
     useEffect(() => {
         const unsubscribe = onSnapshot(collection(db, "map"), (snapshot) => {
-            const updatedPins: Pin[] = snapshot.docs.map((doc) => ({
+            const updatedPins: MainPin[] = snapshot.docs.map((doc) => ({
                 id: doc.id,
                 coordinates: (doc.get("location") as GeoPoint),
             }));
