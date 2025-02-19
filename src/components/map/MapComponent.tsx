@@ -23,6 +23,7 @@ const philippinesBounds = {
 
 export interface MapRef {
     getMapInstance: () => google.maps.Map | null;
+    addMarker: (pin: DefaultPin) => void;
 }
 
 interface MapComponentProps {
@@ -32,6 +33,7 @@ interface MapComponentProps {
 
 const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins = [], onClick }, ref) => {
     const mapRef = useRef<google.maps.Map | null>(null);
+    const markerRef = useRef<google.maps.Marker | null>(null);
 
     const onLoad = (map: google.maps.Map) => {
         mapRef.current = map;
@@ -39,10 +41,30 @@ const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins = [], onClick
 
     const onUnmount = () => {
         mapRef.current = null;
+
     };
+
+    const addMarkerPin = (pin: DefaultPin) => {
+        if (mapRef.current) {
+            const position = {
+                lat: pin.coordinates.latitude,
+                lng: pin.coordinates.longitude,
+            };
+
+            if (markerRef.current) {
+                markerRef.current.setPosition(position)
+            } else {
+                markerRef.current = new google.maps.Marker({
+                    position,
+                    map: mapRef.current,
+                });
+            }
+        }
+    }
 
     useImperativeHandle(ref, () => ({
         getMapInstance: () => mapRef.current,
+        addMarker: (pin: DefaultPin) => addMarkerPin(pin),
     }));
 
     return (
