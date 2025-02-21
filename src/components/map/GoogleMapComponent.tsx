@@ -26,12 +26,12 @@ export interface MapRef {
     addMarker: (pin: DefaultPin) => void;
 }
 
-interface MapComponentProps {
+interface GoogleMapComponentProps {
     pins?: DefaultPin[];
     onClick?: (event: google.maps.MapMouseEvent) => void;
 }
 
-const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins = [], onClick }, ref) => {
+const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(({ pins = [], onClick }, ref) => {
     const mapRef = useRef<google.maps.Map | null>(null);
     const markerRef = useRef<google.maps.Marker | null>(null);
 
@@ -66,7 +66,6 @@ const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins = [], onClick
         addMarker: (pin: DefaultPin) => addMarkerPin(pin),
     }));
 
-    // Ensure `google` is available
     if (typeof window !== "undefined" && !window.google) {
         return <div>Loading...</div>;
     }
@@ -100,6 +99,6 @@ const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins = [], onClick
     );
 });
 
-MapComponent.displayName = "MapComponent";
+GoogleMapComponent.displayName = "GoogleMapComponent";
 
-export default MapComponent;
+export default GoogleMapComponent;
