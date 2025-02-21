@@ -1,4 +1,5 @@
-import DisasterMap from "@/components/map/DisasterMap";
+import DisasterMapWrapper from "@/components/map/DisasterMapWrapper";
+import PinList from "@/components/map/Pins/PinList";
 import { db } from "@/lib/Firebase-Admin";
 import { MainPin } from "@/types/types";
 import { GeoPoint } from "firebase-admin/firestore";
@@ -20,19 +21,8 @@ const DisasterMapPage : React.FC = async () => {
     return (
         <div>
             <h1>Disaster Map Page</h1>
-            <DisasterMap pinData={ pins }/>
-            {pins && pins.length > 0 ? (
-                <ul>
-                    {pins.map((pin) => (
-                        <li key={pin.id}>
-                            Latitude: {pin.coordinates.latitude}, Longitude:{" "}
-                            {pin.coordinates.longitude}
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p>No pins available.</p>
-            )}
+            <DisasterMapWrapper pinData={ pins }/>
+            <PinList pinData={ pins }></PinList>
         </div>
     );
 };
