@@ -1,7 +1,7 @@
 "use client";
 
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { GoogleMap, Marker } from "@react-google-maps/api";
 import type { DefaultPin } from "@/types/types";
 
 const containerStyle = {
@@ -26,12 +26,12 @@ export interface MapRef {
     addMarker: (pin: DefaultPin) => void;
 }
 
-interface MapComponentProps {
+interface GoogleMapComponentProps {
     pins?: DefaultPin[];
     onClick?: (event: google.maps.MapMouseEvent) => void;
 }
 
-const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins = [], onClick }, ref) => {
+const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(({ pins = [], onClick }, ref) => {
     const mapRef = useRef<google.maps.Map | null>(null);
     const markerRef = useRef<google.maps.Marker | null>(null);
 
@@ -41,7 +41,6 @@ const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins = [], onClick
 
     const onUnmount = () => {
         mapRef.current = null;
-
     };
 
     const addMarkerPin = (pin: DefaultPin) => {
@@ -52,7 +51,7 @@ const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins = [], onClick
             };
 
             if (markerRef.current) {
-                markerRef.current.setPosition(position)
+                markerRef.current.setPosition(position);
             } else {
                 markerRef.current = new google.maps.Marker({
                     position,
@@ -60,47 +59,46 @@ const MapComponent = forwardRef<MapRef, MapComponentProps>(({ pins = [], onClick
                 });
             }
         }
-    }
+    };
 
     useImperativeHandle(ref, () => ({
         getMapInstance: () => mapRef.current,
         addMarker: (pin: DefaultPin) => addMarkerPin(pin),
     }));
 
-    return (
-        <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-            <GoogleMap
-                mapContainerStyle={containerStyle}
-                center={center}
-                zoom={6}
-                options={{
-                    restriction: {
-                        latLngBounds: philippinesBounds,
-                        strictBounds: false,
-                    },
-                }}
-                onLoad={onLoad}
-                onUnmount={onUnmount}
-                onClick={onClick}
-            >
-                {
-                    pins.length > 0 &&
-                    pins.map((pin) => (
-                        <Marker
-                            key={`${pin.coordinates.latitude}-${pin.coordinates.longitude}`}
-                            position={{
-                                lat: pin.coordinates.latitude,
-                                lng: pin.coordinates.longitude,
-                            }}
-                        />
-                    ))
-                }
+    if (typeof window !== "undefined" && !window.google) {
+        return <div>Loading...</div>;
+    }
 
-            </GoogleMap>
-        </LoadScript>
+    return (
+        <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={center}
+            zoom={6}
+            options={{
+                restriction: {
+                    latLngBounds: philippinesBounds,
+                    strictBounds: false,
+                },
+            }}
+            onLoad={onLoad}
+            onUnmount={onUnmount}
+            onClick={onClick}
+        >
+            {pins.length > 0 &&
+                pins.map((pin) => (
+                    <Marker
+                        key={`${pin.coordinates.latitude}-${pin.coordinates.longitude}`}
+                        position={{
+                            lat: pin.coordinates.latitude,
+                            lng: pin.coordinates.longitude,
+                        }}
+                    />
+                ))}
+        </GoogleMap>
     );
 });
 
-MapComponent.displayName = "MapComponent";
+GoogleMapComponent.displayName = "GoogleMapComponent";
 
-export default MapComponent;
+export default GoogleMapComponent;
