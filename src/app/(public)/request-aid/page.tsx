@@ -1,4 +1,4 @@
-import RequestMap from "@/components/map/RequestMap";
+import RequestMap from "@/components/map/RequestAidMapWrapper";
 
 const RequestAidPage: React.FC = () => {
 
