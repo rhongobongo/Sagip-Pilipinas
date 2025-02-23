@@ -3,27 +3,16 @@
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import { GoogleMap, Marker } from "@react-google-maps/api";
 import type { DefaultPin } from "@/types/types";
-
-const containerStyle = {
-    width: "100vw",
-    height: "100vh",
-};
-
-const center = {
-    lat: 14.5995,
-    lng: 120.9842,
-};
-
-const philippinesBounds = {
-    north: 21.3,
-    south: 4.5,
-    west: 115.8,
-    east: 127.6,
-};
+import { containerStyle, philippinesBounds, center, addMarkerPin, zoomMarkerPin } from "./MapUtils";
 
 export interface MapRef {
     getMapInstance: () => google.maps.Map | null;
-    addMarker: (pin: DefaultPin) => void;
+    addMarker?: (pin: DefaultPin) => void;
+    zoomMarker?: (pin: DefaultPin) => void;
+}
+
+export interface MarkerRef {
+    getMarkerInstance: () => google.maps.Marker | null;
 }
 
 interface GoogleMapComponentProps {
@@ -31,7 +20,7 @@ interface GoogleMapComponentProps {
     onClick?: (event: google.maps.MapMouseEvent) => void;
 }
 
-const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(({ pins = [], onClick }, ref) => {
+const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(({ pins = [], onClick }, googleMapRef) => {
     const mapRef = useRef<google.maps.Map | null>(null);
     const markerRef = useRef<google.maps.Marker | null>(null);
 
@@ -43,27 +32,10 @@ const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(({ pins =
         mapRef.current = null;
     };
 
-    const addMarkerPin = (pin: DefaultPin) => {
-        if (mapRef.current) {
-            const position = {
-                lat: pin.coordinates.latitude,
-                lng: pin.coordinates.longitude,
-            };
-
-            if (markerRef.current) {
-                markerRef.current.setPosition(position);
-            } else {
-                markerRef.current = new google.maps.Marker({
-                    position,
-                    map: mapRef.current,
-                });
-            }
-        }
-    };
-
-    useImperativeHandle(ref, () => ({
+    useImperativeHandle(googleMapRef, () => ({
         getMapInstance: () => mapRef.current,
-        addMarker: (pin: DefaultPin) => addMarkerPin(pin),
+        addMarker: (pin: DefaultPin) => addMarkerPin(mapRef, markerRef, pin),
+        zoomMarker: (pin: DefaultPin) => zoomMarkerPin(mapRef, pin)
     }));
 
     if (typeof window !== "undefined" && !window.google) {
@@ -80,6 +52,8 @@ const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(({ pins =
                     latLngBounds: philippinesBounds,
                     strictBounds: false,
                 },
+                minZoom: 8,
+                maxZoom: 16, 
             }}
             onLoad={onLoad}
             onUnmount={onUnmount}
@@ -93,6 +67,7 @@ const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(({ pins =
                             lat: pin.coordinates.latitude,
                             lng: pin.coordinates.longitude,
                         }}
+                        onClick={() => zoomMarkerPin(mapRef, pin)}
                     />
                 ))}
         </GoogleMap>

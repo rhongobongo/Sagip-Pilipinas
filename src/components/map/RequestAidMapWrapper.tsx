@@ -21,7 +21,7 @@ const RequestAidMapWrapper
                     },
                 };
                 setPin(newPin);
-                mapRef.current?.addMarker(newPin);
+                mapRef.current?.addMarker?.(newPin);
             }
         };
 
