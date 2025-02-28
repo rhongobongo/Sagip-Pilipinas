@@ -14,7 +14,7 @@ export default async function Dashboard() {
             const roles = Object.keys(rolesObject);
             console.log(userRecord.customClaims);
             return (
-                <div>
+                <div> 
                     <h1>Welcome, {decodedToken.email}</h1>
                     <p>Your Roles: {roles.length > 0 ? roles.join(", ") : "No roles assigned."}</p>
                 </div>
