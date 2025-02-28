@@ -42,7 +42,6 @@ const Primary: React.FC = () => {
         </button>
       </div>
       
-      {/* Image Gallery */}
       <div className="absolute bottom-10 left-10 flex flex-wrap gap-2 w-1/2">
         {images.map((src, index) => (
           <div
