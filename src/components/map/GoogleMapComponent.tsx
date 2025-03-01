@@ -18,15 +18,16 @@ export interface MarkerRef {
 interface GoogleMapComponentProps {
     pins?: DefaultPin[];
     onClick?: (event: google.maps.MapMouseEvent) => void;
-    mapSize?: { width: string; height: string };
+    mapStyle?: React.CSSProperties;
 }
 
 const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(
-    ({ pins = [], onClick, mapSize }, googleMapRef) => {
+    ({ pins = [], onClick, mapStyle }, googleMapRef) => {
         
-        const containerStyle = {
-            width: mapSize?.width ?? "100vw",
-            height: mapSize?.height ?? "100vh",
+        const containerStyle: React.CSSProperties = {
+            width: mapStyle?.width ?? "100vw",
+            height: mapStyle?.height ?? "100vh",
+            ...mapStyle,
         };
 
         const mapRef = useRef<google.maps.Map | null>(null);

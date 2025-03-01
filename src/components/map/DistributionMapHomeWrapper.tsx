@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import dynamic from "next/dynamic";
-import { usePinsStore } from "@/stores/usePinStore";
 import { MapRef } from "./GoogleMapComponent";
 import { MainPin } from "@/types/types";
 
@@ -13,22 +12,21 @@ interface DistributionMapHomeWrapperProps {
 }
 
 const DistributionMapHomeWrapper: React.FC<DistributionMapHomeWrapperProps> = ({ pinData }) => {
-    const pins = usePinsStore((state) => state.pins);
-    const initializePins = usePinsStore((state) => state.initializePins);
-    const fetchPins = usePinsStore((state) => state.fetchPins);
+
     const mapRef = useRef<MapRef>(null);
-    const mapSize = { width: "100%", height: "80vh" };
 
-    useEffect(() => {
-        initializePins(pinData);
-        const unsubscribe = fetchPins();
-        return () => unsubscribe();
-    }, [pinData, initializePins, fetchPins]);
-
+    const mapContainerStyle: React.CSSProperties = {
+        width: "100%",
+        height: "80vh",
+        borderRadius: "2%",
+        border: "4px solid #000000", 
+        overflow: "hidden",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+    };
 
     return (
-        <div className="max-w-3xl">
-            <DynamicMap ref={mapRef} pins={pins} mapSize={mapSize}/>
+        <div className="max-w-3xl rounded-3xl">
+            <DynamicMap ref={mapRef} pins={pinData} mapStyle={mapContainerStyle}/>
         </div>
     );
 };
