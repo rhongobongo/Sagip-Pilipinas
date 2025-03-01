@@ -1,13 +1,13 @@
 export const dynamic = 'force-dynamic';
 
-import Dashboard from "@/components/example/SSRComponentExample";
+import MapSection from "@/components/home/MapSection/MapSection";
 import Primary from "@/components/home/primary/primary";
 
 export default function Home() {
     return (
         <div>
-            <Primary /> 
-            <p>LANDING PAGE?????</p>
+            <Primary/>
+            <MapSection/>
         </div>
     );
 }
