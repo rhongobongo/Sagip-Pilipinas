@@ -3,7 +3,7 @@
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import { GoogleMap, Marker } from "@react-google-maps/api";
 import type { DefaultPin } from "@/types/types";
-import { containerStyle, philippinesBounds, center, addMarkerPin, zoomMarkerPin } from "./MapUtils";
+import { philippinesBounds, center, addMarkerPin, zoomMarkerPin } from "./MapUtils";
 
 export interface MapRef {
     getMapInstance: () => google.maps.Map | null;
@@ -18,61 +18,74 @@ export interface MarkerRef {
 interface GoogleMapComponentProps {
     pins?: DefaultPin[];
     onClick?: (event: google.maps.MapMouseEvent) => void;
+    mapSize?: { width: string; height: string };
 }
 
-const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(({ pins = [], onClick }, googleMapRef) => {
-    const mapRef = useRef<google.maps.Map | null>(null);
-    const markerRef = useRef<google.maps.Marker | null>(null);
+const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(
+    ({ pins = [], onClick, mapSize }, googleMapRef) => {
+        
+        const containerStyle = {
+            width: mapSize?.width ?? "100vw",
+            height: mapSize?.height ?? "100vh",
+        };
 
-    const onLoad = (map: google.maps.Map) => {
-        mapRef.current = map;
-    };
+        const mapRef = useRef<google.maps.Map | null>(null);
+        const markerRef = useRef<google.maps.Marker | null>(null);
 
-    const onUnmount = () => {
-        mapRef.current = null;
-    };
+        const onLoad = (map: google.maps.Map) => {
+            mapRef.current = map;
+            map.setCenter(center);
+        };
 
-    useImperativeHandle(googleMapRef, () => ({
-        getMapInstance: () => mapRef.current,
-        addMarker: (pin: DefaultPin) => addMarkerPin(mapRef, markerRef, pin),
-        zoomMarker: (pin: DefaultPin) => zoomMarkerPin(mapRef, pin)
-    }));
+        const onUnmount = () => {
+            mapRef.current = null;
+        };
 
-    if (typeof window !== "undefined" && !window.google) {
-        return <div>Loading...</div>;
-    }
+        useImperativeHandle(
+            googleMapRef,
+            () => ({
+                getMapInstance: () => mapRef.current,
+                addMarker: (pin) => addMarkerPin(mapRef, markerRef, pin),
+                zoomMarker: (pin) => zoomMarkerPin(mapRef, pin),
+            }),
+            []
+        );
 
-    return (
-        <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={center}
-            zoom={6}
-            options={{
-                restriction: {
-                    latLngBounds: philippinesBounds,
-                    strictBounds: false,
-                },
-                minZoom: 8,
-                maxZoom: 16, 
-            }}
-            onLoad={onLoad}
-            onUnmount={onUnmount}
-            onClick={onClick}
-        >
-            {pins.length > 0 &&
-                pins.map((pin) => (
-                    <Marker
-                        key={`${pin.coordinates.latitude}-${pin.coordinates.longitude}`}
-                        position={{
-                            lat: pin.coordinates.latitude,
-                            lng: pin.coordinates.longitude,
-                        }}
-                        onClick={() => zoomMarkerPin(mapRef, pin)}
-                    />
-                ))}
-        </GoogleMap>
-    );
-});
+
+        if (typeof window === "undefined" || !window.google?.maps) {
+            return <div>Loading...</div>;
+        }
+        return (
+            <GoogleMap
+                mapContainerStyle={containerStyle}
+                center={center}
+                zoom={6}
+                options={{
+                    restriction: {
+                        latLngBounds: philippinesBounds,
+                        strictBounds: false,
+                    },
+                    minZoom: 8,
+                    maxZoom: 16,
+                }}
+                onLoad={onLoad}
+                onUnmount={onUnmount}
+                onClick={onClick}
+            >
+                {pins.length > 0 &&
+                    pins.map((pin) => (
+                        <Marker
+                            key={`${pin.coordinates.latitude}-${pin.coordinates.longitude}`}
+                            position={{
+                                lat: pin.coordinates.latitude,
+                                lng: pin.coordinates.longitude,
+                            }}
+                            onClick={() => zoomMarkerPin(mapRef, pin)}
+                        />
+                    ))}
+            </GoogleMap>
+        );
+    });
 
 GoogleMapComponent.displayName = "GoogleMapComponent";
 
