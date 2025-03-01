@@ -7,7 +7,7 @@ export default function Home() {
     return (
         <div>
             <Primary /> 
-            <p>LANDING PAGE?????</p>
+
         </div>
     );
 }
