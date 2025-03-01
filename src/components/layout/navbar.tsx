@@ -10,7 +10,7 @@ const linksArray: LinkInterface[] = [
     { displayName: "Map", href: "/map" },
     { displayName: "Request Aid", href: "/request-aid" },
     { displayName: "Learn More", href: "/learnmore" },
-    { displayName: "Sign Up", href: "/sign-up" },
+    { displayName: "Sign Up", href: "/register" },
 ];
 
 const Navbar: React.FC = () => {
