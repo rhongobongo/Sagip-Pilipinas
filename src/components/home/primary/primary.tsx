@@ -57,6 +57,7 @@ const images = [
 
 const Primary: React.FC = () => {
   const [highlighted, setHighlighted] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
 
   return (
     <div className="relative h-screen">
@@ -83,7 +84,7 @@ const Primary: React.FC = () => {
            
             {highlighted !== null && (
               <div 
-                className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-1/4 rounded-lg shadow-2xl z-20"
+                className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-2/5 rounded-lg shadow-2xl z-20"
                 onClick={() => setHighlighted(null)}
               >
                 <div className="relative w-full h-full">
@@ -120,9 +121,9 @@ const Primary: React.FC = () => {
               return (
                 <div
                   key={index}
-                  className={`absolute transition-all duration-300 
+                  className={`absolute transition-all duration-300 cursor-pointer
                     ${highlighted === index ? 'scale-105 z-10' : ''}
-                    ${highlighted !== null && highlighted !== index ? 'opacity-50' : 'opacity-100'}
+                    ${(hovered !== null && hovered !== index) ? 'opacity-50' : 'opacity-100'}
                     ${index === highlighted ? 'shadow-2xl' : 'shadow-md'}
                   `}
                   style={{
@@ -137,8 +138,8 @@ const Primary: React.FC = () => {
                     borderRadius: '8px',
                     zIndex: highlighted === index ? 10 : index + 1,
                   }}
-                  onMouseEnter={() => setHighlighted(index)}
-                  onMouseLeave={() => setHighlighted(null)}
+                  onMouseEnter={() => setHovered(index)}
+                  onMouseLeave={() => setHovered(null)}
                   onClick={() => setHighlighted(index === highlighted ? null : index)}
                 >
                   <Image
@@ -178,7 +179,7 @@ const Primary: React.FC = () => {
 
       <p className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm 
         text-gray-400 opacity-75">
-        Click each photo to highlight; hover to read
+        Hover over photos; click to enlarge
       </p>
     </div>
   );
