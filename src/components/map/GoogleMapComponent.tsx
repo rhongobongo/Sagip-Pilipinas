@@ -19,16 +19,35 @@ interface GoogleMapComponentProps {
     pins?: DefaultPin[];
     onClick?: (event: google.maps.MapMouseEvent) => void;
     mapStyle?: React.CSSProperties;
+    options?: google.maps.MapOptions;
 }
 
 const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(
-    ({ pins = [], onClick, mapStyle }, googleMapRef) => {
-        
+    ({ pins = [], onClick, mapStyle, options }, googleMapRef) => {
+
         const containerStyle: React.CSSProperties = {
             width: mapStyle?.width ?? "100vw",
             height: mapStyle?.height ?? "100vh",
             ...mapStyle,
         };
+
+        const getGoogleMapOptions = (overrides: Partial<google.maps.MapOptions> = {}): google.maps.MapOptions => {
+            const defaultOptions: google.maps.MapOptions = {
+                restriction: {
+                    latLngBounds: philippinesBounds,
+                    strictBounds: false,
+                },
+                minZoom: 8,
+                maxZoom: 16,
+            };
+
+            return {
+                ...defaultOptions,
+                ...overrides,
+            };
+        };
+
+        const mergedOptions = getGoogleMapOptions(options);
 
         const mapRef = useRef<google.maps.Map | null>(null);
         const markerRef = useRef<google.maps.Marker | null>(null);
@@ -61,14 +80,7 @@ const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(
                 mapContainerStyle={containerStyle}
                 center={center}
                 zoom={6}
-                options={{
-                    restriction: {
-                        latLngBounds: philippinesBounds,
-                        strictBounds: false,
-                    },
-                    minZoom: 8,
-                    maxZoom: 16,
-                }}
+                options={mergedOptions}
                 onLoad={onLoad}
                 onUnmount={onUnmount}
                 onClick={onClick}
