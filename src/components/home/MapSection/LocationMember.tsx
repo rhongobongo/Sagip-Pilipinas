@@ -1,9 +1,10 @@
 import { OrganizationPin } from "@/types/PinTypes";
 import { PiMapPinFill } from "react-icons/pi";
 
-export const LocationMember: React.FC<{ pin: OrganizationPin }> = ({ pin }) => {
+export const LocationMember: React.FC<{ pin: OrganizationPin, onClick: () => void }> = ({ pin, onClick }) => {
     return (
-        <button className="grid grid-cols-5 items-center text-black w-full">
+        <button className="grid grid-cols-5 items-center text-black w-full"
+            onClick={onClick}>
             <div className="flex justify-center items-center">
                 <PiMapPinFill className="w-10 h-10" />
             </div>

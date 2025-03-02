@@ -6,12 +6,21 @@ import { LocationMember } from "./LocationMember";
 
 interface LocationListProps {
     pinData: OrganizationPin[];
+    onSelectPin: (pin: OrganizationPin | null) => void;
 }
 
-const LocationList: React.FC<LocationListProps> = ({ pinData }) => {
+const LocationList: React.FC<LocationListProps> = ({ pinData, onSelectPin }) => {
     const [region, setRegion] = useState<string>("");
 
     const regions = ["LUZON", "VISAYAS", "MINDANAO"];
+
+    const setRegionEvent = (r: string) => {
+        if (r === region) {
+            setRegion("");
+        } else {
+            setRegion(r);
+        }
+    }
 
     return (
         <div className="flex flex-col gap-4 h-full">
@@ -19,7 +28,7 @@ const LocationList: React.FC<LocationListProps> = ({ pinData }) => {
                 {regions.map((r) => (
                     <button
                         key={r}
-                        onClick={() => setRegion(r)}
+                        onClick={() => setRegionEvent(r)}
                         className={`flex-grow h-full flex items-center justify-center transition-colors duration-200 rounded-3xl ${region === r ? "text-white bg-black" : "text-black hover:bg-gray-300"
                             }`}
                     >
@@ -35,12 +44,19 @@ const LocationList: React.FC<LocationListProps> = ({ pinData }) => {
                             .filter((pin) => pin.region === region)
                             .map((pin) => (
                                 <li key={pin.id} className="mb-2">
-                                    <LocationMember pin={pin} />
+                                    <LocationMember pin={pin} onClick={() => onSelectPin(pin)} />
                                 </li>
                             ))}
                     </ul>
                 ) : (
-                    <p className="text-gray-500 text-center">Select a region to view locations.</p>
+                    <ul>
+                        {pinData
+                            .map((pin) => (
+                                <li key={pin.id} className="mb-2">
+                                    <LocationMember pin={pin} onClick={() => onSelectPin(pin)} />
+                                </li>
+                            ))}
+                    </ul>
                 )}
             </div>
         </div>

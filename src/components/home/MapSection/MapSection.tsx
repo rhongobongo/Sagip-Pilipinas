@@ -1,9 +1,8 @@
-import DistributionMapHomeWrapper from "@/components/map/DistributionMapHomeWrapper";
 import { db } from "@/lib/Firebase-Admin";
 import { GeoPoint } from "firebase-admin/firestore";
 import { MainPin } from "@/types/types";
-import LocationList from "./LocationList";
 import { OrganizationPin } from "@/types/PinTypes";
+import MapSectionInteractive from "./MapSectionInteractive";
 
 const fetchPins = async (): Promise<MainPin[]> => {
     const snapshot = await db.collection("map").get();
@@ -144,14 +143,7 @@ const MapSection: React.FC = async () => {
     return (
         <div className="h-screen w-full bg-[#D9D9D9]">
             <div className="pt-8 font-semibold text-center text-4xl text-black">KNOW YOUR NEAREST DISTRIBUTION CENTER</div>
-            <div className="grid grid-cols-2 gap-8 p-8 h-[80vh]">
-                <div className="mx-20 rounded-2xl flex-grow">
-                    <DistributionMapHomeWrapper pinData={locations} />
-                </div>
-                <div className="h-full">
-                    <LocationList pinData={locations} />
-                </div>
-            </div>  
+            <MapSectionInteractive locations={locations}></MapSectionInteractive>
         </div>
     )
 }
