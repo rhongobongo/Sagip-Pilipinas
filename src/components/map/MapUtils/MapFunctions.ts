@@ -24,6 +24,7 @@ export const zoomMarkerPin = (mapRef: React.RefObject<google.maps.Map | null>, p
         mapRef.current.panTo(position);
         setTimeout(() => {
             mapRef.current?.setZoom(12);
+            mapRef.current?.panTo(position);
         }, 200);
     }
 };
