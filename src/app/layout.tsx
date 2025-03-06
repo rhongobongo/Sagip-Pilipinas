@@ -36,7 +36,9 @@ export default function RootLayout({
                     strategy="beforeInteractive"
                 />
                 <Navbar />
-                {children}
+                <div className="mx-auto content-center">
+                    {children}
+                </div>
             </body>
         </html>
     );

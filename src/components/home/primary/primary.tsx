@@ -80,7 +80,6 @@ const Primary: React.FC = () => {
         >
           <div 
             className="relative h-full overflow-hidden"
-
           >
            
             {highlighted !== null && (

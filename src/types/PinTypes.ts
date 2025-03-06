@@ -16,5 +16,7 @@ export interface RequestPin extends DefaultPin {
 
 export interface OrganizationPin extends DefaultPin {
     id: string;
-    name: string;
+    name?: string;
+    location?: string;
+    region?: string;
 }
