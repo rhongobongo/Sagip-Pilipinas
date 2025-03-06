@@ -11,5 +11,8 @@ export interface MainPin extends DefaultPin {
 }
 
 export interface RequestPin extends DefaultPin {
+    fullName?: string;
+    contactNumber?: string;
     disasterType?: string;
+    aidType?: string;
 }
