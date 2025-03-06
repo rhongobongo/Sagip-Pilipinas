@@ -7,12 +7,16 @@ import { RequestPin } from "@/types/types";
 
 const DynamicMap = dynamic(() => import("./GoogleMapComponent"), { ssr: false });
 
+interface RequestAidMapWrapperProps {
+    width?: string; // Optional width prop
+    height?: string; // Optional height prop
+}
+
 const RequestAidMapWrapper
-    : React.FC = () => {
+    : React.FC<RequestAidMapWrapperProps> = ({ width = "100vw", height = "100vh" }) => {
 
         const [pin, setPin] = useState<RequestPin | null>(null);
         const mapRef = useRef<MapRef>(null);
-        const mapSize = { width: "100%", height: "80vh" };
 
         const handleMapClick = (event: google.maps.MapMouseEvent) => {
             if (event.latLng) {
@@ -55,7 +59,13 @@ const RequestAidMapWrapper
 
         return (
             <div>
-                <DynamicMap ref={mapRef} onClick={handleMapClick} />
+                <DynamicMap 
+                ref={mapRef} 
+                onClick={handleMapClick} 
+                width={width} // Pass the width prop
+                height={height} // Pass the height prop
+                />
+                
                 <div className="flex flex-col space-y-2">
                     <label htmlFor="latitude" className="text-sm font-medium text-gray-700">
                         Latitude
