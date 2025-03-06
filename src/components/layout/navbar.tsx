@@ -6,7 +6,7 @@ interface LinkInterface {
 }
 
 const linksArray: LinkInterface[] = [
-    { displayName: "Request Aid", href: "/" },
+    { displayName: "Home", href: "/" },
     { displayName: "Map", href: "/map" },
     { displayName: "Request Aid", href: "/request-aid" },
     { displayName: "Learn More", href: "/learnmore" },
