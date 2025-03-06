@@ -51,14 +51,6 @@ const RequestAidMapWrapper: React.FC = () => {
             return;
         }
 
-        try {
-            requestAid(formData);
-            alert("Aid request submitted successfully!");
-        } catch (error) {
-            console.error("Error in requestAid:", error);
-            alert("An error occurred. Please try again.");
-        }
-
         if (!formData.aidType && !formData.disasterType) {
             alert("Please select Disaster and Aid type.");
             return;
@@ -70,6 +62,14 @@ const RequestAidMapWrapper: React.FC = () => {
         else if (!formData.disasterType) {
             alert("Please select Disaster type.");
             return;
+        }
+
+        try {
+            requestAid(formData);
+            alert("Aid request submitted successfully!");
+        } catch (error) {
+            console.error("Error in requestAid:", error);
+            alert("An error occurred. Please try again.");
         }
     };
 
