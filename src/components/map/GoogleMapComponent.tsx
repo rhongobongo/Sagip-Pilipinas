@@ -3,101 +3,102 @@
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import { GoogleMap, Marker } from "@react-google-maps/api";
 import type { DefaultPin } from "@/types/types";
-
-const containerStyle = {
-    width: "100vw",
-    height: "100vh",
-};
-
-const center = {
-    lat: 14.5995,
-    lng: 120.9842,
-};
-
-const philippinesBounds = {
-    north: 21.3,
-    south: 4.5,
-    west: 115.8,
-    east: 127.6,
-};
+import { philippinesBounds, center, addMarkerPin, zoomMarkerPin } from "./MapUtils";
 
 export interface MapRef {
     getMapInstance: () => google.maps.Map | null;
-    addMarker: (pin: DefaultPin) => void;
+    addMarker?: (pin: DefaultPin) => void;
+    zoomMarker?: (pin: DefaultPin) => void;
+}
+
+export interface MarkerRef {
+    getMarkerInstance: () => google.maps.Marker | null;
 }
 
 interface GoogleMapComponentProps {
     pins?: DefaultPin[];
     onClick?: (event: google.maps.MapMouseEvent) => void;
+    mapStyle?: React.CSSProperties;
+    options?: google.maps.MapOptions;
 }
 
-const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(({ pins = [], onClick }, ref) => {
-    const mapRef = useRef<google.maps.Map | null>(null);
-    const markerRef = useRef<google.maps.Marker | null>(null);
+const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(
+    ({ pins = [], onClick, mapStyle, options }, googleMapRef) => {
 
-    const onLoad = (map: google.maps.Map) => {
-        mapRef.current = map;
-    };
+        const containerStyle: React.CSSProperties = {
+            width: mapStyle?.width ?? "100vw",
+            height: mapStyle?.height ?? "100vh",
+            ...mapStyle,
+        };
 
-    const onUnmount = () => {
-        mapRef.current = null;
-    };
-
-    const addMarkerPin = (pin: DefaultPin) => {
-        if (mapRef.current) {
-            const position = {
-                lat: pin.coordinates.latitude,
-                lng: pin.coordinates.longitude,
-            };
-
-            if (markerRef.current) {
-                markerRef.current.setPosition(position);
-            } else {
-                markerRef.current = new google.maps.Marker({
-                    position,
-                    map: mapRef.current,
-                });
-            }
-        }
-    };
-
-    useImperativeHandle(ref, () => ({
-        getMapInstance: () => mapRef.current,
-        addMarker: (pin: DefaultPin) => addMarkerPin(pin),
-    }));
-
-    if (typeof window !== "undefined" && !window.google) {
-        return <div>Loading...</div>;
-    }
-
-    return (
-        <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={center}
-            zoom={6}
-            options={{
+        const getGoogleMapOptions = (overrides: Partial<google.maps.MapOptions> = {}): google.maps.MapOptions => {
+            const defaultOptions: google.maps.MapOptions = {
                 restriction: {
                     latLngBounds: philippinesBounds,
                     strictBounds: false,
                 },
-            }}
-            onLoad={onLoad}
-            onUnmount={onUnmount}
-            onClick={onClick}
-        >
-            {pins.length > 0 &&
-                pins.map((pin) => (
-                    <Marker
-                        key={`${pin.coordinates.latitude}-${pin.coordinates.longitude}`}
-                        position={{
-                            lat: pin.coordinates.latitude,
-                            lng: pin.coordinates.longitude,
-                        }}
-                    />
-                ))}
-        </GoogleMap>
-    );
-});
+                minZoom: 8,
+                maxZoom: 16,
+            };
+
+            return {
+                ...defaultOptions,
+                ...overrides,
+            };
+        };
+
+        const mergedOptions = getGoogleMapOptions(options);
+
+        const mapRef = useRef<google.maps.Map | null>(null);
+        const markerRef = useRef<google.maps.Marker | null>(null);
+
+        const onLoad = (map: google.maps.Map) => {
+            mapRef.current = map;
+            map.setCenter(center);
+        };
+
+        const onUnmount = () => {
+            mapRef.current = null;
+        };
+
+        useImperativeHandle(
+            googleMapRef,
+            () => ({
+                getMapInstance: () => mapRef.current,
+                addMarker: (pin) => addMarkerPin(mapRef, markerRef, pin),
+                zoomMarker: (pin) => zoomMarkerPin(mapRef, pin),
+            }),
+            []
+        );
+
+
+        if (typeof window === "undefined" || !window.google?.maps) {
+            return <div>Loading...</div>;
+        }
+        return (
+            <GoogleMap
+                mapContainerStyle={containerStyle}
+                center={center}
+                zoom={6}
+                options={mergedOptions}
+                onLoad={onLoad}
+                onUnmount={onUnmount}
+                onClick={onClick}
+            >
+                {pins.length > 0 &&
+                    pins.map((pin) => (
+                        <Marker
+                            key={`${pin.coordinates.latitude}-${pin.coordinates.longitude}`}
+                            position={{
+                                lat: pin.coordinates.latitude,
+                                lng: pin.coordinates.longitude,
+                            }}
+                            onClick={() => zoomMarkerPin(mapRef, pin)}
+                        />
+                    ))}
+            </GoogleMap>
+        );
+    });
 
 GoogleMapComponent.displayName = "GoogleMapComponent";
 

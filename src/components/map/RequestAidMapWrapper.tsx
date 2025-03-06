@@ -9,8 +9,10 @@ const DynamicMap = dynamic(() => import("./GoogleMapComponent"), { ssr: false })
 
 const RequestAidMapWrapper
     : React.FC = () => {
+
         const [pin, setPin] = useState<RequestPin | null>(null);
         const mapRef = useRef<MapRef>(null);
+        const mapSize = { width: "100%", height: "80vh" };
 
         const handleMapClick = (event: google.maps.MapMouseEvent) => {
             if (event.latLng) {
@@ -21,7 +23,7 @@ const RequestAidMapWrapper
                     },
                 };
                 setPin(newPin);
-                mapRef.current?.addMarker(newPin);
+                mapRef.current?.addMarker?.(newPin);
             }
         };
 

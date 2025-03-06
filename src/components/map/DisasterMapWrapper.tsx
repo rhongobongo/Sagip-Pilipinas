@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { usePinsStore } from "@/stores/usePinStore";
 import { MapRef } from "./GoogleMapComponent";
 import { MainPin } from "@/types/types";
+import PinList from "./Pins/PinList";
 
 const DynamicMap = dynamic(() => import("./GoogleMapComponent"), { ssr: false });
 
@@ -24,8 +25,12 @@ const DisasterMapWrapper: React.FC<DisasterMapWrapperProps> = ({ pinData }) => {
         return () => unsubscribe();
     }, [pinData, initializePins, fetchPins]);
 
+
     return (
-        <DynamicMap ref={mapRef} pins={pins} />
+        <>
+            <DynamicMap ref={mapRef} pins={pins}/>
+            <PinList pinData={pins} mapRef={mapRef}></PinList>
+        </>
     );
 };
 
