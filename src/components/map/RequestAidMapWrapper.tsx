@@ -50,8 +50,7 @@ const RequestAidMapWrapper: React.FC = () => {
             alert("Please select a location on the map.");
             return;
         }
-
-        if (!formData.aidType && !formData.disasterType) {
+        else if (!formData.aidType && !formData.disasterType) {
             alert("Please select Disaster and Aid type.");
             return;
         }
