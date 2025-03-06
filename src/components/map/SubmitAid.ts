@@ -1,33 +1,25 @@
 "use server";
 
-import { db } from "@/lib/Firebase/Firebase";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { db } from "@/lib/Firebase-Admin";
+import { GeoPoint, Timestamp } from "firebase-admin/firestore";
+import { RequestPin } from "@/types/types";
 
-export async function submitRequestAid(prevState: any, formData: FormData) {
-    const name = formData.get("name") as string;
-    const contactNumber = formData.get("contactNumber") as string;
-    const disasterType = formData.get("disasterType") as string;
-    const aidType = formData.get("aidType") as string;
-    const latitude = formData.get("latitude") ? Number(formData.get("latitude")) : null;
-    const longitude = formData.get("longitude") ? Number(formData.get("longitude")) : null;
-
-    if (!latitude || !longitude) {
-        return { error: "Please select a location on the map." };
+export async function requestAid(aidRequest: RequestPin) {
+    if (!aidRequest.coordinates?.latitude || !aidRequest.coordinates?.longitude) {
+        throw new Error("Missing fields");
     }
 
-    try {
-        await addDoc(collection(db, "aid_requests"), {
-            name,
-            contactNumber,
-            disasterType,
-            aidType,
-            coordinates: { latitude, longitude },
-            timestamp: Timestamp.now(),
-        });
+    const uniqueID = `${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+    const geoPoint = new GeoPoint(aidRequest.coordinates.latitude, aidRequest.coordinates.longitude);
 
-        return { success: "Aid request submitted successfully!" };
-    } catch (error) {
-        console.error("Error in requestAid:", error);
-        return { error: "An error occurred. Please try again." };
-    }
+    await db.collection("aidRequest").doc(uniqueID).set({
+        name: aidRequest.fullName,
+        contactNumber: aidRequest.contactNumber,
+        disasterType: aidRequest.disasterType,
+        aidType: aidRequest.aidType,
+        coordinates: geoPoint,
+        timestamp: Timestamp.now(),
+    });
+
+    return { message: "Request Aid set up successfully." };
 }
