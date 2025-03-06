@@ -1,7 +1,7 @@
 import type { Timestamp } from "firebase/firestore";
 
 export interface DefaultPin {
-    coordinates: { latitude: number; longitude: number };
+    coordinates: { latitude: number | null; longitude: number | null };
 }
 
 export interface MainPin extends DefaultPin {
