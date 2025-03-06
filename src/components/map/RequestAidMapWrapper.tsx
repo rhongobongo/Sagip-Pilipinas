@@ -58,6 +58,19 @@ const RequestAidMapWrapper: React.FC = () => {
             console.error("Error in requestAid:", error);
             alert("An error occurred. Please try again.");
         }
+
+        if (!formData.aidType && !formData.disasterType) {
+            alert("Please select Disaster and Aid type.");
+            return;
+        }
+        else if (!formData.aidType) {
+            alert("Please select Aid type.");
+            return;
+        }
+        else if (!formData.disasterType) {
+            alert("Please select Disaster type.");
+            return;
+        }
     };
 
     return (
