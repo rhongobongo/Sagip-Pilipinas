@@ -2,10 +2,10 @@ import type { Timestamp } from "firebase/firestore";
 
 export interface DefaultPin {
   coordinates: { latitude: number; longitude: number };
+  id: string;
 }
 
 export interface MainPin extends DefaultPin {
-  id: string;
   disasterType?: string;
   date?: Timestamp;
 }

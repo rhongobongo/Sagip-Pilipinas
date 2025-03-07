@@ -7,7 +7,7 @@ import MapSectionInteractive from "./MapSectionInteractive";
 const fetchPins = async (): Promise<MainPin[]> => {
     const snapshot = await db.collection("map").get();
     return snapshot.docs.map((doc) => {
-        const { latitude, longitude } = (doc.get("location") as GeoPoint);
+        const { latitude, longitude } = (doc.get("coordinates") as GeoPoint);
         return {
             id: doc.id,
             coordinates: { latitude, longitude },
