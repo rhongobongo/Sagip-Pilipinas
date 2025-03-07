@@ -16,7 +16,7 @@ export const usePinsStore = create<PinsState>((set) => ({
         const unsubscribe = onSnapshot(collection(db, "map"), (snapshot) => {
             const updatedPins: MainPin[] = snapshot.docs.map((doc) => ({
                 id: doc.id,
-                coordinates: doc.get("location") as GeoPoint,
+                coordinates: doc.get("coordinates") as GeoPoint,
             }));
             set({ pins: updatedPins });
         });
