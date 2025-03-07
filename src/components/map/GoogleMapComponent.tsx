@@ -20,15 +20,18 @@ interface GoogleMapComponentProps {
     onClick?: (event: google.maps.MapMouseEvent) => void;
     mapStyle?: React.CSSProperties;
     options?: google.maps.MapOptions;
+    width?: string; // Optional width prop
+    height?: string; // Optional height prop
 }
 
 const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(
-    ({ pins = [], onClick, mapStyle, options }, googleMapRef) => {
+    ({ pins = [], onClick, mapStyle, options, width = "100vw", height = "100vh" }, googleMapRef) => {
 
+        // Merge optional size props with mapStyle
         const containerStyle: React.CSSProperties = {
-            width: mapStyle?.width ?? "100vw",
-            height: mapStyle?.height ?? "100vh",
-            ...mapStyle,
+            width, // Use the width prop (default: "100vw")
+            height, // Use the height prop (default: "100vh")
+            ...mapStyle, // Spread the mapStyle prop (additional styles)
         };
 
         const getGoogleMapOptions = (overrides: Partial<google.maps.MapOptions> = {}): google.maps.MapOptions => {

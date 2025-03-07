@@ -8,7 +8,12 @@ import { requestAid } from "./SubmitAid";
 
 const DynamicMap = dynamic(() => import("./GoogleMapComponent"), { ssr: false });
 
-const RequestAidMapWrapper: React.FC = () => {
+interface RequestAidMapWrapperProps {
+    width?: string; // Optional width prop
+    height?: string; // Optional height prop
+}
+
+const RequestAidMapWrapper : React.FC<RequestAidMapWrapperProps> = ({ width = "100vw", height = "100vh" }) => {
     const [formData, setFormData] = useState<RequestPin>({
         fullName: "",
         contactNumber: "",
