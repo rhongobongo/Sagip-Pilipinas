@@ -9,6 +9,8 @@ interface RequestFormProps {
 }
 
 const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
+  const [name, setName] = useState("");
+  const [contactNum, setContactNum] = useState("");
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
   const [calamityLevel, setCalamityLevel] = useState("");
@@ -20,6 +22,8 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
       e.preventDefault();
 
       Object.assign(pin, {
+        name,
+        contactNum,
         date,
         location,
         calamityLevel,
@@ -37,13 +41,24 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
         <div className="ml-5 grid gap-2 w-1/3">
           <div className="flex items-center">
             <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
+              Name:
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-2 border rounded-2xl bg-red-700"
+            />
+          </div>
+          <div className="flex items-center">
+            <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
               Date:
             </label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2 border rounded-2xl bg-red-800"
+              className="w-full px-4 py-2 border rounded-2xl bg-red-700"
             />
           </div>
           <div className="flex items-center">
@@ -54,11 +69,22 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="w-full px-4 py-2 border rounded-2xl bg-red-800"
+              className="w-full px-4 py-2 border rounded-2xl bg-red-700"
             />
           </div>
         </div>
         <div className="grid gap-2 w-1/3">
+          <div className="flex items-center">
+            <label className="w-24 text-right mr-2 whitespace-nowrap text-black -translate-x-5">
+              Contact Number:
+            </label>
+            <input
+              type="text"
+              value={contactNum}
+              onChange={(e) => setContactNum(e.target.value)}
+              className="w-full px-4 py-2 border rounded-2xl bg-red-700"
+            />
+          </div>
           <div className="flex items-center">
             <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
               Calamity Type:
@@ -66,7 +92,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
             <select
               value={calamityType}
               onChange={(e) => setCalamityType(e.target.value)}
-              className="w-full px-4 py-2 border rounded-2xl bg-red-800"
+              className="w-full px-4 py-2 border rounded-2xl bg-red-700"
             >
               <option value="">Select Type</option>
               <option value="flood">Flood</option>
@@ -84,7 +110,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
             <select
               value={calamityLevel}
               onChange={(e) => setCalamityLevel(e.target.value)}
-              className="w-full px-4 py-2 border rounded-2xl bg-red-800"
+              className="w-full px-4 py-2 border rounded-2xl bg-red-700"
             >
               <option value="">Select Level</option>
               <option value="1">Level 1 - Minor</option>
@@ -103,7 +129,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
         <textarea
           value={shortDesc}
           onChange={(e) => setShortDesc(e.target.value)}
-          className="px-4 py-2 border rounded-2xl w-4/6 bg-red-800 h-36 resize-none"
+          className="px-4 py-2 border rounded-2xl w-4/6 bg-red-700 h-36 resize-none"
         />
       </div>
       <div className="mt-10 flex justify-end pb-8">
