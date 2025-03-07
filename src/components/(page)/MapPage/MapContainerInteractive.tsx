@@ -1,9 +1,10 @@
 "use client"
 
 import DisasterMapWrapper from "@/components/map/DisasterMapWrapper";
-import PinList from "./PinList";
 import { MainPin } from "@/types/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import PinList from "./PinList";
+
 interface MapContainerInteractiveProps {
     pins: MainPin[];
 }

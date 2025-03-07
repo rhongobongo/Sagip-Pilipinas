@@ -29,11 +29,11 @@ interface GoogleMapComponentProps<T extends DefaultPin = DefaultPin> {
 const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(
     ({ pins = [], onClick, mapStyle, options, width = "100vw", height = "100vh", setPin }, googleMapRef) => {
 
-        // Merge optional size props with mapStyle
+
         const containerStyle: React.CSSProperties = {
-            width, // Use the width prop (default: "100vw")
-            height, // Use the height prop (default: "100vh")
-            ...mapStyle, // Spread the mapStyle prop (additional styles)
+            width, 
+            height, 
+            ...mapStyle, 
         };
 
         const getGoogleMapOptions = (overrides: Partial<google.maps.MapOptions> = {}): google.maps.MapOptions => {

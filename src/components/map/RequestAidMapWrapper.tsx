@@ -38,7 +38,7 @@ const RequestAidMapWrapper: React.FC<RequestAidMapWrapperProps> = ({
             },
         });
 
-        mapRef.current?.addMarker?.({id: "", coordinates: { latitude, longitude } });
+        mapRef.current?.addMarker?.({ id: "", coordinates: { latitude, longitude } });
     };
 
     return (
