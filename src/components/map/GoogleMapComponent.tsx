@@ -5,27 +5,29 @@ import { GoogleMap, Marker } from "@react-google-maps/api";
 import type { DefaultPin } from "@/types/types";
 import { philippinesBounds, center, addMarkerPin, zoomMarkerPin } from "./MapUtils";
 
-export interface MapRef {
+export interface MapRef<T extends DefaultPin = DefaultPin> {
     getMapInstance: () => google.maps.Map | null;
-    addMarker?: (pin: DefaultPin) => void;
-    zoomMarker?: (pin: DefaultPin) => void;
+    addMarker?: (pin: T) => void;
+    zoomMarker?: (pin: T) => void;
 }
+
 
 export interface MarkerRef {
     getMarkerInstance: () => google.maps.Marker | null;
 }
 
-interface GoogleMapComponentProps {
-    pins?: DefaultPin[];
+interface GoogleMapComponentProps<T extends DefaultPin = DefaultPin> {
+    pins?: T[];
     onClick?: (event: google.maps.MapMouseEvent) => void;
     mapStyle?: React.CSSProperties;
     options?: google.maps.MapOptions;
-    width?: string; // Optional width prop
-    height?: string; // Optional height prop
+    width?: string;
+    height?: string;
+    setPin?: (pin: T) => void;
 }
 
 const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(
-    ({ pins = [], onClick, mapStyle, options, width = "100vw", height = "100vh" }, googleMapRef) => {
+    ({ pins = [], onClick, mapStyle, options, width = "100vw", height = "100vh", setPin }, googleMapRef) => {
 
         // Merge optional size props with mapStyle
         const containerStyle: React.CSSProperties = {
@@ -89,16 +91,25 @@ const GoogleMapComponent = forwardRef<MapRef, GoogleMapComponentProps>(
                 onClick={onClick}
             >
                 {pins.length > 0 &&
-                    pins.map((pin) => (
-                        <Marker
-                            key={`${pin.coordinates.latitude}-${pin.coordinates.longitude}`}
-                            position={{
-                                lat: pin.coordinates.latitude,
-                                lng: pin.coordinates.longitude,
-                            }}
-                            onClick={() => zoomMarkerPin(mapRef, pin)}
-                        />
-                    ))}
+                    pins.map((pin) => {
+                        if (!pin.coordinates) return null; // Skip invalid pins
+
+                        return (
+                            <Marker
+                                key={pin.id}
+                                position={{
+                                    lat: pin.coordinates.latitude,
+                                    lng: pin.coordinates.longitude,
+                                }}
+                                onClick={() => {
+                                    zoomMarkerPin(mapRef, pin);
+                                    if (setPin) {
+                                        setPin(pin);
+                                    }
+                                }}
+                            />
+                        );
+                    })}
             </GoogleMap>
         );
     });
