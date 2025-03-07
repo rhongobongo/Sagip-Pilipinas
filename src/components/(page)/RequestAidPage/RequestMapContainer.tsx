@@ -12,7 +12,7 @@ const RequestMapContainer = () => {
   return (
     <div className="grid bg-white">
       <div className="flex justify-center items-center pt-10">
-        <div className="border-red-800 border-[36px] rounded-lg overflow-hidden">
+        <div className="border-red-700 border-[36px] rounded-lg overflow-hidden">
           <RequestAidMapWrapper
             pin={pin}
             setPin={setPin}
