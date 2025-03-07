@@ -86,7 +86,7 @@ const NewsGrid = () => {
   const currentItems = newsItems.slice(indexOfFirstItem, indexOfLastItem);
 
   // Change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber : number) => setCurrentPage(pageNumber);
 
   return (
     <div className="container mx-auto px-4 py-8 bg-[#F3F3F3]">
