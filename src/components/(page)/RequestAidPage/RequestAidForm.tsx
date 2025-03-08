@@ -16,6 +16,27 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   const [calamityLevel, setCalamityLevel] = useState("");
   const [calamityType, setCalamityType] = useState("");
   const [shortDesc, setShortDesc] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setImage(selectedFile);
+      
+      // Create a preview URL for the image
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview(null);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     if (pin) {
@@ -29,6 +50,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
         calamityLevel,
         calamityType,
         shortDesc,
+        image, // Add the image to the pin data
       });
 
       requestAid(pin);
@@ -36,7 +58,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="text-white font-sans ">
+    <form onSubmit={handleSubmit} className="text-white font-sans">
       <div className="flex justify-center items-center w-full gap-20">
         <div className="ml-5 grid gap-2 w-1/3">
           <div className="flex items-center">
@@ -132,6 +154,52 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
           className="px-4 py-2 border rounded-2xl w-4/6 bg-red-700 h-36 resize-none"
         />
       </div>
+      
+      {/* Image Upload Section */}
+      <div className="flex justify-center items-center mt-5 w-full pl-2">
+        <label className="w-24 text-right whitespace-nowrap text-black -translate-x-10">
+          Attach Image:
+        </label>
+        <div className="w-4/6 flex flex-col">
+          <div className="flex items-center">
+            <input
+              type="file"
+              id="image-upload"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+            <label
+              htmlFor="image-upload"
+              className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 cursor-pointer inline-block"
+            >
+              Choose Image
+            </label>
+            {image && (
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="ml-3 text-black hover:text-red-700"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+          
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="mt-3 border rounded-lg p-2 bg-gray-100">
+              <img 
+                src={imagePreview} 
+                alt="Preview" 
+                className="max-h-40 max-w-full object-contain" 
+              />
+              <p className="text-black text-sm mt-1">{image?.name}</p>
+            </div>
+          )}
+        </div>
+      </div>
+      
       <div className="mt-10 flex justify-end pb-8">
         <button
           type="submit"
