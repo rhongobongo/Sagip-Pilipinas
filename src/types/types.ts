@@ -17,4 +17,5 @@ export interface RequestPin extends DefaultPin {
   calamityLevel?: string;
   calamityType?: string;
   shortDesc?: string;
+  imageURL?: string;
 }
