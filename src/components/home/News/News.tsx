@@ -1,93 +1,118 @@
 "use client";
 
-
-import React from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+
+interface NewsItem {
+  id: string;
+  title: string;
+  summary: string;
+  imageUrl: string | null;
+  timestamp: string;
+  calamityType: string;
+  calamityLevel: string;
+  slug: string;
+}
 
 const NewsGrid = () => {
-  // Temporary placeholder data - this will be replaced with Firebase data
-  const newsItems = [
-    {
-      id: 1,
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      imageUrl: '/placeholder-news-1.jpg',
-      slug: 'news-item-1'
-    },
-    {
-      id: 2,
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      imageUrl: '/placeholder-news-2.jpg',
-      slug: 'news-item-2'
-    },
-    {
-      id: 3,
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      imageUrl: '/placeholder-news-3.jpg',
-      slug: 'news-item-3'
-    },
-    {
-      id: 4,
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      imageUrl: '/placeholder-news-4.jpg',
-      slug: 'news-item-4'
-    },
-    {
-      id: 5,
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      imageUrl: '/placeholder-news-5.jpg',
-      slug: 'news-item-5'
-    },
-    {
-      id: 6,
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      imageUrl: '/placeholder-news-6.jpg',
-      slug: 'news-item-6'
-    },
-    {
-      id: 7,
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      imageUrl: '/placeholder-news-7.jpg',
-      slug: 'news-item-7'
-    },
-    {
-      id: 8,
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      imageUrl: '/placeholder-news-8.jpg',
-      slug: 'news-item-8'
-    },
-    {
-      id: 9,
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      imageUrl: '/placeholder-news-9.jpg',
-      slug: 'news-item-9'
-    }
-  ];
-
+  // State for news data
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  
   // State for pagination
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [itemsPerPage] = React.useState(9);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage] = useState<number>(9);
   
-  // Calculate total pages
-  const totalPages = Math.ceil(newsItems.length / itemsPerPage);
+  // State for search
+  const [searchTerm, setSearchTerm] = useState<string>('');
   
-  // Get current items
-  const indexOfLastItem = currentPage * itemsPerPage;
+  // Fetch news data from our API route
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setLoading(true);
+        
+        const response = await fetch('/api/news', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Server error details:', errorData);
+          throw new Error(`Server responded with ${response.status}: ${JSON.stringify(errorData)}`);
+        }
+        
+        const data = await response.json();
+        
+        // Use a stable mapping that doesn't depend on random values
+        const fetchedNews: NewsItem[] = data.map((item: any) => ({
+          ...item,
+          // Use a stable date format
+          timestamp: item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-US') : ''
+        }));
+        
+        setNewsItems(fetchedNews);
+        setError(null);
+      } catch (err: any) {
+        console.error('Error fetching news:', err);
+        setError(`Failed to fetch news items: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchNews();
+  }, []);
+  
+  // Filter news items based on search using memoization to avoid re-renders
+  const filteredNews = searchTerm
+    ? newsItems.filter(
+        (item) => 
+          (item?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) || false) ||
+          (item?.calamityType?.toLowerCase()?.includes(searchTerm.toLowerCase()) || false) ||
+          (item?.summary?.toLowerCase()?.includes(searchTerm.toLowerCase()) || false)
+      )
+    : newsItems;
+    
+  // Calculate total pages - ensure stable calculation
+  const totalPages = Math.max(1, Math.ceil(filteredNews.length / itemsPerPage));
+  
+  // Get current items for the page safely
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const indexOfLastItem = safeCurrentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = newsItems.slice(indexOfFirstItem, indexOfLastItem);
-
-  // Change page
-  const paginate = (pageNumber : number) => setCurrentPage(pageNumber);
-
+  const currentItems = filteredNews.slice(indexOfFirstItem, indexOfLastItem);
+  
+  // Pagination handler - keep it stable
+  const paginate = (pageNumber: number) => setCurrentPage(Math.min(pageNumber, totalPages));
+  
+  // Loading state
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 bg-[#F3F3F3]">
+        <div className="flex justify-center items-center h-64">
+          <p>Loading news...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Error state
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8 bg-[#F3F3F3]">
+        <div className="flex justify-center items-center h-64">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="container mx-auto px-4 py-8 bg-[#F3F3F3]">
       <div className="flex justify-between items-center mb-6">
@@ -96,6 +121,8 @@ const NewsGrid = () => {
           <input
             type="text"
             placeholder="Search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="border border-gray-300 rounded-full px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <svg
@@ -111,68 +138,82 @@ const NewsGrid = () => {
           </svg>
         </div>
       </div>
-
+      
+      {/* News grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {currentItems.map((item) => (
           <Link href={`/news/${item.slug}`} key={item.id}>
             <div className="border border-gray-300 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <div className="h-48 relative">
-                {/* Placeholder image - replace with your actual Image component */}
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500">Image Placeholder</span>
-                </div>
-                {/* When you have actual images, use this instead:
-                <Image
-                  src={item.imageUrl}
-                  alt={item.title}
-                  layout="fill"
-                  objectFit="cover"
-                  placeholder="blur"
-                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
-                />
-                */}
+              <div className="relative h-48">
+                {item.imageUrl ? (
+                  <Image 
+                    src={item.imageUrl} 
+                    alt={item.title || 'News image'} 
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-500">{item.calamityType || 'News'}</span>
+                  </div>
+                )}
+                {item.calamityLevel && (
+                  <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                    {item.calamityLevel}
+                  </div>
+                )}
               </div>
+              
               <div className="p-4">
-                <h2 className="font-medium text-lg line-clamp-2 mb-2">{item.title}</h2>
-                <p className="text-gray-600 text-sm line-clamp-4">{item.summary}</p>
+                <h2 className="font-medium text-lg line-clamp-2 mb-2">{item.title || 'News Title'}</h2>
+                <p className="text-gray-600 text-sm line-clamp-4">{item.summary || 'No summary available'}</p>
+                
+                {item.timestamp && (
+                  <div className="flex justify-end items-center text-xs text-gray-500 mt-2">
+                    <span>{item.timestamp}</span>
+                  </div>
+                )}
               </div>
             </div>
           </Link>
         ))}
       </div>
-
+      
       {/* Pagination */}
-      <div className="flex justify-center items-center mt-10 space-x-1">
-        <button
-          onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
-          disabled={currentPage === 1}
-          className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
-        >
-          &lt;
-        </button>
-        
-        {[...Array(totalPages).keys()].map(number => (
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center mt-10 space-x-1">
           <button
-            key={number + 1}
-            onClick={() => paginate(number + 1)}
-            className={`px-3 py-1 rounded border ${
-              currentPage === number + 1
-                ? 'bg-blue-500 text-white border-blue-500'
-                : 'border-gray-300 hover:bg-gray-100'
-            }`}
+            onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
           >
-            {number + 1}
+            &lt;
           </button>
-        ))}
-        
-        <button
-          onClick={() => paginate(currentPage < totalPages ? currentPage + 1 : totalPages)}
-          disabled={currentPage === totalPages}
-          className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
-        >
-          &gt;
-        </button>
-      </div>
+          
+          {[...Array(totalPages).keys()].map(number => (
+            <button
+              key={number + 1}
+              onClick={() => paginate(number + 1)}
+              className={`px-3 py-1 rounded border ${
+                currentPage === number + 1
+                  ? 'bg-blue-500 text-white border-blue-500'
+                  : 'border-gray-300 hover:bg-gray-100'
+              }`}
+            >
+              {number + 1}
+            </button>
+          ))}
+          
+          <button
+            onClick={() => paginate(currentPage < totalPages ? currentPage + 1 : totalPages)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+          >
+            &gt;
+          </button>
+        </div>
+      )}
     </div>
   );
 };
