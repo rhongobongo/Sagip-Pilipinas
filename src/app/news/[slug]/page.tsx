@@ -108,6 +108,7 @@ export default async function NewsPage(props: {
                                                         mapTypeControl: false,
                                                         streetViewControl: false,
                                                     }}
+                                                    autoZoom={true} // Enable auto-zoom
                                                 />
                                             </div>
                                         )}
@@ -115,7 +116,7 @@ export default async function NewsPage(props: {
                                 </div>
                             </section>
 
-                            {/* Additional Information */}
+                            {/* Rest of the component remains the same */}
                             <section className="mb-6">
                                 <h2 className="text-xl font-semibold mb-3 text-black">Additional Information</h2>
                                 <DetailCard>
