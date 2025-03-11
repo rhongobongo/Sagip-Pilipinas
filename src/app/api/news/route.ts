@@ -1,5 +1,5 @@
-import { db } from '@/lib/Firebase-Admin';
 import { NextRequest } from 'next/server';
+import { db } from '@/lib/Firebase-Admin'; // Added the missing import
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         id: doc.id,
         title: data.shortDesc || 'News Title',
         summary: data.calamityType ? `${data.calamityType} - ${data.calamityLevel || ''}` : 'News Summary',
-        imageUrl: data.imageUrl || '/placeholder-image.jpg', // Adjust field name if needed
+        imageUrl: data.imageUrl || '/placeholder-image.jpg',
         timestamp: data.timestamp ? data.timestamp.toDate().toISOString() : '',
         calamityType: data.calamityType || '',
         calamityLevel: data.calamityLevel || '',
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       status: 200
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error fetching news:', error);
     return new Response(JSON.stringify({ error: 'Failed to fetch news items' }), {
       headers: { 'Content-Type': 'application/json' },
