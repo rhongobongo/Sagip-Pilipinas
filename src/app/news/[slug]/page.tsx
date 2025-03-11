@@ -1,7 +1,7 @@
 import { db } from '@/lib/Firebase-Admin';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import GoogleMapComponent from '@/components/map/GoogleMapComponent'; // Adjust the path if needed
+import ClientMapWrapper from '@/components/map/ClientMapWrapper'; // Import the new wrapper component
 
 export default async function NewsPage({ params }: { params: { slug: string } }) {
   try {
@@ -46,7 +46,7 @@ export default async function NewsPage({ params }: { params: { slug: string } })
         `${coordinates.latitude.toFixed(4)}, ${coordinates.longitude.toFixed(4)}` : 
         'Location not available',
       slug: snapshot.id,
-      coordinates: coordinates ? { lat: coordinates.latitude, lng: coordinates.longitude } : undefined, // Convert coordinates to the format expected by GoogleMapComponent
+      coordinates: coordinates ? { lat: coordinates.latitude, lng: coordinates.longitude } : undefined,
     };
 
     const formattedDate = newsItem.timestamp 
@@ -88,40 +88,32 @@ export default async function NewsPage({ params }: { params: { slug: string } })
                   </div>
 
                   {/* Location Info */}
-                    <div className="bg-white p-4 rounded-lg shadow-sm md:col-span-2">
+                  <div className="bg-white p-4 rounded-lg shadow-sm md:col-span-2">
                     <h3 className="font-medium mb-2 text-black">Location Details</h3>
                     <p className="text-black mb-2"><span className="font-medium">Coordinates:</span> {newsItem.location}</p>
-                    {/* Map component */}
+                    
+                    {/* Using the ClientMapWrapper component instead of direct GoogleMapComponent */}
                     {newsItem.coordinates && (
-                        <div className="h-64 w-full border border-gray-200 rounded-md overflow-hidden"> 
-                        <GoogleMapComponent
-                            width="100%"
-                            height="100%"
-                            mapStyle={{ borderRadius: '0.375rem' }}
-                            pins={[
-                            {
-                                id: newsItem.id,
-                                coordinates: {
-                                latitude: newsItem.coordinates.lat,
-                                longitude: newsItem.coordinates.lng
-                                }
+                      <div className="h-64 w-full border border-gray-200 rounded-md overflow-hidden">
+                        <ClientMapWrapper
+                          pin={{
+                            id: newsItem.id,
+                            coordinates: {
+                              latitude: newsItem.coordinates.lat,
+                              longitude: newsItem.coordinates.lng
                             }
-                            ]}
-                            options={{
-                            zoom: 15, // Higher zoom level to focus more closely
+                          }}
+                          options={{
+                            zoom: 15,
                             center: { lat: newsItem.coordinates.lat, lng: newsItem.coordinates.lng },
-                            disableDefaultUI: false,
                             zoomControl: true,
-                            scrollwheel: false, // Disable scroll wheel zoom to prevent accidental zooming
-                            draggable: false,   // Disable panning to lock the view
-                            mapTypeControl: false, // Remove the map type controls for cleaner UI
-                            streetViewControl: false // Remove street view for cleaner UI
-                            }}
+                            mapTypeControl: false,
+                            streetViewControl: false
+                          }}
                         />
-                        </div>
+                      </div>
                     )}
-                    </div>
-               
+                  </div>
                 </div>
               </div>
               
