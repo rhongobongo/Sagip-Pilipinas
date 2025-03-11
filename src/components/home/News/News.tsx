@@ -15,6 +15,18 @@ interface NewsItem {
   slug: string;
 }
 
+// Define a type for raw API response items
+interface RawNewsItem {
+  id: string;
+  title?: string;
+  summary?: string;
+  imageUrl?: string | null;
+  timestamp?: string;
+  calamityType?: string;
+  calamityLevel?: string;
+  slug: string;
+}
+
 const NewsGrid = () => {
   // State for news data
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
@@ -47,20 +59,25 @@ const NewsGrid = () => {
           throw new Error(`Server responded with ${response.status}: ${JSON.stringify(errorData)}`);
         }
         
-        const data = await response.json();
+        const data = await response.json() as RawNewsItem[];
         
         // Use a stable mapping that doesn't depend on random values
-        const fetchedNews: NewsItem[] = data.map((item: any) => ({
-          ...item,
-          // Use a stable date format
-          timestamp: item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-US') : ''
+        const fetchedNews: NewsItem[] = data.map((item: RawNewsItem) => ({
+          id: item.id,
+          title: item.title || '',
+          summary: item.summary || '',
+          imageUrl: item.imageUrl || null,
+          timestamp: item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-US') : '',
+          calamityType: item.calamityType || '',
+          calamityLevel: item.calamityLevel || '',
+          slug: item.slug
         }));
         
         setNewsItems(fetchedNews);
         setError(null);
-      } catch (err: any) {
+      } catch (err) {
         console.error('Error fetching news:', err);
-        setError(`Failed to fetch news items: ${err.message}`);
+        setError(`Failed to fetch news items: ${err instanceof Error ? err.message : String(err)}`);
       } finally {
         setLoading(false);
       }
@@ -73,9 +90,9 @@ const NewsGrid = () => {
   const filteredNews = searchTerm
     ? newsItems.filter(
         (item) => 
-          (item?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) || false) ||
-          (item?.calamityType?.toLowerCase()?.includes(searchTerm.toLowerCase()) || false) ||
-          (item?.summary?.toLowerCase()?.includes(searchTerm.toLowerCase()) || false)
+          (item.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (item.calamityType.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (item.summary.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     : newsItems;
     
