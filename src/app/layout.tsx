@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import Navbar from "@/components/layout/navbar";
+import NavbarWrapper from "@/components/layout/Navbar/NavbarWrapper";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -13,6 +13,8 @@ const geistMono = Geist_Mono({
     variable: "--font-geist-mono",
     subsets: ["latin"],
 });
+
+
 
 export const metadata: Metadata = {
     title: "Sagip-Pilipinas",
@@ -35,7 +37,7 @@ export default function RootLayout({
                     src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
                     strategy="beforeInteractive"
                 />
-                <Navbar />
+                <NavbarWrapper />
                 <div className="mx-auto content-center">
                     {children}
                 </div>
