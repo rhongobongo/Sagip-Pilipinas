@@ -12,8 +12,8 @@ const MapSectionInteractive: React.FC<{ locations: OrganizationPin[] }> = ({ loc
 
 
     return (
-        <div className="grid grid-cols-2 gap-8 p-8 h-[80vh]">
-            <div className="mx-20 rounded-2xl flex-grow">
+        <div className="container mx-auto grid grid-cols-2 gap-8 p-8 h-[80vh]">
+            <div className="rounded-2xl flex-grow">
                 <DistributionMapHomeWrapper pinData={locations} selectedPin={selectedPin} />
             </div>
             <div className="h-full">
