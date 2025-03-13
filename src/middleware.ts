@@ -10,11 +10,12 @@ import {
 
 const PUBLIC_PATHS = ['/', '/about', '/contact-us', '/map', '/request-aid', '/404'];
 const AUTH_PATHS = ['/register', '/login', 'forget-password'];
+const ADMIN_PATH_REGEX = /^\/admin(?:\/([a-zA-Z0-9-]+))?(?:\/|$)/;
 
 export default async function middleware(request: NextRequest) {
 
-    const adminRegex = /^\/admin(?:\/([a-zA-Z0-9]+))?(?:\/|$)/;
     const { nextUrl } = request;
+    const isAdminRoute = ADMIN_PATH_REGEX.test(nextUrl.pathname);
 
     return authMiddleware(request, {
         loginPath: '/api/login',
@@ -30,10 +31,10 @@ export default async function middleware(request: NextRequest) {
 
         handleValidToken: async ({ token, decodedToken }, headers) => {
 
-            if (adminRegex.test(nextUrl.pathname)) {
+            if (isAdminRoute) {
                 const user = await MiddlewareFirebaseAdmin.getUser(decodedToken.uid);
                 if (!user?.customClaims?.admin) {
-                    return NextResponse.redirect(new URL('/404', request.url));
+                    return NextResponse.redirect(new URL('/403', request.url));
                 }
             }
             return NextResponse.next({
@@ -44,7 +45,7 @@ export default async function middleware(request: NextRequest) {
         },
 
         handleInvalidToken: async (_reason) => {
-            if (adminRegex.test(nextUrl.pathname)) {
+            if (isAdminRoute) {
                 return NextResponse.redirect(new URL('/404', request.url));
             }
             return redirectToLogin(request, {
