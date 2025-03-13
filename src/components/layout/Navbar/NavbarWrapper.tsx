@@ -2,12 +2,18 @@
 
 import { usePathname } from "next/navigation";
 import Navbar from "./Navbar";
+import AdminHeader from "@/components/(page)/Admin/AdminHeader";
 
-const HIDDEN_NAVBAR_PATHS = ["/admin"];
+const ADMIN_NAVBAR_PATHS = ["/admin"];
 
 const NavbarWrapper = () => {
     const pathname = usePathname();
-    return HIDDEN_NAVBAR_PATHS.includes(pathname) ? null : <Navbar />;
-};
+
+    if (pathname.startsWith("/admin")) {
+        return <AdminHeader />;
+    }
+
+    return <Navbar />;
+}
 
 export default NavbarWrapper;
