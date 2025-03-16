@@ -1,8 +1,9 @@
-const AdminPage: React.FC = () => {
-
+const AnalyticsPage = () => {
     return (
-        <div>AdminPage</div>
-    )
-};
+        <div className="container text-black h-[93vh]">
+            <p>Analytics content goes here...</p>
+        </div>
+    );
+}
 
-export default AdminPage;
+export default AnalyticsPage;
