@@ -11,14 +11,16 @@ const RequestMapContainer = () => {
 
   return (
     <div className="grid bg-white">
-      <div className="text-black">
-        <h1 className=" font-semibolds">REQUEST AID</h1>
-        <p>
-          Request aid during or after a calamity by filling up this short form
-          to alert our people to send help towards your location.
-        </p>
+      <div className="text-black ml-8">
+        <h1 className="font-bold text-2xl mt-8 pl-16">REQUEST AID</h1>
+        <div className="flex items-center justify-center">
+          <p className="text-xl">
+            Request aid during or after a calamity by filling up this short form
+            to alert our people to send help towards your location.
+          </p>
+        </div>
       </div>
-      <div className="flex justify-center items-center pt-10">
+      <div className="flex justify-center items-center pt-4">
         <div className="border-red-400 border-8 rounded-lg overflow-hidden">
           <RequestAidMapWrapper
             pin={pin}
