@@ -1,4 +1,4 @@
-import type { Timestamp } from "firebase/firestore";
+import type { Timestamp } from 'firebase/firestore';
 
 export interface DefaultPin {
   coordinates: { latitude: number; longitude: number };
@@ -18,4 +18,6 @@ export interface RequestPin extends DefaultPin {
   calamityType?: string;
   shortDesc?: string;
   imageURL?: string;
+  submissionDate?: string;
+  submissionTime?: string;
 }
