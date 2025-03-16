@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "github:fortawesome/react-fontawesome",
     "@react-google-maps/api": "^2.20.5",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
