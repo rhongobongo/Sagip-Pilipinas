@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { RequestPin } from '@/types/types';
 import { requestAid } from '@/components/map/SubmitAid';
 import { uploadImage } from './uploadImage';
@@ -13,10 +13,17 @@ interface RequestFormProps {
 const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   const [name, setName] = useState('');
   const [contactNum, setContactNum] = useState('');
-  const [date, setDate] = useState('');
-  const [location, setLocation] = useState('');
+  // const [date, setDate] = useState(''); unused
+  // const [location, setLocation] = useState(''); unused
   const [calamityLevel, setCalamityLevel] = useState('');
   const [calamityType, setCalamityType] = useState('');
+  const [otherCalamity, setOtherCalamity] = useState('');
+  const [aidRequest, setAidRequest] = useState('');
+  const [otherAidRequest, setOtherAidRequest] = useState('');
+
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+
   const [shortDesc, setShortDesc] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -48,26 +55,47 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
     console.log('reached 2');
     const imageURL = await uploadImage(image);
 
+    const formattedDate = format(new Date(), 'MMMM dd, yyyy');
+    const formattedTime = format(new Date(), 'h:mm a');
+
     Object.assign(pin, {
       name,
       contactNum,
-      date,
       location,
       calamityLevel,
       calamityType,
       shortDesc,
       imageURL,
+      submissionDate: formattedDate,
+      submissionTime: formattedTime,
     });
 
     await requestAid(pin);
   };
 
+  useEffect(() => {
+    if (pin && pin.coordinates) {
+      setLatitude(pin.coordinates.latitude);
+      setLongitude(pin.coordinates.longitude);
+    } else {
+      setLatitude(null);
+      setLongitude(null);
+    }
+  }, [pin]);
+
   return (
     <form onSubmit={handleSubmit} className="text-black font-sans">
-      <div className="ml-36 -translate-y-8">
-        <p>Date: {format(new Date(), 'MMMM dd, yyyy')}</p>
-        <p>Time: {format(new Date(), 'h:mm a')}</p>
+      <div className="opacity-60 flex justify-evenly gap-[36rem] -translate-y-6">
+        <div className="">
+          <p>Date: {format(new Date(), 'MMMM dd, yyyy')}</p>
+          <p>Time: {format(new Date(), 'h:mm a')}</p>
+        </div>
+        <div className="text-wrap">
+          Note: Place a pin in the map and fill out all necessary inormation
+          before submitting request.
+        </div>
       </div>
+
       <div className="flex justify-center items-center w-full gap-20">
         <div className="ml-5 grid gap-2 w-1/3">
           <div className="flex items-center">
@@ -93,30 +121,6 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
             />
           </div>
           <div className="flex items-center">
-            <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
-              Date:
-            </label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2 border rounded-2xl bg-red-400"
-            />
-          </div>
-          {/* <div className="flex items-center">
-            <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
-              Location:
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full px-4 py-2 border rounded-2xl bg-red-400"
-            />
-          </div> */}
-        </div>
-        <div className="grid gap-2 w-1/3">
-          <div className="flex items-center">
             <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
               Calamity Type:
             </label>
@@ -134,6 +138,61 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
               <option value="other">Other</option>
             </select>
           </div>
+          {calamityType === 'other' && (
+            <div className="flex items-center mt-2">
+              {' '}
+              {/* Added mt-2 for spacing */}
+              <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
+                Input Calamity:
+              </label>
+              <textarea
+                value={otherCalamity}
+                onChange={(e) => setOtherCalamity(e.target.value)}
+                className="w-full px-4 py-2 border rounded-2xl bg-red-400"
+              />
+            </div>
+          )}
+          {/* <div className="flex items-center">
+            <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
+              Date:
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full px-4 py-2 border rounded-2xl bg-red-400"
+            />
+          </div> */}
+          {/* <div className="flex items-center">
+            <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
+              Location:
+            </label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full px-4 py-2 border rounded-2xl bg-red-400"
+            />
+          </div> */}
+        </div>
+        <div className="grid gap-2 w-1/3">
+          <div className="flex items-center">
+            <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
+              Longitude:
+            </label>
+            <p className="opacity-60">
+              {longitude !== null ? longitude.toFixed(6) : 'Not selected'}
+            </p>
+          </div>
+          <div className="flex items-center">
+            <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
+              Latitude:
+            </label>
+            <p className="opacity-60">
+              {latitude !== null ? latitude.toFixed(6) : 'Not selected'}
+            </p>
+          </div>
+
           <div className="flex items-center">
             <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
               Calamity Level:
@@ -151,6 +210,36 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
               <option value="5">Level 5 - Catastrophic</option>
             </select>
           </div>
+          <div className="flex items-center">
+            <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
+              Aid Request:
+            </label>
+            <select
+              value={aidRequest}
+              onChange={(e) => setAidRequest(e.target.value)}
+              className="w-full px-4 py-2 border rounded-2xl bg-red-400"
+            >
+              <option value="">Select Type</option>
+              <option value="flood">Clothes</option>
+              <option value="earthquake">Food</option>
+              <option value="fire">Volunteers</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          {aidRequest === 'other' && (
+            <div className="flex items-center mt-2">
+              {' '}
+              {/* Added mt-2 for spacing */}
+              <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
+                Input Aid:
+              </label>
+              <textarea
+                value={otherAidRequest}
+                onChange={(e) => setOtherAidRequest(e.target.value)}
+                className="w-full px-4 py-2 border rounded-2xl bg-red-400"
+              />
+            </div>
+          )}
         </div>
       </div>
       <div className="flex justify-center items-center mt-3 w-full pl-2">
