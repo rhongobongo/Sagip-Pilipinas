@@ -28,6 +28,8 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false); // New state for dialog
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -49,6 +51,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsConfirmationOpen(true); // Open the confirmation dialog
     console.log('reached');
     if (!pin || !image) return;
 
@@ -71,6 +74,37 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
     });
 
     await requestAid(pin);
+  };
+
+  const confirmSubmission = async () => {
+    // This function will handle the actual submission
+    if (!pin || !image) return;
+
+    const imageURL = await uploadImage(image);
+    const formattedDate = format(new Date(), 'MMMM dd, yyyy');
+    const formattedTime = format(new Date(), 'h:mm a');
+
+    Object.assign(pin, {
+      name,
+      contactNum,
+      location,
+      calamityLevel,
+      calamityType,
+      shortDesc,
+      imageURL,
+      submissionDate: formattedDate,
+      submissionTime: formattedTime,
+    });
+
+    await requestAid(pin);
+    setIsConfirmationOpen(false); // Close the dialog after submission
+
+    // Optionally, you can add a success message or redirect here
+    alert('Request submitted successfully!'); // Example success message
+  };
+
+  const cancelSubmission = () => {
+    setIsConfirmationOpen(false); // Close the dialog
   };
 
   useEffect(() => {
@@ -312,6 +346,40 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
           information, which includes your name and contact number-
         </p>
       </div>
+      {/* Confirmation Dialog */}
+      {isConfirmationOpen && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center text-white">
+          <div className="bg-[#211E1E] p-8 rounded-md shadow-lg w-2/5">
+            <div className="flex mb-4 -translate-x-3">
+              <img // Warning Image
+                src="/Warning.svg" // Replace with the correct path to your image
+                alt="Warning Symbol"
+                width="48" // Adjust size as needed
+                height="48"
+                className="-translate-y-3"
+              />
+              <p className="text-lg font-bold">Confirm Submission</p>
+            </div>
+            <p>Submit your aid request?</p>
+            <div className="flex justify-end mt-6">
+              <button
+                type="button"
+                onClick={cancelSubmission}
+                className=" hover:bg-gray-600 px-4 py-2 rounded-md mr-2 font-normal"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                onClick={confirmSubmission}
+                className="bg-green-500 hover:bg-green-600 text-black px-4 py-2 rounded-md font-semibold"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 };
