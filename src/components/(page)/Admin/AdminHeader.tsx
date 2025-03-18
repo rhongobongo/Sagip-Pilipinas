@@ -3,7 +3,7 @@ import { Bell, User } from "lucide-react";
 
 const AdminHeader: React.FC = () => {
     return (
-        <div className="p-4 bg-[#B0022A] shadow-[inset_0_-1px_0_0_rgba(169,169,169,.5)]">
+        <div className="p-4 bg-[#B0022A] shadow-[inset_0_-1px_0_0_rgba(169,169,169,.5)] sticky">
             <div className="max-w-6xl mx-auto flex justify-between items-center">
 
                 <div className="flex items-center space-x-3">
