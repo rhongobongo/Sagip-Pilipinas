@@ -6,7 +6,6 @@ import { auth, db, createUserWithEmailAndPassword } from '@/lib/Firebase/Firebas
 import { collection, addDoc, setDoc, doc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-// Initialize Firebase Storage
 const storage = getStorage();
 
 const OrgRegistrationForm: React.FC = () => {
@@ -30,7 +29,6 @@ const OrgRegistrationForm: React.FC = () => {
       const selectedFile = e.target.files[0];
       setImage(selectedFile);
 
-      // Create a preview URL for the image
       const reader = new FileReader();
       reader.onload = (event) => {
         setImagePreview(event.target?.result as string);
@@ -67,11 +65,9 @@ const OrgRegistrationForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Reset states
     setError(null);
     setSuccess(null);
     
-    // Form validation
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
@@ -81,7 +77,7 @@ const OrgRegistrationForm: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // 1. Create user with email and password
+
       const userCredential = await createUserWithEmailAndPassword(
         auth, 
         formData.email, 
@@ -90,7 +86,6 @@ const OrgRegistrationForm: React.FC = () => {
       
       const user = userCredential.user;
       
-      // 2. Upload image to Firebase Storage if an image was selected
       let profileImageUrl = '';
       
       if (image) {
@@ -99,7 +94,6 @@ const OrgRegistrationForm: React.FC = () => {
         profileImageUrl = await getDownloadURL(storageRef);
       }
       
-      // 3. Save organization data to Firestore
       await setDoc(doc(db, "organizations", user.uid), {
         name: formData.name,
         email: formData.email,
@@ -112,10 +106,8 @@ const OrgRegistrationForm: React.FC = () => {
         userId: user.uid
       });
       
-      // Success message
       setSuccess("Registration successful! Redirecting to dashboard...");
       
-      // Reset form
       setFormData({
         name: '',
         email: '',
@@ -128,14 +120,12 @@ const OrgRegistrationForm: React.FC = () => {
       setImage(null);
       setImagePreview(null);
       
-      // Redirect to dashboard or login page after registration
-      // Using setTimeout to show the success message before redirect
       setTimeout(() => {
         window.location.href = './login';
       }, 2000);
       
     } catch (error: any) {
-      // Handle Firebase errors
+
       let errorMessage = "Registration failed. Please try again.";
       
       if (error.code === 'auth/email-already-in-use') {
