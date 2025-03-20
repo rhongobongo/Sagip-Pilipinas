@@ -5,6 +5,7 @@ import { RequestPin } from '@/types/types';
 import { requestAid } from '@/components/map/SubmitAid';
 import { uploadImage } from './uploadImage';
 import { format } from 'date-fns';
+import Image from 'next/image';
 
 interface RequestFormProps {
   pin: RequestPin | null;
@@ -321,7 +322,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
           {/* Image Preview */}
           {imagePreview && (
             <div className="mt-3 border rounded-lg p-2 bg-gray-100">
-              <img
+              <Image
                 src={imagePreview}
                 alt="Preview"
                 className="max-h-40 max-w-full object-contain"
@@ -351,7 +352,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center text-white">
           <div className="bg-[#211E1E] p-8 rounded-md shadow-lg w-2/5">
             <div className="flex mb-4 -translate-x-3">
-              <img // Warning Image
+              <Image // Warning Image
                 src="/Warning.svg" // Replace with the correct path to your image
                 alt="Warning Symbol"
                 width="48" // Adjust size as needed

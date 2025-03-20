@@ -5,6 +5,7 @@ import { loginWithCredentials } from '@/lib/APICalls/Auth/login';
 import OrgRegistrationForm from './OrganizationRegistrationForm';
 import VolRegistrationForm from './VolunteerRegistrationForm';
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 const RegistrationForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -68,7 +69,7 @@ const RegistrationForm: React.FC = () => {
         {!showVolunteerForm && !showOrganizationForm && (
           <div className="flex flex-grow-0 flex-shrink-0 gap-4 mt-4 mb-4 rounded-sm   ">
             <div className="w-full">
-              <img src="/home-image/image9.jpg" alt="" />
+              <Image src="/home-image/image9.jpg" alt="" />
               <button
                 type="submit"
                 className="w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none mt-4"
@@ -78,7 +79,7 @@ const RegistrationForm: React.FC = () => {
               </button>
             </div>
             <div className="w-full">
-              <img src="/home-image/image1.jpg" alt="" className="w-full" />
+              <Image src="/home-image/image1.jpg" alt="" className="w-full" />
               <button
                 type="submit"
                 className="w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none mt-4"
