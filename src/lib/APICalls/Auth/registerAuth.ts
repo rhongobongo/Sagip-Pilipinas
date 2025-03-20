@@ -16,6 +16,7 @@ interface Organization {
 
 export async function registerOrganization(formData: FormData, image: File) {
     try {
+        console.log(formData.get("email"));
         const userRecord = await auth.createUser({
             email: formData.get("email") as string,
             password: formData.get("password") as string,
@@ -45,12 +46,14 @@ export async function registerOrganization(formData: FormData, image: File) {
             userId: userRecord.uid
         };
 
+        console.log(organizationData);
+
         await db.collection("organizations").doc(userRecord.uid).set(organizationData);
 
         return { success: true, message: "Registration successful!" };
     } catch (error) {
         let errorMessage = "Registration failed. Please try again.";
-
+        console.log(error);
         if (error instanceof Error && 'code' in error) {
             const errorCode = (error as { code: string }).code;
 

@@ -78,8 +78,16 @@ const OrgRegistrationForm: React.FC = () => {
         setIsLoading(true);
 
         try {
-            const formData = new FormData();
-            const response = await registerOrganization(formData, image);
+            const formDataObj = new FormData();
+            formDataObj.append("name", formData.name);
+            formDataObj.append("email", formData.email);
+            formDataObj.append("contactNumber", formData.contactNumber);
+            formDataObj.append("password", formData.password);
+            formDataObj.append("retypePassword", formData.retypePassword);
+            formDataObj.append("type", formData.type);
+            formDataObj.append("description", formData.description);
+
+            const response = await registerOrganization(formDataObj, image);
 
             if (response.success) {
                 setSuccess("Registration successful! Redirecting to dashboard...");
@@ -110,6 +118,7 @@ const OrgRegistrationForm: React.FC = () => {
             setIsLoading(false);
         }
     };
+
 
 
     return (
