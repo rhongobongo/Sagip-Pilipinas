@@ -8,19 +8,45 @@ import {
   faXTwitter, // Previously known as Twitter
 } from '@fortawesome/free-brands-svg-icons';
 
+import { collection, addDoc, getFirestore } from 'firebase/firestore';
+import { app } from '../../lib/Firebase/Firebase';
+
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
   const [concern, setConcern] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionResult, setSubmissionResult] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const db = getFirestore(app);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle feedback submission logic here
-    console.log('Email:', email);
-    console.log('Concern:', concern);
-    // You would typically send this data to a server or handle it in some other way
-    // Reset form fields after submission (optional):
-    setEmail('');
-    setConcern('');
+    setIsSubmitting(true);
+    setSubmissionResult(null); // Reset previous submission result
+
+    try {
+      const docRef = await addDoc(collection(db, 'userFeedback'), {
+        email: email,
+        concern: concern,
+        timestamp: new Date(),
+      });
+      console.log('Document written with ID: ', docRef.id);
+      setSubmissionResult('Feedback submitted successfully!');
+      setEmail('');
+      setConcern('');
+    } catch (error: unknown) {
+      console.error('Error adding document: ', error);
+      if (error instanceof Error) {
+        setSubmissionResult(`Failed to submit feedback: ${error.message}`);
+      } else {
+        setSubmissionResult(
+          'Failed to submit feedback: An unknown error occurred.'
+        );
+        console.error('Unknown error:', error);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -80,12 +106,22 @@ const Footer: React.FC = () => {
             <div className="text-right mt-4">
               <button
                 type="submit"
-                className=" hover:bg-gray-400 text-black font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                className={`hover:bg-gray-400 text-black font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
+                  isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={isSubmitting}
               >
-                Send
+                {isSubmitting ? 'Sending...' : 'Send'}
               </button>
             </div>
           </form>
+          {submissionResult && (
+            <p
+              className={`mt-2 text-sm ${submissionResult.startsWith('Failed') ? 'text-red-500' : 'text-green-500'}`}
+            >
+              {submissionResult}
+            </p>
+          )}
         </div>
       </div>
     </footer>
