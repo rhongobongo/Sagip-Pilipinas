@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 
 interface LinkInterface {
   displayName: string;
@@ -19,7 +18,7 @@ const Navbar: React.FC = () => {
     <nav className="p-4 bg-[#B0022A] shadow-[inset_0_-1px_0_0_rgba(169,169,169,.5)]">
       <div className="max-w-6xl mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-3">
-          <Image
+          <img
             src="/logo.png"
             alt="Logo"
             className="h-10 w-10 object-contain"
