@@ -50,7 +50,7 @@ const VolRegistrationForm: React.FC = () => {
               />
             )}
             {imagePreview && (
-              <img
+              <Image
                 src={preview && imagePreview}
                 alt="Preview"
                 className="w-full h-full object-cover"

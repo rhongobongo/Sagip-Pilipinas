@@ -34,9 +34,16 @@ const Footer: React.FC = () => {
       setSubmissionResult('Feedback submitted successfully!');
       setEmail('');
       setConcern('');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding document: ', error);
-      setSubmissionResult(`Failed to submit feedback: ${error.message}`);
+      if (error instanceof Error) {
+        setSubmissionResult(`Failed to submit feedback: ${error.message}`);
+      } else {
+        setSubmissionResult(
+          'Failed to submit feedback: An unknown error occurred.'
+        );
+        console.error('Unknown error:', error);
+      }
     } finally {
       setIsSubmitting(false);
     }
