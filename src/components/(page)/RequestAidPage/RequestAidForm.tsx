@@ -107,9 +107,14 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
       await requestAid(pin);
       setIsConfirmationOpen(false); // Close the dialog after submission
       alert('Request submitted successfully!'); // Example success message
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error submitting request:', error);
-      alert(`Failed to submit request: ${error.message}`);
+      if (error instanceof Error) {
+        alert(`Failed to submit request: ${error.message}`);
+      } else {
+        alert('Failed to submit request: An unknown error occurred.');
+        console.error('Unknown error:', error);
+      }
     } finally {
       setIsSubmittingConfirmation(false); // Set submitting state back to false
     }
