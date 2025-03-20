@@ -29,6 +29,8 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false); // New state for dialog
+  const [isSubmittingConfirmation, setIsSubmittingConfirmation] =
+    useState(false); // New state for confirmation submission
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -77,30 +79,40 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   };
 
   const confirmSubmission = async () => {
-    // This function will handle the actual submission
-    if (!pin || !image) return;
+    setIsSubmittingConfirmation(true); // Set submitting state to true
+    if (!pin || !image) {
+      setIsSubmittingConfirmation(false);
+      return;
+    }
 
-    const imageURL = await uploadImage(image);
-    const formattedDate = format(new Date(), 'MMMM dd, yyyy');
-    const formattedTime = format(new Date(), 'h:mm a');
+    try {
+      const imageURL = await uploadImage(image);
+      const formattedDate = format(new Date(), 'MMMM dd, yyyy'); // Corrected date format
+      const formattedTime = format(new Date(), 'h:mm a');
 
-    Object.assign(pin, {
-      name,
-      contactNum,
-      location,
-      calamityLevel,
-      calamityType,
-      shortDesc,
-      imageURL,
-      submissionDate: formattedDate,
-      submissionTime: formattedTime,
-    });
+      Object.assign(pin, {
+        name,
+        contactNum,
+        location: `${latitude?.toFixed(6)}, ${longitude?.toFixed(6)}`, // Include location here
+        calamityLevel,
+        calamityType: calamityType === 'other' ? otherCalamity : calamityType,
+        aidRequest: aidRequest === 'other' ? otherAidRequest : aidRequest,
+        shortDesc,
+        imageURL,
+        submissionDate: formattedDate,
+        submissionTime: formattedTime,
+        coordinates: { latitude, longitude }, // Ensure coordinates are included
+      });
 
-    await requestAid(pin);
-    setIsConfirmationOpen(false); // Close the dialog after submission
-
-    // Optionally, you can add a success message or redirect here
-    alert('Request submitted successfully!'); // Example success message
+      await requestAid(pin);
+      setIsConfirmationOpen(false); // Close the dialog after submission
+      alert('Request submitted successfully!'); // Example success message
+    } catch (error: any) {
+      console.error('Error submitting request:', error);
+      alert(`Failed to submit request: ${error.message}`);
+    } finally {
+      setIsSubmittingConfirmation(false); // Set submitting state back to false
+    }
   };
 
   const cancelSubmission = () => {
@@ -373,8 +385,9 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
                 type="button"
                 onClick={confirmSubmission}
                 className="bg-green-500 hover:bg-green-600 text-black px-4 py-2 rounded-md font-semibold"
+                disabled={isSubmittingConfirmation}
               >
-                Yes
+                {isSubmittingConfirmation ? 'Submitting...' : 'Yes'}
               </button>
             </div>
           </div>
