@@ -106,6 +106,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
 
       await requestAid(pin);
       setIsConfirmationOpen(false); // Close the dialog after submission
+      window.location.reload();
       alert('Request submitted successfully!'); // Example success message
     } catch (error: unknown) {
       console.error('Error submitting request:', error);
