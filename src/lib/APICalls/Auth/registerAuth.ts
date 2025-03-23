@@ -81,68 +81,72 @@ interface Volunteer {
     updatedAt: string;
     userId: string;
 }
-
 export async function registerVolunteer(formData: FormData) {
-    try {
-        console.log(formData.get("email"));
-        
-        const userRecord = await auth.createUser({
-            email: formData.get("email") as string,
-            password: formData.get("password") as string,
-            displayName: formData.get("name") as string
-        });
+  try {
+      // First, create the auth user to get a UID
+      const userRecord = await auth.createUser({
+          email: formData.get("email") as string,
+          password: formData.get("password") as string,
+          displayName: formData.get("name") as string
+      });
 
-        let profileImageUrl = '';
-        const profileImage = formData.get("profileImage") as File;
-        
-        if (profileImage) {
-            const bucket = storage;
-            const file = bucket.file(`volunteers/${userRecord.uid}/profile-image`);
-            const imageBuffer = Buffer.from(await profileImage.arrayBuffer());
-            await file.save(imageBuffer);
-            profileImageUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
-        }
+      const userId = userRecord.uid; // Store UID to use consistently
 
-        const volunteerData: Volunteer = {
-            name: formData.get("name") as string,
-            email: formData.get("email") as string,
-            contactNumber: formData.get("contactNumber") as string,
-            username: formData.get("username") as string,
-            profileImageUrl,
-            organizationId: formData.get("selectedOrganization") as string,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            userId: userRecord.uid
-        };
+      // Process profile image
+      let profileImageUrl = '';
+      const profileImage = formData.get("profileImage") as File;
+      
+      if (profileImage) {
+          const bucket = storage;
+          // Use the userId from auth to create consistent paths
+          const file = bucket.file(`volunteers/${userId}/profile-image`);
+          const imageBuffer = Buffer.from(await profileImage.arrayBuffer());
+          await file.save(imageBuffer);
+          profileImageUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
+      }
 
-        console.log(volunteerData);
-        
-        await db.collection("volunteers").doc(userRecord.uid).set(volunteerData);
-        
-        await db.collection("users").doc(userRecord.uid).set({
-            role: "volunteer",
-            organizationId: formData.get("selectedOrganization") as string,
-            createdAt: new Date().toISOString()
-        });
-        
-        return { success: true, message: "Registration successful!" };
-    } catch (error) {
-        let errorMessage = "Registration failed. Please try again.";
-        console.log(error);
-        
-        if (error instanceof Error && 'code' in error) {
-            const errorCode = (error as { code: string }).code;
-            if (errorCode === 'auth/email-already-exists') {
-                errorMessage = "This email is already registered. Please use a different email.";
-            } else if (errorCode === 'auth/invalid-email') {
-                errorMessage = "Invalid email format.";
-            } else if (errorCode === 'auth/weak-password') {
-                errorMessage = "Password is too weak. Please use a stronger password.";
-            } else if (errorCode === 'auth/uid-already-exists') {
-                errorMessage = "Username is already taken. Please choose a different username.";
-            }
-        }
-        
-        return { success: false, message: errorMessage };
-    }
+      // Create volunteer data with the same userId
+      const volunteerData: Volunteer = {
+          name: formData.get("name") as string,
+          email: formData.get("email") as string,
+          contactNumber: formData.get("contactNumber") as string,
+          username: formData.get("username") as string,
+          profileImageUrl,
+          organizationId: formData.get("organization") as string, // Match the field name from the form
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          userId: userId // Use the same userId from auth
+      };
+      
+      // Create volunteer document with the userId as the document ID
+      await db.collection("volunteers").doc(userId).set(volunteerData);
+      
+      // Create user document with the same userId
+      await db.collection("users").doc(userId).set({
+          role: "volunteer",
+          organizationId: formData.get("organization") as string, // Match the field name from the form
+          createdAt: new Date().toISOString()
+      });
+      
+      console.log(`Successfully created volunteer with ID: ${userId}`);
+      return { success: true, message: "Registration successful!" };
+  } catch (error) {
+      let errorMessage = "Registration failed. Please try again.";
+      console.error("Error during volunteer registration:", error);
+      
+      if (error instanceof Error && 'code' in error) {
+          const errorCode = (error as { code: string }).code;
+          if (errorCode === 'auth/email-already-exists') {
+              errorMessage = "This email is already registered. Please use a different email.";
+          } else if (errorCode === 'auth/invalid-email') {
+              errorMessage = "Invalid email format.";
+          } else if (errorCode === 'auth/weak-password') {
+              errorMessage = "Password is too weak. Please use a stronger password.";
+          } else if (errorCode === 'auth/uid-already-exists') {
+              errorMessage = "Username is already taken. Please choose a different username.";
+          }
+      }
+      
+      return { success: false, message: errorMessage };
+  }
 }
