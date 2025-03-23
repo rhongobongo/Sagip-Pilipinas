@@ -1,25 +1,54 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
-import preview from '../../../../public/PreviewPhoto.svg';
+import { useState, ChangeEvent, FormEvent, useEffect } from 'react';
+
+// Define types
+type ProfileData = {
+    name: string;
+    email: string;
+    contactNumber: string;
+    username: string;
+    profileImageUrl: string;
+    organizationId: string;
+    organization: string;
+    createdAt: string;
+    updatedAt: string;
+    userId: string;
+};
+
+type EditableData = {
+    name: string;
+    email: string;
+    contactNumber: string;
+    organizationId: string;
+};
+
+type PasswordForm = {
+    currentPassword: string;
+    newPassword: string;
+    retypePassword: string;
+};
+
+type OrganizationsMap = {
+    [key: string]: string;
+};
 
 const VolunteerProfileManagement = () => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [image, setImage] = useState(null);
-    const [imagePreview, setImagePreview] = useState('/profile-placeholder.jpg');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
-    const [passwordForm, setPasswordForm] = useState({
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [image, setImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>('/profile-placeholder.jpg');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
+    const [passwordForm, setPasswordForm] = useState<PasswordForm>({
         currentPassword: '',
         newPassword: '',
         retypePassword: ''
     });
-    const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [showPasswordForm, setShowPasswordForm] = useState<boolean>(false);
 
     // Hardcoded profile data
-    const [profileData, setProfileData] = useState({
+    const [profileData, setProfileData] = useState<ProfileData>({
         name: "John Doe",
         email: "johndoe@example.com",
         contactNumber: "(555) 123-4567",
@@ -33,7 +62,7 @@ const VolunteerProfileManagement = () => {
     });
 
     // Hardcoded organizations
-    const organizations = {
+    const organizations: OrganizationsMap = {
         "org1": "Community Helpers",
         "org2": "Local Food Bank",
         "org3": "Animal Shelter",
@@ -43,14 +72,19 @@ const VolunteerProfileManagement = () => {
     // Hardcoded contributions
     const contributions = "Volunteered 45 hours in the last 3 months. Participated in 5 community events. Led the downtown cleanup initiative.";
 
-    const [editableData, setEditableData] = useState({
+    const [editableData, setEditableData] = useState<EditableData>({
         name: profileData.name,
         email: profileData.email,
         contactNumber: profileData.contactNumber,
         organizationId: profileData.organizationId
     });
 
-    const handleEditToggle = () => {
+    // Initialize imagePreview from profileData when component mounts
+    useEffect(() => {
+        setImagePreview(profileData.profileImageUrl);
+    }, [profileData.profileImageUrl]);
+
+    const handleEditToggle = (): void => {
         if (isEditing) {
             // Cancel editing - reset to original data
             setEditableData({
@@ -65,7 +99,7 @@ const VolunteerProfileManagement = () => {
         setIsEditing(!isEditing);
     };
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
         const { name, value } = e.target;
         setEditableData(prev => ({
             ...prev,
@@ -73,7 +107,7 @@ const VolunteerProfileManagement = () => {
         }));
     };
 
-    const handlePasswordInputChange = (e) => {
+    const handlePasswordInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
         const { name, value } = e.target;
         setPasswordForm(prev => ({
             ...prev,
@@ -81,48 +115,56 @@ const VolunteerProfileManagement = () => {
         }));
     };
 
-    const handleImageChange = (e) => {
+    const handleImageChange = (e: ChangeEvent<HTMLInputElement>): void => {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
             setImage(selectedFile);
 
             const reader = new FileReader();
-            reader.onload = (event) => {
-                setImagePreview(event.target?.result);
+            reader.onload = (event: ProgressEvent<FileReader>) => {
+                if (event.target?.result) {
+                    setImagePreview(event.target.result as string);
+                }
             };
             reader.readAsDataURL(selectedFile);
         }
     };
 
-    const handleRemoveImage = () => {
+    const handleRemoveImage = (): void => {
         setImage(null);
         setImagePreview('/profile-placeholder.jpg');
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
         setIsLoading(true);
         
         // Simulate API call
         setTimeout(() => {
-            setProfileData({
+            // Update the profile data with new values including the image
+            const updatedProfileData = {
                 ...profileData,
                 name: editableData.name,
                 email: editableData.email,
                 contactNumber: editableData.contactNumber,
                 organizationId: editableData.organizationId,
                 organization: organizations[editableData.organizationId] || 'Unknown Organization',
-                profileImageUrl: imagePreview,
                 updatedAt: new Date().toISOString()
-            });
+            };
             
+            // Only update the image URL if it has changed
+            if (imagePreview !== profileData.profileImageUrl) {
+                updatedProfileData.profileImageUrl = imagePreview;
+            }
+            
+            setProfileData(updatedProfileData);
             setSuccess("Profile updated successfully!");
             setIsEditing(false);
             setIsLoading(false);
         }, 1000);
     };
 
-    const handlePasswordSubmit = (e) => {
+    const handlePasswordSubmit = (e: FormEvent): void => {
         e.preventDefault();
         setIsLoading(true);
         
@@ -139,10 +181,22 @@ const VolunteerProfileManagement = () => {
         }, 1000);
     };
 
-    const formatDate = (dateString) => {
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const formatDate = (dateString: string): string => {
+        const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(dateString).toLocaleDateString('en-US', options);
     };
+
+    // Clear success/error messages after a timeout
+    useEffect(() => {
+        if (success || error) {
+            const timer = setTimeout(() => {
+                setSuccess(null);
+                setError(null);
+            }, 3000);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [success, error]);
 
     return (
         <div className="container mx-auto px-4 py-8 text-black">
@@ -166,11 +220,13 @@ const VolunteerProfileManagement = () => {
                         {/* Profile Image Section */}
                         <div className="md:w-1/4 flex flex-col items-center justify-start md:border-r md:pr-6">
                             <div className="relative w-40 h-40 rounded-full overflow-hidden bg-gray-300 mb-4">
-                                <img
-                                    src={imagePreview}
-                                    alt="Profile"
-                                    className="w-full h-full object-cover"
-                                />
+                                {imagePreview && (
+                                    <img
+                                        src={imagePreview}
+                                        alt="Profile"
+                                        className="w-full h-full object-cover"
+                                    />
+                                )}
                                 {isEditing && (
                                     <input
                                         type="file"
@@ -190,7 +246,7 @@ const VolunteerProfileManagement = () => {
                                     >
                                         Change Photo
                                     </label>
-                                    {imagePreview && (
+                                    {imagePreview && imagePreview !== '/profile-placeholder.jpg' && (
                                         <button
                                             type="button"
                                             onClick={handleRemoveImage}
