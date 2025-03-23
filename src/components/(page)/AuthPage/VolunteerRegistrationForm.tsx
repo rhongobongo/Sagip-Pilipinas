@@ -1,9 +1,21 @@
-// VolRegistrationForm.tsx
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import preview from '../../../../public/PreviewPhoto.svg';
 import Image from 'next/image';
 import { registerVolunteer } from '@/lib/APICalls/Auth/registerAuth';
+
+// Define the Organization interface
+interface Organization {
+  name: string;
+  email: string;
+  contactNumber: string;
+  type: string;
+  description: string;
+  profileImageUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+}
 
 const VolRegistrationForm: React.FC = () => {
   const [image, setImage] = useState<File | null>(null);
@@ -20,6 +32,30 @@ const VolRegistrationForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
+
+  // Fetch organizations on component mount
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        // Replace this with your actual API call to fetch organizations
+        const response = await fetch('/api/organizations');
+        if (!response.ok) {
+          throw new Error('Failed to fetch organizations');
+        }
+        const data = await response.json();
+        setOrganizations(data);
+      } catch (error) {
+        console.error('Error fetching organizations:', error);
+        setError('Failed to load organizations. Please refresh the page.');
+      } finally {
+        setIsLoadingOrgs(false);
+      }
+    };
+
+    fetchOrganizations();
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -278,15 +314,55 @@ const VolRegistrationForm: React.FC = () => {
             value={formData.organization}
             onChange={handleInputChange}
             required
+            disabled={isLoadingOrgs}
           >
             <option value="">Select Organization</option>
-            <option value="org1">Organization 1</option>
-            <option value="org2">Organization 2</option>
-            <option value="org3">Organization 3</option>
+            {organizations.map((org) => (
+              <option key={org.userId} value={org.userId}>
+                {org.name} - {org.type}
+              </option>
+            ))}
           </select>
-          <h1 className="font-semibold mt-8">
-            IM ASSUMING MGA PICTURES NI SA MGA ORGANIZATIONS ARI SO IDK PA
-          </h1>
+          
+          {/* Organizations display section */}
+          <div className="w-full mt-8">
+            {isLoadingOrgs ? (
+              <p className="text-center">Loading organizations...</p>
+            ) : organizations.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {organizations.map((org) => (
+                  <div 
+                    key={org.userId}
+                    className={`p-4 border rounded-lg hover:shadow-md cursor-pointer transition-all ${
+                      formData.organization === org.userId ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                    }`}
+                    onClick={() => setFormData(prev => ({ ...prev, organization: org.userId }))}
+                  >
+                    <div className="flex items-center mb-2">
+                      {org.profileImageUrl ? (
+                        <img 
+                          src={org.profileImageUrl} 
+                          alt={org.name} 
+                          className="w-12 h-12 rounded-full object-cover mr-3"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-300 mr-3 flex items-center justify-center">
+                          {org.name.charAt(0)}
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-medium">{org.name}</h3>
+                        <p className="text-sm text-gray-600">{org.type}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-700 line-clamp-2">{org.description}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500">No organizations are currently available</p>
+            )}
+          </div>
         </div>
         
         <div className="mt-10 flex justify-end pb-8">
