@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { createContext } from 'react';
+import { createContext } from "react";
 
 export interface VolunteerProfileData {
     name: string;
@@ -13,6 +13,9 @@ export interface VolunteerProfileData {
     createdAt: string;
     updatedAt: string;
     userId: string;
+    description?: string;  // Added optional field
+    skills?: string;
+    availability?: string;
 }
 
 export interface VolunteerProfileContextType {

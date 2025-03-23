@@ -7,27 +7,67 @@ const VolunteerProfileDetails = () => {
     const context = useContext(VolunteerProfileContext);
 
     if (!context) {
-        return <p>Loading...</p>;
+        return <p className="text-center text-gray-500">Loading profile...</p>;
     }
 
     const { profileData } = context;
 
     return (
-        <div className="p-4 border rounded-lg shadow-md bg-white text-black container mx-auto">
-            <img
-                src={profileData.profileImageUrl}
-                alt="Profile"
-                className="w-24 h-24 rounded-full mx-auto"
-            />
-            <h2 className="text-xl font-semibold text-center mt-2">{profileData.name}</h2>
-            <p className="text-gray-600 text-center">@{profileData.username}</p>
+        <div className="w-full md:w-2/3 space-y-4 text-black">
+            <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Full Name*
+                </label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    defaultValue={profileData?.name || ""}
+                    className="w-full p-3 border border-gray-300 rounded-md"
+                    required
+                />
+            </div>
 
-            <div className="mt-4">
-                <p><strong>Email:</strong> {profileData.email}</p>
-                <p><strong>Contact:</strong> {profileData.contactNumber}</p>
-                <p><strong>Organization:</strong> {profileData.organization}</p>
-                <p className="text-sm text-gray-500">Joined: {new Date(profileData.createdAt).toLocaleDateString()}</p>
-                <p className="text-sm text-gray-500">Updated: {new Date(profileData.updatedAt).toLocaleDateString()}</p>
+            {/* Email */}
+            <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email (Cannot be changed)
+                </label>
+                <input
+                    type="email"
+                    id="email"
+                    defaultValue={profileData?.email || ""}
+                    className="w-full p-3 border border-gray-300 rounded-md bg-gray-100"
+                    disabled
+                />
+            </div>
+
+            <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                    Username*
+                </label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    defaultValue={profileData?.username || ""}
+                    className="w-full p-3 border border-gray-300 rounded-md"
+                    required
+                />
+            </div>
+
+            <div>
+                <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                    Contact Number*
+                </label>
+                <input
+                    type="tel"
+                    id="contactNumber"
+                    name="contactNumber"
+                    defaultValue={profileData?.contactNumber || ""}
+                    className="w-full p-3 border border-gray-300 rounded-md"
+                    required
+                />
             </div>
         </div>
     );
