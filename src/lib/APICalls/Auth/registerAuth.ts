@@ -24,15 +24,18 @@ export async function registerOrganization(formData: FormData, image: File) {
         });
 
         let profileImageUrl = '';
+        
         if (image) {
             const bucket = storage;
-            const file = bucket.file(`organizations/${userRecord.uid}/profile-image`);
 
-            const imageBuffer = Buffer.from(await image.arrayBuffer());
-            await file.save(imageBuffer);
-
+            const regex = /\.\w+$/;
+            const match = regex.exec(image.name);
+            const fileExtension = match ? match[0] : "";
+            const file = bucket.file(`organizations/${userRecord.uid}/profile-image${fileExtension}`);
+            await file.save(Buffer.from(await image.arrayBuffer()));
             profileImageUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
         }
+        
 
         const organizationData: Organization = {
             name: formData.get("name") as string,
@@ -92,18 +95,28 @@ export async function registerVolunteer(formData: FormData) {
 
       const userId = userRecord.uid; // Store UID to use consistently
 
-      // Process profile image
       let profileImageUrl = '';
       const profileImage = formData.get("profileImage") as File;
       
       if (profileImage) {
           const bucket = storage;
-          // Use the userId from auth to create consistent paths
-          const file = bucket.file(`volunteers/${userId}/profile-image`);
+      
+          const originalName = profileImage.name;
+          const fileExtension = originalName.substring(originalName.lastIndexOf(".")); 
+      
+          // Ensure the extension is included in the stored file name
+          const file = bucket.file(`volunteers/${userId}/profile-image${fileExtension}`);
+      
+          // Convert image to Buffer
           const imageBuffer = Buffer.from(await profileImage.arrayBuffer());
+      
+          // Save the file to the storage bucket
           await file.save(imageBuffer);
+      
+          // Construct the public URL
           profileImageUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
       }
+      
 
       // Create volunteer data with the same userId
       const volunteerData: Volunteer = {
