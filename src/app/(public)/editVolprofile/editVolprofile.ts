@@ -9,7 +9,7 @@ export async function getVolunteerProfile(userId: string) {
     const volunteerDoc = await db.collection('volunteers').doc(userId).get();
     
     if (!volunteerDoc.exists) {
-      return null; // Return null if volunteer doesn't exist
+      return null;
     }
     
     const volunteerData = volunteerDoc.data();
@@ -36,9 +36,7 @@ export async function getVolunteerProfile(userId: string) {
     throw new Error('Failed to fetch profile data');
   }
 }
-
-// Function to update volunteer profile
-export async function updateVolunteerProfile(formData: FormData, userId: string) {
+export async function updateVolunteerProfile(formData: FormData, userId: string, imageFile?: File) {
   try {
     // Prepare update data
     const updateData = {
@@ -54,7 +52,22 @@ export async function updateVolunteerProfile(formData: FormData, userId: string)
     // Update the volunteer document
     await db.collection('volunteers').doc(userId).update(updateData);
     
-    return { success: true, message: 'Profile updated successfully!' };
+    // Handle image upload if provided
+    let imageUploadResult = null;
+    if (imageFile) {
+      imageUploadResult = await uploadProfileImage(imageFile, userId);
+      
+      if (!imageUploadResult.success) {
+        // Optionally, you could throw an error or handle this differently
+        console.warn('Profile image upload failed:', imageUploadResult.message);
+      }
+    }
+    
+    return { 
+      success: true, 
+      message: 'Profile updated successfully!',
+      imageUrl: imageUploadResult?.imageUrl || null
+    };
   } catch (error) {
     console.error('Error updating profile:', error);
     return { success: false, message: 'Profile update failed. Please try again.' };
