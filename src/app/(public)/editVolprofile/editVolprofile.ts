@@ -9,7 +9,7 @@ export async function getVolunteerProfile(userId: string) {
     const volunteerDoc = await db.collection('volunteers').doc(userId).get();
     
     if (!volunteerDoc.exists) {
-      return null;
+      return null; // Return null if volunteer doesn't exist
     }
     
     const volunteerData = volunteerDoc.data();
