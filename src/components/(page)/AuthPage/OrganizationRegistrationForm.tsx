@@ -4,13 +4,10 @@ import preview from '../../../../public/PreviewPhoto.svg';
 import Image from 'next/image';
 import { registerOrganization } from '@/lib/APICalls/Auth/registerAuth';
 import { FaPeopleGroup } from 'react-icons/fa6';
-
-interface SocialLink {
-  id: number;
-  platform: string;
-  username: string;
-  link: string;
-}
+import { BsTwitterX } from 'react-icons/bs';
+import { FaInstagram } from 'react-icons/fa';
+import { FaFacebook } from 'react-icons/fa';
+import { CiCirclePlus } from 'react-icons/ci';
 
 const OrgRegistrationForm: React.FC = () => {
   const [image, setImage] = useState<File | null>(null);
@@ -19,6 +16,7 @@ const OrgRegistrationForm: React.FC = () => {
     name: '',
     email: '',
     contactNumber: '',
+    acctUsername: '',
     password: '',
     retypePassword: '',
     type: '',
@@ -31,11 +29,6 @@ const OrgRegistrationForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [otherTextbox, setOtherTextbox] = useState(false);
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
-    { id: 1, platform: 'X', username: '', link: '' },
-    { id: 2, platform: 'Instagram', username: '', link: '' },
-    { id: 3, platform: 'Facebook', username: '', link: '' },
-  ]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -78,30 +71,6 @@ const OrgRegistrationForm: React.FC = () => {
         [name]: value,
       }));
     }
-  };
-
-  const handleSocialInputChange = (
-    id: number,
-    field: 'username' | 'link',
-    value: string
-  ) => {
-    setSocialLinks(
-      socialLinks.map((link) =>
-        link.id === id ? { ...link, [field]: value } : link
-      )
-    );
-  };
-
-  const addLink = (platform: string) => {
-    const newId = socialLinks.length + 1;
-    setSocialLinks([
-      ...socialLinks,
-      { id: newId, platform, username: '', link: '' },
-    ]);
-  };
-
-  const deleteLink = (id: number) => {
-    setSocialLinks(socialLinks.filter((link) => link.id !== id));
   };
 
   const validateForm = () => {
@@ -158,6 +127,7 @@ const OrgRegistrationForm: React.FC = () => {
           name: '',
           email: '',
           contactNumber: '',
+          acctUsername: '',
           password: '',
           retypePassword: '',
           type: '',
@@ -204,7 +174,7 @@ const OrgRegistrationForm: React.FC = () => {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="flex flex- items-start justify-around">
+        <div className="flex items-start justify-around">
           <div className="flex justify-center mt-5 w-1/4 pl-2 flex-col items-center">
             {/* Image Upload Section */}
             <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-300 flex items-center justify-center">
@@ -256,8 +226,8 @@ const OrgRegistrationForm: React.FC = () => {
           </div>
           <div className="w-full flex flex-col gap-3">
             <div className="flex w-full gap-4">
-              <div className="items-center">
-                <label className="w-32 text-right font-bold">
+              <div className="items-center w-full">
+                <label className="w-full text-right font-bold">
                   Organization Name:
                 </label>{' '}
                 <input
@@ -269,7 +239,7 @@ const OrgRegistrationForm: React.FC = () => {
                   required
                 />{' '}
               </div>
-              <div className="items-center">
+              <div className="items-center w-full">
                 <label className="w-32 text-right font-bold">Location:</label>{' '}
                 <input
                   className="textbox w-full"
@@ -280,7 +250,7 @@ const OrgRegistrationForm: React.FC = () => {
                   required
                 />{' '}
               </div>
-              <div className="items-center">
+              <div className="items-center w-full">
                 <label className="w-32 text-right font-bold">
                   Date of Establishment:
                 </label>{' '}
@@ -295,12 +265,12 @@ const OrgRegistrationForm: React.FC = () => {
               </div>
             </div>
             <div>
-              <div className="flex w-4/5 justify-start mt-4">
+              <div className="flex w-[100%] justify-start mt-4">
                 <div className="mb-4 bg-white w-full text-black shadow-lg border-4 border-[#ef8080] rounded-lg px-6 pb-6">
                   <label className="flex justify-center font-bold -translate-x-7 -translate-y-3 bg-white rounded-3xl w-1/5">
-                    Organization Type:
+                    Type of Organization:
                   </label>
-                  <div className="flex flex-wrap gap-2 justify-start w-full">
+                  <div className="grid grid-cols-2 gap-4 w-full">
                     <label className="flex items-center">
                       <input
                         type="radio"
@@ -357,7 +327,7 @@ const OrgRegistrationForm: React.FC = () => {
                         Religious Organization (Non-Profit)
                       </span>
                     </label>
-                    <label className="flex items-center w-2/3">
+                    <label className="flex items-center w-2/3 col-span-2">
                       <input
                         type="radio"
                         name="type"
@@ -387,7 +357,7 @@ const OrgRegistrationForm: React.FC = () => {
               </div>
               <div className="flex justify-center">
                 <div className="h-[4.25rem] translate-y-24 translate-x-6 border-l-2 border-black"></div>
-                <div className="flex flex-col items-start w-2/3">
+                <div className="flex flex-col items-start w-full">
                   <h2 className="text-lg font-semibold mb-4">
                     <div className="w-4 translate-y-28 translate-x-6 border-t-2 border-black"></div>
                     <div className="w-4 translate-y-40 translate-x-6 border-t-2 border-black"></div>
@@ -397,21 +367,25 @@ const OrgRegistrationForm: React.FC = () => {
                     <div>
                       <input
                         type="text"
-                        className="textbox placeholder:text-black w-2/3"
+                        name="contactNumber"
+                        value={formData.contactNumber}
+                        onChange={handleInputChange}
+                        className="textbox placeholder:text-black w-[86.5%]"
                         placeholder="+63 |"
+                        required
                       />
                     </div>
                     <div>
                       <input
                         type="text"
-                        className="textbox placeholder:text-gray-300 w-[60%] ml-10"
+                        className="textbox placeholder:text-gray-300 w-[80%] ml-10"
                         placeholder="Primary Contact Person Name"
                       />
                     </div>
                     <div>
                       <input
                         type="text"
-                        className="textbox placeholder:text-gray-300 w-[60%] ml-10"
+                        className="textbox placeholder:text-gray-300 w-[80%] ml-10"
                         placeholder="Position in organization"
                       />
                     </div>
@@ -419,91 +393,220 @@ const OrgRegistrationForm: React.FC = () => {
                 </div>
 
                 <div className="w-full flex flex-col items-start">
-                  <div className="">
-                    <h1 className="text-lg font-semibold mb-4">
+                  <div className="w-full">
+                    <label className="flex justify-center font-bold -translate-x-1 translate-y-2 bg-white rounded-3xl w-1/4">
                       Social Media:
-                    </h1>
+                    </label>
+                    <div className="flex justify-center bg-white w-full text-black shadow-lg border-4 border-[#ef8080] rounded-lg p-6 gap-8">
+                      <div>
+                        <h1 className="flex items-center gap-1">
+                          <BsTwitterX className="text-2xl" />{' '}
+                          <button className="flex items-center">
+                            <CiCirclePlus /> Add Link
+                          </button>
+                        </h1>
+                      </div>
+                      <div>
+                        <h1 className="flex items-center gap-1">
+                          <FaFacebook className="text-2xl" />{' '}
+                          <button className="flex items-center">
+                            <CiCirclePlus /> Add Link
+                          </button>{' '}
+                        </h1>
+                      </div>
+                      <div>
+                        <h1 className="flex items-center gap-1">
+                          <FaInstagram className="text-2xl" />{' '}
+                          <button className="flex items-center">
+                            <CiCirclePlus /> Add Link
+                          </button>{' '}
+                        </h1>
+                      </div>
+                    </div>
                   </div>
-                  <div className="">
+                  <div className="w-full">
+                    <div className="mt-2 w-full">
+                      <h1 className="text-lg font-semibold w-full">Email:</h1>
+                      <input
+                        className="textbox w-full"
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full py-4">
+                <label className="flex justify-center font-bold -translate-x-1 translate-y-2 bg-white rounded-3xl w-1/5">
+                  Type of Aid In Stock:
+                </label>
+                <div className="flex justify-center bg-white w-full text-black shadow-lg border-4 border-[#ef8080] rounded-lg p-6 gap-8">
+                  <div className="grid grid-cols-4 gap-4">
                     <div>
-                      <h1 className="text-lg font-semibold mb-4">Email:</h1>
-                      <input type="text" className="textbox" />
+                      <label>
+                        <input
+                          type="checkbox"
+                          className="custom-checkbox-input peer sr-only"
+                        />
+                        <span className="custom-checkbox-indicator"></span>
+                        <span>Food</span>
+                      </label>
+                    </div>
+                    <div>
+                      <label>
+                        <input
+                          type="checkbox"
+                          className="custom-checkbox-input peer sr-only"
+                        />
+                        <span className="custom-checkbox-indicator"></span>
+                        <span>Clothing</span>
+                      </label>
+                    </div>
+                    <div>
+                      <label>
+                        <input
+                          type="checkbox"
+                          className="custom-checkbox-input peer sr-only"
+                        />
+                        <span className="custom-checkbox-indicator"></span>
+                        <span>Shelter</span>
+                      </label>
+                    </div>
+                    <div>
+                      <label>
+                        <input
+                          type="checkbox"
+                          className="custom-checkbox-input peer sr-only"
+                        />
+                        <span className="custom-checkbox-indicator"></span>
+                        <span>Counseling</span>
+                      </label>
+                    </div>
+                    <div>
+                      <label>
+                        <input
+                          type="checkbox"
+                          className="custom-checkbox-input peer sr-only"
+                        />
+                        <span className="custom-checkbox-indicator"></span>
+                        <span>Medical Supplies</span>
+                      </label>
+                    </div>
+                    <div>
+                      <label>
+                        <input
+                          type="checkbox"
+                          className="custom-checkbox-input peer sr-only"
+                        />
+                        <span className="custom-checkbox-indicator"></span>
+                        <span>Search and Rescue</span>
+                      </label>
+                    </div>
+                    <div>
+                      <label>
+                        <input
+                          type="checkbox"
+                          className="custom-checkbox-input peer sr-only"
+                        />
+                        <span className="custom-checkbox-indicator"></span>
+                        <span>Financial Assistance</span>
+                      </label>
+                    </div>
+                    <div>
+                      <label>
+                        <input
+                          type="checkbox"
+                          className="custom-checkbox-input peer sr-only"
+                        />
+                        <span className="custom-checkbox-indicator"></span>
+                        <span>Technical/Logistical Support</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col justify-center">
+                <div className="bg-white w-full text-black shadow-lg border-4 border-[#ef8080] rounded-lg p-6 mt-7">
+                  <div className="w-full flex justify-center mb-4 text-xl">
+                    <h1 className="font-bold">Sponsors: </h1>
+                  </div>
+                  <div className="w-full flex justify-center mb-6 text-xl">
+                    <button className="text-6xl">
+                      <CiCirclePlus />
+                    </button>{' '}
+                  </div>
+                </div>
+                <div className="flex flex-col mt-8 mb-8 w-full pl-2">
+                  <label className="w-24 text-right whitespace-nowrap text-black font-bold">
+                    Organization Description:
+                  </label>
+                  <textarea
+                    className="shortDesc"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="w-full">
+                  <label className="flex justify-center font-bold -translate-x-1 translate-y-2 bg-white rounded-3xl w-1/6">
+                    Account Details:
+                  </label>
+                  <div className="flex justify-center bg-white w-full text-black shadow-lg border-4 border-[#ef8080] rounded-lg p-6 gap-8">
+                    <div className="w-full flex gap-3 justify-center">
+                      <div className="items-center">
+                        <label className="text-right mr-2">
+                          Account Username:
+                        </label>
+                        <input
+                          className="textbox w-full"
+                          type="text"
+                          name="acctUsername"
+                          value={formData.acctUsername}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                      <div className="items-center">
+                        <label className="text-right mr-2">
+                          Account Password:
+                        </label>
+                        <input
+                          className="textbox w-full"
+                          type="password"
+                          name="password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                      <div className="items-center">
+                        <label className="text-right mr-2">
+                          Retype Password:
+                        </label>
+                        <input
+                          className="textbox w-full"
+                          type="password"
+                          name="retypePassword"
+                          value={formData.retypePassword}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* <div className="flex items-center">
-              <label className="w-32 text-right mr-2">Email:</label>
-              <input
-                className="textbox w-full"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="flex items-center">
-              <label className="w-32 text-right mr-2">Contact #:</label>
-              <input
-                className="textbox w-full"
-                type="text"
-                name="contactNumber"
-                value={formData.contactNumber}
-                onChange={handleInputChange}
-                required
-              />
-            </div> */}
-
-          {/* <div className="w-full flex flex-col gap-3">
-            <div className="flex items-center">
-              <label className="w-32 text-right mr-2">Password:</label>
-              <input
-                className="textbox w-full"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="flex items-center">
-              <label className="w-32 text-right mr-2">Retype Password:</label>
-              <input
-                className="textbox w-full"
-                type="password"
-                name="retypePassword"
-                value={formData.retypePassword}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-          </div> */}
-        </div>
-        <div className="flex flex-col mt-8 mb-8 w-full pl-2">
-          <label className="w-24 text-right whitespace-nowrap text-black">
-            Organization Description:
-          </label>
-          <textarea
-            className="shortDesc"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="pl-2">
-          <h1>Sponsors: </h1>
-          <h1 className="flex items-center justify-center font-semibold">
-            IM ASSUMING MGA PICTURES NI SA MGA NAG REGISTER ARI SO IDK PA
-          </h1>
-        </div>
         <div className="mt-10 flex justify-end pb-8">
           <button
             type="submit"
-            className={`bg-gray-300 text-black font-semibold text-sm px-8 py-2 rounded-md hover:bg-gray-400 ${
+            className={`bg-red-600 text-white font-semibold text-sm px-8 py-2 rounded-md hover:bg-red-700 ${
               isLoading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             disabled={isLoading}

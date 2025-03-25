@@ -107,3 +107,31 @@ input.peer:checked + .radio-container::after {
   white-space: nowrap;
   border-width: 0;
 }
+
+.custom-checkbox-indicator {
+  display: inline-block;
+  width: 20px; /* Adjust as needed */
+  height: 20px; /* Adjust as needed */
+  border: 2px solid #b3002a; /* Match your radio button border */
+  border-radius: 4px; /* Adjust for desired rounded corners */
+  margin-right: 8px; /* Adjust spacing between checkbox and text */
+  position: relative; /* For positioning the checkmark */
+  background-color: white; /* Default background color */
+}
+
+.custom-checkbox-input:checked + .custom-checkbox-indicator {
+  background-color: #b3002a; /* Red background when checked */
+  border-color: #b3002a; /* Red border when checked */
+}
+
+.custom-checkbox-input:checked + .custom-checkbox-indicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 6px; /* Adjust thickness of checkmark */
+  height: 10px; /* Adjust length of checkmark */
+  border: solid white;
+  border-width: 0 3px 3px 0;
+}
