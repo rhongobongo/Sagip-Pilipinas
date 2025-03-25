@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Bell, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import ReviewRequests from './components/ReviewRequests';  // Import the ReviewRequests component
 
 const AdminDashboard: React.FC = () => {
   const [isNavOpen, setIsNavOpen] = useState<boolean>(true);
@@ -67,7 +68,7 @@ const AdminDashboard: React.FC = () => {
                 <li 
                   key={item}
                   className={`px-4 py-3 cursor-pointer hover:bg-red-600 transition ${activeTab === item ? 'bg-red-800' : ''}`}
-                  onClick={() => setActiveTab(item)}
+                  onClick={() => setActiveTab(item)} // This will set the active tab
                 >
                   {item}
                 </li>
@@ -93,7 +94,8 @@ const AdminDashboard: React.FC = () => {
           <div className="p-6">
             <h2 className="text-2xl font-bold mb-4 text-black">.  {activeTab}</h2>
             <div className="bg-white p-6 rounded-lg shadow text-black">    
-              <p>Content for {activeTab} will appear here.</p>
+              {/* Show the component when "Review Aid Requests" is selected */}
+              {activeTab === 'Review Aid Requests' ? <ReviewRequests /> : <p>Content for {activeTab} will appear here.</p>}
             </div>
           </div>
         </main>
