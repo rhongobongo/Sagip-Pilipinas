@@ -3,6 +3,7 @@ import { useState } from 'react';
 import preview from '../../../../public/PreviewPhoto.svg';
 import Image from 'next/image';
 import { registerOrganization } from '@/lib/APICalls/Auth/registerAuth';
+import { FaPeopleGroup } from 'react-icons/fa6';
 
 const OrgRegistrationForm: React.FC = () => {
   const [image, setImage] = useState<File | null>(null);
@@ -127,10 +128,10 @@ const OrgRegistrationForm: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1300px] w-full text-black shadow-lg border-4 border-red-500 rounded-lg p-8 ">
-      <div className="">
-        <h1 className="flex items-center justify-center mb-4">
-          Help out people in their time of need by registering now!
+    <div className="max-w-[1600px] bg-[#D9D9D9] w-full text-black shadow-lg border-4 border-black rounded-lg p-8 ">
+      <div className="w-1/6 flex justify-center">
+        <h1 className="flex justify-start mb-4 -translate-y-12 bg-white px-4 rounded-3xl font-bold">
+          <FaPeopleGroup className="text-3xl pr-1" /> ORGANIZATION
         </h1>
       </div>
 
@@ -147,8 +148,8 @@ const OrgRegistrationForm: React.FC = () => {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="flex items-start justify-around">
-          <div className="flex justify-center mt-5 w-full pl-2 flex-col items-center">
+        <div className="flex flex- items-start justify-around">
+          <div className="flex justify-center mt-5 w-1/4 pl-2 flex-col items-center">
             {/* Image Upload Section */}
             <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-300 flex items-center justify-center">
               {!imagePreview && (
@@ -198,18 +199,115 @@ const OrgRegistrationForm: React.FC = () => {
             )}
           </div>
           <div className="w-full flex flex-col gap-3">
-            <div className="flex items-center">
-              <label className="w-32 text-right mr-2">Name:</label>{' '}
-              <input
-                className="textbox w-full"
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />{' '}
+            <div className="flex w-full gap-4">
+              <div className="items-center">
+                <label className="w-32 text-right font-bold">
+                  Organization Name:
+                </label>{' '}
+                <input
+                  className="textbox w-full"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />{' '}
+              </div>
+              <div className="items-center">
+                <label className="w-32 text-right font-bold">Location:</label>{' '}
+                <input
+                  className="textbox w-full"
+                  type="text"
+                  name="name"
+                  //value={formData.Location}
+                  onChange={handleInputChange}
+                  required
+                />{' '}
+              </div>
+              <div className="items-center">
+                <label className="w-32 text-right font-bold">
+                  Date of Establishment:
+                </label>{' '}
+                <input
+                  className="textbox w-full"
+                  type="text"
+                  name="name"
+                  //value={formData.Date}
+                  onChange={handleInputChange}
+                  required
+                />{' '}
+              </div>
             </div>
-            <div className="flex items-center">
+            <div>
+              <div className="flex w-4/5 justify-start">
+                <div className="mb-4">
+                  <label className="block text-sm font-medium">Type:</label>
+                  <div className="mt-2 flex flex-wrap gap-2 justify-between">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="type"
+                        value="ngo"
+                        checked={formData.type === 'ngo'}
+                        onChange={handleInputChange}
+                      />
+                      <span className="ml-1">
+                        Non-Governmental Organization (NGO)
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="type"
+                        value="charity"
+                        checked={formData.type === 'charity'}
+                        onChange={handleInputChange}
+                      />
+                      <span className="ml-1">
+                        Local Community Organization (Charity)
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="type"
+                        value="foundation"
+                        checked={formData.type === 'foundation'}
+                        onChange={handleInputChange}
+                      />
+                      <span className="ml-1">
+                        Government Agency (Foundation)
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="type"
+                        value="nonprofit"
+                        checked={formData.type === 'nonprofit'}
+                        onChange={handleInputChange}
+                      />
+                      <span className="ml-1">
+                        Religious Organization (Non-Profit)
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="type"
+                        value="other"
+                        checked={formData.type === 'other'}
+                        onChange={handleInputChange}
+                      />
+                      <span className="ml-1">Others: (Specify)</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* <div className="flex items-center">
               <label className="w-32 text-right mr-2">Email:</label>
               <input
                 className="textbox w-full"
@@ -230,9 +328,9 @@ const OrgRegistrationForm: React.FC = () => {
                 onChange={handleInputChange}
                 required
               />
-            </div>
-          </div>
-          <div className="w-full flex flex-col gap-3">
+            </div> */}
+
+          {/* <div className="w-full flex flex-col gap-3">
             <div className="flex items-center">
               <label className="w-32 text-right mr-2">Password:</label>
               <input
@@ -255,33 +353,14 @@ const OrgRegistrationForm: React.FC = () => {
                 required
               />
             </div>
-            <div className="flex items-center">
-              <label className="w-40 text-right mr-2 -translate-x-6">
-                Type:
-              </label>
-              <select
-                className="w-full bg-[#ededed] rounded-2xl min-h-8"
-                name="type"
-                value={formData.type}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select Type</option>
-                <option value="ngo">NGO</option>
-                <option value="charity">Charity</option>
-                <option value="foundation">Foundation</option>
-                <option value="nonprofit">Non-Profit</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-          </div>
+          </div> */}
         </div>
         <div className="flex flex-col mt-8 mb-8 w-full pl-2">
           <label className="w-24 text-right whitespace-nowrap text-black">
-            Short Description:
+            Organization Description:
           </label>
           <textarea
-            className="px-4 py-2 border rounded-2xl w-full bg-[#ededed] h-36 resize-none"
+            className="shortDesc"
             name="description"
             value={formData.description}
             onChange={handleInputChange}
@@ -305,14 +384,6 @@ const OrgRegistrationForm: React.FC = () => {
           </button>
         </div>
       </form>
-      <div className="flex items-center justify-center">
-        <h1>
-          Already have an account? Log in{' '}
-          <a className="text-blue-800" href="./login">
-            here!
-          </a>
-        </h1>
-      </div>
     </div>
   );
 };
