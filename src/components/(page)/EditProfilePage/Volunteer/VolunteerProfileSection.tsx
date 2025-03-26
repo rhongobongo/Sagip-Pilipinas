@@ -3,7 +3,7 @@
 import { useState, FormEvent, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { VolunteerProfileContext } from './VolunteerProfileContext';
-import { updateVolunteerProfile } from '@/app/(public)/editVolprofile/editVolprofile';
+import { updateVolunteerProfile } from '@/lib/APICalls/Volunteer/editVolunteerProfile';
 
 import VolunteerProfileImage from '@/components/(page)/EditProfilePage/Volunteer/VolunteerProfileImage';
 import VolunteerProfileDetails from '@/components/(page)/EditProfilePage/Volunteer/VolunteerProfileDetails';

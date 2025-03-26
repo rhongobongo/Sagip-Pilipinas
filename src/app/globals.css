@@ -41,26 +41,10 @@ body {
 }
 
 .textbox {
-  background-color: #ef8080;
+  background-color: #ededed;
   border-radius: 1rem;
   padding: 0.5rem;
-}
-
-.select {
-  background-color: #ef8080;
-  border-radius: 1rem;
-  padding: 0.5rem;
-  width: 100%;
-}
-
-.shortDesc {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  border-radius: 1rem;
-  width: 100%;
-  background-color: #ef8080;
-  height: 9rem;
-  resize: none;
+  margin-left: 1rem;
 }
 
 /* Style for the custom radio button container */
