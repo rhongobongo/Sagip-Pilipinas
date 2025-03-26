@@ -1,5 +1,6 @@
 'use server';
 
+
 import { db, storage, auth } from '@/lib/Firebase-Admin'; // Ensure storage is exported from index
 import * as admin from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore'; // Correct import if needed elsewhere, or use admin.firestore.Timestamp
@@ -282,7 +283,7 @@ interface Volunteer {
   updatedAt: string;
   userId: string;
 }
-
+  
 export async function registerVolunteer(formData: FormData) {
   try {
     // First, create the auth user to get a UID
@@ -369,4 +370,60 @@ export async function registerVolunteer(formData: FormData) {
 
     return { success: false, message: errorMessage };
   }
+}
+    try {
+        const userRecord = await auth.createUser({
+            email: formData.get("email") as string,
+            password: formData.get("password") as string,
+            displayName: formData.get("name") as string
+        });
+
+        const userId = userRecord.uid;
+
+        const profileImage = formData.get("profileImage") as File;
+
+        if (profileImage) {
+            await updateProfileImage(profileImage, userRecord.uid, "volunteers");
+        }
+
+        const volunteerData: Omit<Volunteer, "profileImageUrl"> = {
+            name: formData.get("name") as string,
+            email: formData.get("email") as string,
+            contactNumber: formData.get("contactNumber") as string,
+            username: formData.get("username") as string,
+            organizationId: formData.get("organization") as string,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            userId: userId // Use the same userId from auth
+        };
+
+        await db.collection("volunteers").doc(userId).set(volunteerData);
+
+        await db.collection("users").doc(userId).set({
+            role: "volunteer",
+            organizationId: formData.get("organization") as string,
+            createdAt: new Date().toISOString()
+        });
+
+        console.log(`Successfully created volunteer with ID: ${userId}`);
+        return { success: true, message: "Registration successful!" };
+    } catch (error) {
+        let errorMessage = "Registration failed. Please try again.";
+        console.error("Error during volunteer registration:", error);
+
+        if (error instanceof Error && 'code' in error) {
+            const errorCode = (error as { code: string }).code;
+            if (errorCode === 'auth/email-already-exists') {
+                errorMessage = "This email is already registered. Please use a different email.";
+            } else if (errorCode === 'auth/invalid-email') {
+                errorMessage = "Invalid email format.";
+            } else if (errorCode === 'auth/weak-password') {
+                errorMessage = "Password is too weak. Please use a stronger password.";
+            } else if (errorCode === 'auth/uid-already-exists') {
+                errorMessage = "Username is already taken. Please choose a different username.";
+            }
+        }
+
+        return { success: false, message: errorMessage };
+    }
 }
