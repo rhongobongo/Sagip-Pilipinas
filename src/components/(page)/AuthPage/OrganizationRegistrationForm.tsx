@@ -3,7 +3,6 @@ import { useState } from 'react';
 import preview from '../../../../public/PreviewPhoto.svg';
 import Image from 'next/image';
 import { registerOrganization } from '@/lib/APICalls/Auth/registerAuth';
-
 import { FaPeopleGroup } from 'react-icons/fa6';
 import { BsTwitterX } from 'react-icons/bs';
 import { FaInstagram } from 'react-icons/fa';
@@ -12,7 +11,6 @@ import { CiCirclePlus } from 'react-icons/ci';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 import imageCompression from 'browser-image-compression';
-
 
 const OrgRegistrationForm: React.FC = () => {
   const [image, setImage] = useState<File | null>(null);
@@ -603,6 +601,7 @@ const OrgRegistrationForm: React.FC = () => {
           <FaPeopleGroup className="text-3xl pr-1" /> Organization
         </h1>
       </div>
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
           {error}
@@ -1255,14 +1254,6 @@ const OrgRegistrationForm: React.FC = () => {
           </button>
         </div>
       </form>
-      <div className="flex items-center justify-center">
-        <h1>
-          Already have an account? Log in{' '}
-          <a className="text-blue-800" href="./login">
-            here!
-          </a>
-        </h1>
-      </div>
     </div>
   );
 };
