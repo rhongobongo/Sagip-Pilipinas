@@ -46,3 +46,76 @@ body {
   padding: 0.5rem;
   margin-left: 1rem;
 }
+
+/* Style for the custom radio button container */
+.radio-container {
+  border: 2px solid #b3002a; /* border-2 border-gray-300 */
+  border-radius: 9999px; /* rounded-full */
+  width: 1rem; /* w-5 */
+  height: 1rem; /* h-5 */
+  display: flex;
+  align-items: center; /* items-center */
+  justify-content: center; /* justify-center */
+  cursor: pointer;
+}
+
+/* Style for the inner dot (initially hidden) */
+.radio-container::after {
+  content: '';
+  height: 0.5rem; /* after:h-2.5 */
+  width: 0.5rem; /* after:w-2.5 */
+  border-radius: 9999px; /* after:rounded-full */
+  background-color: transparent; /* Initially no background */
+  display: block; /* Important for ::after to be rendered */
+}
+
+/* Styles when the associated input (with class 'peer') is checked */
+input.peer:checked + .radio-container {
+  border-color: #b3002a; /* peer-checked:border-red-500 */
+  background-color: white; /* peer-checked:bg-red-100 */
+}
+
+input.peer:checked + .radio-container::after {
+  background-color: #b3002a; /* peer-checked:after:bg-red-500 */
+}
+
+/*  sr-only class (from previous response, included for completeness) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.custom-checkbox-indicator {
+  display: inline-block;
+  width: 20px; /* Adjust as needed */
+  height: 20px; /* Adjust as needed */
+  border: 2px solid #b3002a; /* Match your radio button border */
+  border-radius: 4px; /* Adjust for desired rounded corners */
+  margin-right: 8px; /* Adjust spacing between checkbox and text */
+  position: relative; /* For positioning the checkmark */
+  background-color: white; /* Default background color */
+}
+
+.custom-checkbox-input:checked + .custom-checkbox-indicator {
+  background-color: #b3002a; /* Red background when checked */
+  border-color: #b3002a; /* Red border when checked */
+}
+
+.custom-checkbox-input:checked + .custom-checkbox-indicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 6px; /* Adjust thickness of checkmark */
+  height: 10px; /* Adjust length of checkmark */
+  border: solid white;
+  border-width: 0 3px 3px 0;
+}
