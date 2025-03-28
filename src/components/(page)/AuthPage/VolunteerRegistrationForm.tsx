@@ -9,8 +9,6 @@ import { BsTwitterX } from 'react-icons/bs';
 import { FaInstagram } from 'react-icons/fa';
 import { FaFacebook } from 'react-icons/fa';
 import { CiCirclePlus } from 'react-icons/ci';
-import { FiEye, FiEyeOff } from 'react-icons/fi'; // Add this line
-import imageCompression from 'browser-image-compression';
 
 // Define the Organization interface
 interface Organization {
@@ -28,10 +26,6 @@ interface Organization {
 const VolRegistrationForm: React.FC = () => {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [idPhoto, setIdPhoto] = useState<File | null>(null);
-  const [idPhotoPreview, setIdPhotoPreview] = useState<string | null>(null);
-  const [showMainPassword, setShowMainPassword] = useState<boolean>(false);
-  const [showRetypePassword, setShowRetypePassword] = useState<boolean>(false);
   const [formData, setFormData] = useState({
     firstName: '',
     middleName: '',
@@ -47,249 +41,12 @@ const VolRegistrationForm: React.FC = () => {
     retypePassword: '',
     organization: '',
     roleOrCategory: '',
-    idType: '',
-    backgroundCheckConsent: false,
-    contactPerson: '',
-    contactPersonRelation: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
-  const [skills, setSkills] = useState({
-    firstAidCPR: false,
-    psychosocialSupport: false,
-    medicalServices: false,
-    searchRescue: false,
-    clericalWork: false,
-    counseling: false,
-    other: false, // State for the "Others" checkbox itself
-  });
-  const [otherSkillText, setOtherSkillText] = useState('');
-
-  const initialSocialState = {
-    // Define initial state structure
-    username: '',
-    link: '',
-    mode: 'initial' as 'initial' | 'adding' | 'editing' | 'added', // Add type assertion
-  };
-
-  const [socialLinks, setSocialLinks] = useState({
-    twitter: { ...initialSocialState },
-    facebook: { ...initialSocialState },
-    instagram: { ...initialSocialState },
-  });
-
-  // State for temporary input values during add/edit social links
-  const [editValues, setEditValues] = useState<{
-    platform: keyof typeof socialLinks | null;
-    username: string;
-    link: string;
-  }>({
-    platform: null,
-    username: '',
-    link: '',
-  });
-
-  const handleAddClick = (platform: keyof typeof socialLinks) => {
-    setEditValues({ platform, username: '', link: '' });
-    setSocialLinks((prev) => ({
-      ...prev,
-      [platform]: { ...prev[platform], mode: 'adding' },
-    }));
-  };
-
-  const handleEditClick = (platform: keyof typeof socialLinks) => {
-    const currentData = socialLinks[platform];
-    setEditValues({
-      platform,
-      username: currentData.username,
-      link: currentData.link,
-    });
-    setSocialLinks((prev) => ({
-      ...prev,
-      [platform]: { ...prev[platform], mode: 'editing' },
-    }));
-  };
-
-  const handleDeleteClick = (platform: keyof typeof socialLinks) => {
-    setSocialLinks((prev) => ({
-      ...prev,
-      [platform]: { ...initialSocialState }, // Reset to initial state
-    }));
-    if (editValues.platform === platform) {
-      setEditValues({ platform: null, username: '', link: '' });
-    }
-  };
-
-  // Handler specifically for social media input changes
-  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEditValues((prev) => ({
-      ...prev,
-      [name]: value, // Update 'username' or 'link' in editValues
-    }));
-  };
-
-  const handleSave = (platform: keyof typeof socialLinks) => {
-    if (!editValues.username.trim()) {
-      alert('Username cannot be empty.');
-      return;
-    }
-    setSocialLinks((prev) => ({
-      ...prev,
-      [platform]: {
-        username: editValues.username.trim(),
-        link: editValues.link.trim(),
-        mode: 'added',
-      },
-    }));
-    setEditValues({ platform: null, username: '', link: '' });
-  };
-
-  const handleCancel = (platform: keyof typeof socialLinks) => {
-    const previousMode = socialLinks[platform].username ? 'added' : 'initial';
-    setSocialLinks((prev) => ({
-      ...prev,
-      [platform]: { ...prev[platform], mode: previousMode },
-    }));
-    setEditValues({ platform: null, username: '', link: '' });
-  };
-
-  const renderSocialEntry = (
-    platform: keyof typeof socialLinks,
-    IconComponent: React.ElementType,
-    platformName: string
-  ) => {
-    const { username, link, mode } = socialLinks[platform];
-    const isCurrentlyEditing = editValues.platform === platform;
-
-    switch (mode) {
-      case 'adding':
-      case 'editing':
-        return (
-          <div className="flex flex-col gap-2 w-full md:w-auto">
-            <h2 className="flex items-center gap-1 font-semibold">
-              <IconComponent className="text-2xl" /> {platformName}
-            </h2>
-            <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              value={isCurrentlyEditing ? editValues.username : ''}
-              onChange={handleEditInputChange}
-              className="textbox w-full p-2 border rounded text-sm" // Added text-sm
-              required
-            />
-            <input
-              type="text"
-              name="link"
-              placeholder="Profile Link (Optional)"
-              value={isCurrentlyEditing ? editValues.link : ''}
-              onChange={handleEditInputChange}
-              className="textbox w-full p-2 border rounded text-sm" // Added text-sm
-            />
-            <div className="flex gap-2 mt-1">
-              <button
-                type="button"
-                onClick={() => handleSave(platform)}
-                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => handleCancel(platform)}
-                className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        );
-      case 'added':
-        return (
-          <div className="flex flex-col gap-1 items-start">
-            <h2 className="flex items-center gap-1 font-semibold">
-              <IconComponent className="text-2xl" />
-              {link ? (
-                <a
-                  href={link.startsWith('http') ? link : `https://${link}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                  title={link}
-                >
-                  {username}
-                </a>
-              ) : (
-                <span>{username}</span>
-              )}
-            </h2>
-            <div className="flex gap-2 mt-1">
-              <button
-                type="button"
-                onClick={() => handleEditClick(platform)}
-                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDeleteClick(platform)}
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        );
-      case 'initial':
-      default:
-        return (
-          <div>
-            <h1 className="flex items-center gap-1">
-              <IconComponent className="text-2xl" />
-              <button
-                className="flex items-center gap-1 px-3 py-1 rounded hover:bg-red-200"
-                type="button"
-                onClick={() => handleAddClick(platform)}
-              >
-                <CiCirclePlus /> Add Link
-              </button>
-            </h1>
-          </div>
-        );
-    }
-  };
-
-  const handleSkillChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setSkills((prev) => {
-      const newSkills = { ...prev, [name]: checked };
-      // If "other" is being unchecked, clear the text field
-      if (name === 'other' && !checked) {
-        setOtherSkillText('');
-      }
-      return newSkills;
-    });
-  };
-
-  // Handles changes specifically for the "Others" text input
-  const handleOtherSkillTextChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setOtherSkillText(e.target.value);
-  };
-
-  const toggleMainPasswordVisibility = () => {
-    setShowMainPassword((prev) => !prev);
-  };
-
-  const toggleRetypePasswordVisibility = () => {
-    setShowRetypePassword((prev) => !prev);
-  };
 
   // Fetch organizations on component mount
   useEffect(() => {
@@ -308,96 +65,22 @@ const VolRegistrationForm: React.FC = () => {
     fetchOrgs();
   }, []);
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const originalFile = e.target.files[0];
-      console.log(
-        `Original profile file size: ${originalFile.size / 1024 / 1024} MB`
-      );
+      const selectedFile = e.target.files[0];
+      setImage(selectedFile);
 
-      // Compression options (adjust as needed for profile pictures)
-      const options = {
-        maxSizeMB: 0.5, // Target ~500KB
-        maxWidthOrHeight: 1024, // Resize to max 1024px
-        useWebWorker: true,
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string);
       };
-
-      try {
-        console.log('Compressing profile image...');
-        const compressedFile = await imageCompression(originalFile, options);
-        console.log(
-          `Compressed profile file size: ${compressedFile.size / 1024 / 1024} MB`
-        );
-
-        // Use the compressedFile for preview and state
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setImagePreview((event.target?.result as string) ?? null);
-          setImage(compressedFile); // Set the COMPRESSED file in state
-        };
-        reader.readAsDataURL(compressedFile); // Read compressed file for preview
-      } catch (error) {
-        console.error('Error during profile image compression:', error);
-        // Optionally handle error, e.g., fallback to original file
-        // or show an error message to the user.
-        // Example Fallback (may still cause size limit issues):
-        // setImage(originalFile);
-        // const reader = new FileReader();
-        // reader.onload = (event) => { setImagePreview(event.target?.result as string ?? null); };
-        // reader.readAsDataURL(originalFile);
-      }
-
-      e.target.value = ''; // Clear input value
+      reader.readAsDataURL(selectedFile);
     }
   };
 
   const handleRemoveImage = () => {
     setImage(null);
     setImagePreview(null);
-  };
-
-  const handleIdPhotoChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (e.target.files && e.target.files[0]) {
-      const originalFile = e.target.files[0];
-      console.log(
-        `Original ID Photo size: ${originalFile.size / 1024 / 1024} MB`
-      );
-
-      // Compression options (adjust as needed for ID photos)
-      const options = {
-        maxSizeMB: 0.4, // Target 500KB - IDs might need clarity
-        maxWidthOrHeight: 1200, // Allow slightly higher resolution?
-        useWebWorker: true,
-      };
-
-      try {
-        console.log('Compressing ID photo...');
-        const compressedFile = await imageCompression(originalFile, options);
-        console.log(
-          `Compressed ID Photo size: ${compressedFile.size / 1024 / 1024} MB`
-        );
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setIdPhotoPreview((event.target?.result as string) ?? null);
-          setIdPhoto(compressedFile); // Set compressed file in state
-        };
-        reader.readAsDataURL(compressedFile);
-      } catch (error) {
-        console.error('Error during ID photo compression:', error);
-        // Handle error, maybe fallback to original or show message
-      }
-
-      e.target.value = ''; // Clear input value
-    }
-  };
-
-  // Handler to remove the selected ID Photo
-  const handleRemoveIdPhoto = () => {
-    setIdPhoto(null);
-    setIdPhotoPreview(null);
   };
 
   const handleInputChange = (
@@ -438,15 +121,6 @@ const VolRegistrationForm: React.FC = () => {
     setError(null);
     setSuccess(null);
 
-    const selectedSkills = Object.entries(skills)
-      .filter(([key, value]) => key !== 'other' && value) // Get checked skills (excluding 'other' itself)
-      .map(([key]) => key); // Get only the names
-
-    // Add the 'other' text if the 'other' checkbox is checked and text is entered
-    if (skills.other && otherSkillText.trim()) {
-      selectedSkills.push(otherSkillText.trim());
-    }
-
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
@@ -465,22 +139,12 @@ const VolRegistrationForm: React.FC = () => {
 
       // Append all form fields to FormData
       Object.entries(formData).forEach(([key, value]) => {
-        // Convert value to string before appending
-        formDataObj.append(key, String(value));
+        formDataObj.append(key, value);
       });
 
       // Append the image with the correct field name to match the API function
       if (image) {
         formDataObj.append('profileImage', image);
-      }
-      if (idPhoto) {
-        formDataObj.append('idPhoto', idPhoto);
-      }
-
-      if (selectedSkills.length > 0) {
-        formDataObj.append('skills', JSON.stringify(selectedSkills));
-        // Alternatively, as comma-separated:
-        // formDataObj.append('skills', selectedSkills.join(','));
       }
 
       // Call the registerVolunteer function
@@ -505,24 +169,7 @@ const VolRegistrationForm: React.FC = () => {
           retypePassword: '',
           organization: '',
           roleOrCategory: '',
-          idType: '',
-          backgroundCheckConsent: false,
-          contactPerson: '',
-          contactPersonRelation: '',
         });
-
-        setSkills({
-          // Reset skills state
-          firstAidCPR: false,
-          psychosocialSupport: false,
-          medicalServices: false,
-          searchRescue: false,
-          clericalWork: false,
-          counseling: false,
-          other: false,
-        });
-        setOtherSkillText('');
-
         setImage(null);
         setImagePreview(null);
 
@@ -647,6 +294,7 @@ const VolRegistrationForm: React.FC = () => {
                 />{' '}
               </div>
             </div>
+
             <div className="w-full flex gap-3">
               <div className=" items-center w-full">
                 <label className="w-32 text-right mr-2">
@@ -688,18 +336,37 @@ const VolRegistrationForm: React.FC = () => {
               </div>
             </div>
             <div className="flex w-full pt-4 gap-8">
-              <div className="w-full pt-4">
-                {' '}
-                {/* Add padding-top */}
-                <div className="relative mb-[-1rem] z-10 w-full flex justify-center md:justify-start">
-                  <label className="font-bold bg-white rounded-3xl px-4 py-1 border-2 border-[#ef8080]">
-                    Social Media (Optional):
+              <div className="w-full flex flex-col items-start">
+                <div className="w-full">
+                  <label className="flex justify-center font-bold -translate-x-1 translate-y-2 bg-white rounded-3xl w-1/4">
+                    Social Media:
                   </label>
-                </div>
-                <div className="flex flex-col sm:flex-row flex-wrap justify-around items-start bg-white w-full text-black shadow-lg border-2 border-[#ef8080] rounded-lg p-6 pt-8 gap-6 md:gap-8">
-                  {renderSocialEntry('twitter', BsTwitterX, 'Twitter')}
-                  {renderSocialEntry('facebook', FaFacebook, 'Facebook')}
-                  {renderSocialEntry('instagram', FaInstagram, 'Instagram')}
+                  <div className="flex justify-center bg-white w-full text-black shadow-lg border-4 border-[#ef8080] rounded-lg p-6 gap-8">
+                    <div>
+                      <h1 className="flex items-center gap-1">
+                        <BsTwitterX className="text-2xl" />{' '}
+                        <button className="flex items-center">
+                          <CiCirclePlus /> Add Link
+                        </button>
+                      </h1>
+                    </div>
+                    <div>
+                      <h1 className="flex items-center gap-1">
+                        <FaFacebook className="text-2xl" />{' '}
+                        <button className="flex items-center">
+                          <CiCirclePlus /> Add Link
+                        </button>{' '}
+                      </h1>
+                    </div>
+                    <div>
+                      <h1 className="flex items-center gap-1">
+                        <FaInstagram className="text-2xl" />{' '}
+                        <button className="flex items-center">
+                          <CiCirclePlus /> Add Link
+                        </button>{' '}
+                      </h1>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="flex w-[100%] justify-start mt-4">
@@ -753,7 +420,7 @@ const VolRegistrationForm: React.FC = () => {
                 <label className="font-bold">Current Address:</label>
                 <input
                   type="text"
-                  className="textbox placeholder:text-gray-300"
+                  className="textbox"
                   placeholder="Street, Barangay, City/Municipality, Province, Zipcode"
                   name="address"
                   value={formData.address}
@@ -765,7 +432,7 @@ const VolRegistrationForm: React.FC = () => {
                 <label className="font-bold">Region/Area of Operation:</label>
                 <input
                   type="text"
-                  className="textbox placeholder:text-gray-300"
+                  className="textbox"
                   placeholder="Where you prefer to help"
                   name="areaOfOperation"
                   value={formData.areaOfOperation}
@@ -779,123 +446,81 @@ const VolRegistrationForm: React.FC = () => {
                 Skills and Expertise:
               </label>
               <div className="flex justify-center bg-white w-full text-black shadow-lg border-4 border-[#ef8080] rounded-lg p-6 gap-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
-                  {' '}
-                  {/* Ensure width */}
-                  {/* First Aid & CPR */}
+                <div className="grid grid-cols-4 gap-4">
                   <div>
-                    <label className="inline-flex items-center">
-                      {' '}
-                      {/* Use inline-flex */}
+                    <label>
                       <input
                         type="checkbox"
-                        name="firstAidCPR" // Unique name
-                        checked={skills.firstAidCPR} // Use state
-                        onChange={handleSkillChange} // Use new handler
                         className="custom-checkbox-input peer sr-only"
                       />
                       <span className="custom-checkbox-indicator"></span>
-                      <span className="ml-2">First Aid & CPR</span>{' '}
-                      {/* Add ml-2 for spacing */}
+                      <span>First Aid & CPR</span>
                     </label>
                   </div>
-                  {/* Psychosocial Support */}
                   <div>
-                    <label className="inline-flex items-center">
+                    <label>
                       <input
                         type="checkbox"
-                        name="psychosocialSupport" // Unique name
-                        checked={skills.psychosocialSupport} // Use state
-                        onChange={handleSkillChange} // Use new handler
                         className="custom-checkbox-input peer sr-only"
                       />
                       <span className="custom-checkbox-indicator"></span>
-                      <span className="ml-2">Psychosocial Support</span>
+                      <span>Psyochosocial Support</span>
                     </label>
                   </div>
-                  {/* Medical Services */}
                   <div>
-                    <label className="inline-flex items-center">
+                    <label>
                       <input
                         type="checkbox"
-                        name="medicalServices" // Unique name
-                        checked={skills.medicalServices} // Use state
-                        onChange={handleSkillChange} // Use new handler
                         className="custom-checkbox-input peer sr-only"
                       />
                       <span className="custom-checkbox-indicator"></span>
-                      <span className="ml-2">Medical Services</span>
+                      <span>Medical Services</span>
                     </label>
                   </div>
-                  {/* Search & Rescue */}
                   <div>
-                    <label className="inline-flex items-center">
+                    <label>
                       <input
                         type="checkbox"
-                        name="searchRescue" // Unique name
-                        checked={skills.searchRescue} // Use state
-                        onChange={handleSkillChange} // Use new handler
                         className="custom-checkbox-input peer sr-only"
                       />
                       <span className="custom-checkbox-indicator"></span>
-                      <span className="ml-2">Search & Rescue</span>
+                      <span>Others: </span>
                     </label>
                   </div>
-                  {/* Clerical Work */}
                   <div>
-                    <label className="inline-flex items-center">
+                    <label>
                       <input
                         type="checkbox"
-                        name="clericalWork" // Unique name
-                        checked={skills.clericalWork} // Use state
-                        onChange={handleSkillChange} // Use new handler
                         className="custom-checkbox-input peer sr-only"
                       />
                       <span className="custom-checkbox-indicator"></span>
-                      <span className="ml-2">Clerical Work</span>
+                      <span>Search & Rescue</span>
                     </label>
                   </div>
-                  {/* Counseling */}
                   <div>
-                    <label className="inline-flex items-center">
+                    <label>
                       <input
                         type="checkbox"
-                        name="counseling" // Unique name
-                        checked={skills.counseling} // Use state
-                        onChange={handleSkillChange} // Use new handler
                         className="custom-checkbox-input peer sr-only"
                       />
                       <span className="custom-checkbox-indicator"></span>
-                      <span className="ml-2">Counseling</span>
+                      <span>Clerical Work</span>
                     </label>
                   </div>
-                  {/* Others */}
-                  <div className="col-span-1 sm:col-span-2 flex items-center flex-wrap">
-                    {' '}
-                    {/* Allow wrapping */}
-                    <label className="inline-flex items-center mr-2 mb-2 sm:mb-0">
-                      {' '}
-                      {/* Add margin */}
+                  <div>
+                    <label>
                       <input
                         type="checkbox"
-                        name="other" // Specific name "other"
-                        checked={skills.other} // Use state
-                        onChange={handleSkillChange} // Use new handler
                         className="custom-checkbox-input peer sr-only"
                       />
                       <span className="custom-checkbox-indicator"></span>
-                      <span className="ml-2">Others:</span>
+                      <span>Counseling</span>
                     </label>
-                    {/* Conditionally Render Textbox */}
-                    {skills.other && (
-                      <input
-                        type="text"
-                        className="textbox p-1 text-sm flex-grow min-w-[150px]" // Use textbox style, adjust padding/size, allow growth
-                        placeholder="Please specify"
-                        value={otherSkillText}
-                        onChange={handleOtherSkillTextChange} // Use specific handler
-                      />
-                    )}
+                  </div>
+                  <div>
+                    <label>
+                      <input type="text" className="w-full" />
+                    </label>
                   </div>
                 </div>
               </div>
@@ -1049,150 +674,18 @@ const VolRegistrationForm: React.FC = () => {
                     <div>
                       <input
                         type="text"
-                        name="contactPerson"
-                        value={formData.contactPerson}
-                        onChange={handleInputChange}
                         className="textbox placeholder:text-gray-300 w-[80%] ml-10"
-                        placeholder="Emergency Contact Person Name"
+                        placeholder="Primary Contact Person Name"
                       />
                     </div>
                     <div>
                       <input
                         type="text"
-                        name="contactPersonRelation"
-                        value={formData.contactPersonRelation}
-                        onChange={handleInputChange}
                         className="textbox placeholder:text-gray-300 w-[80%] ml-10"
-                        placeholder="Relationship with contact Person"
+                        placeholder="Position in organization"
                       />
                     </div>
                   </div>
-                </div>
-                <div className="w-full flex flex-col gap-4 border-4 border-[#ef8080] rounded-2xl p-4">
-                  <div className="mt-2 text-lg">
-                    <label className="font-bold">Valid Documents:</label>
-                    <p className="text-md ml-8 mt-2">
-                      Upload any form of valid government issued ID
-                    </p>
-                  </div>
-                  <div className="flex flex-col w-full">
-                    {/* ID Type Dropdown */}
-                    <div className="flex w-full">
-                      <label className="flex w-1/4 justify-start items-center pl-4">
-                        {' '}
-                        {/* Adjusted width/padding */}
-                        Type of ID:
-                      </label>
-                      {/* Make sure this select has name="idType" */}
-                      <select
-                        className="textbox w-3/4" // Adjusted width
-                        name="idType" // Ensure name attribute is set
-                        value={formData.idType}
-                        onChange={handleInputChange}
-                        required // Add required if applicable
-                      >
-                        <option value="">Select a valid ID</option>
-                        <option value="passport">Philippine Passport</option>
-                        <option value="national-id">
-                          National ID (PhilSys ID)
-                        </option>
-                        <option value="drivers-license">
-                          Driver's License (LTO)
-                        </option>
-                        <option value="sss-id">
-                          Social Security System (SSS) ID
-                        </option>
-                        <option value="umid">
-                          Unified Multi-Purpose ID (UMID)
-                        </option>
-                        {/* ... other ID options ... */}
-                        <option value="gsis-id">
-                          Government Service Insurance System (GSIS) eCard
-                        </option>
-                        <option value="prc-id">
-                          Professional Regulation Commission (PRC) ID
-                        </option>
-                        <option value="voters-id">
-                          COMELEC Voter's ID or Voter's Certification
-                        </option>
-                        <option value="ibp-id">
-                          Integrated Bar of the Philippines (IBP) ID
-                        </option>
-                        <option value="owwa-id">
-                          Overseas Workers Welfare Administration (OWWA) ID
-                        </option>
-                        <option value="senior-id">Senior Citizen ID</option>
-                        <option value="pwd-id">
-                          Persons with Disability (PWD) ID
-                        </option>
-                        <option value="acr-id">
-                          Alien Certificate of Registration (ACR) I-Card
-                        </option>
-                        <option value="seamans-book">
-                          Seaman's Book (SIRB)
-                        </option>
-                      </select>
-                    </div>
-
-                    {/* ID Photo Upload Section */}
-                    <div className="flex w-full mt-4 items-center">
-                      <label className="flex w-1/4 justify-start items-center pl-4 shrink-0">
-                        {' '}
-                        {/* Adjusted width/padding */}
-                        Photo of Valid ID:
-                      </label>
-                      <div className="flex items-center gap-4 w-3/4">
-                        {' '}
-                        {/* Adjusted width */}
-                        {/* Preview Area */}
-                        <div className="w-28 h-20 border rounded bg-gray-100 flex items-center justify-center overflow-hidden ml-2">
-                          {idPhotoPreview ? (
-                            <img
-                              src={idPhotoPreview}
-                              alt="ID Preview"
-                              className="object-contain h-full w-full"
-                            />
-                          ) : (
-                            <span className="text-xs text-gray-500 p-1 text-center">
-                              ID Preview
-                            </span>
-                          )}
-                        </div>
-                        {/* Controls Area */}
-                        <div className="flex flex-col">
-                          {/* Hidden Input */}
-                          <input
-                            type="file"
-                            id="id-photo-upload" // Unique ID
-                            accept="image/*"
-                            onChange={handleIdPhotoChange} // Use specific handler
-                            className="hidden"
-                          />
-                          {/* Show Upload or Delete Button */}
-                          {idPhotoPreview ? (
-                            <button
-                              type="button"
-                              onClick={handleRemoveIdPhoto} // Use specific handler
-                              className="text-sm text-red-600 hover:text-red-800 mb-1"
-                            >
-                              Delete Photo
-                            </button>
-                          ) : (
-                            <label
-                              htmlFor="id-photo-upload"
-                              className="cursor-pointer text-sm text-black hover:text-blue-800 mb-1 inline-flex items-center"
-                            >
-                              <CiCirclePlus className="text-lg mr-1" /> Add
-                              Photo
-                            </label>
-                          )}
-                          {/* <p className="text-xs text-gray-500">
-                            Max 0.5MB recommended
-                          </p> */}
-                        </div>
-                      </div>
-                    </div>
-                  </div>{' '}
                 </div>
               </div>
 
@@ -1290,67 +783,31 @@ const VolRegistrationForm: React.FC = () => {
                         required
                       />
                     </div>
-                    <div className="items-center relative w-full md:w-1/3">
-                      {' '}
-                      {/* Added relative, control width */}
+                    <div className="items-center">
                       <label className="text-right mr-2">
                         Account Password:
                       </label>
                       <input
-                        type={showMainPassword ? 'text' : 'password'} // Use state for type
-                        className="textbox w-full pr-10" // Add padding for icon
+                        className="textbox w-full"
+                        type="password"
                         name="password"
                         value={formData.password}
                         onChange={handleInputChange}
                         required
                       />
-                      {/* Toggle Button */}
-                      <button
-                        type="button"
-                        onClick={toggleMainPasswordVisibility} // Use specific handler
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-black hover:text-gray-800 translate-y-3"
-                        aria-label={
-                          showMainPassword ? 'Hide password' : 'Show password'
-                        }
-                      >
-                        {showMainPassword ? (
-                          <FiEyeOff size={20} />
-                        ) : (
-                          <FiEye size={20} />
-                        )}
-                      </button>
                     </div>
-
-                    {/* --- Retype Password (Updated) --- */}
-                    <div className="items-center relative w-full md:w-1/3">
-                      {' '}
-                      {/* Added relative, control width */}
+                    <div className="items-center">
                       <label className="text-right mr-2">
                         Retype Password:
                       </label>
                       <input
-                        type={showRetypePassword ? 'text' : 'password'} // Use state for type
-                        className="textbox w-full pr-10" // Add padding for icon
+                        className="textbox w-full"
+                        type="password"
                         name="retypePassword"
                         value={formData.retypePassword}
                         onChange={handleInputChange}
                         required
                       />
-                      {/* Toggle Button */}
-                      <button
-                        type="button"
-                        onClick={toggleRetypePasswordVisibility} // Use specific handler
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-black hover:text-gray-800 translate-y-3"
-                        aria-label={
-                          showRetypePassword ? 'Hide password' : 'Show password'
-                        }
-                      >
-                        {showRetypePassword ? (
-                          <FiEyeOff size={20} />
-                        ) : (
-                          <FiEye size={20} />
-                        )}
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -1374,21 +831,11 @@ const VolRegistrationForm: React.FC = () => {
 
       <div className="flex items-center justify-center">
         <h1>
-          I consent to a background check to further authenticate this
-          registration.
+          Already have an account? Log in{' '}
+          <a className="text-blue-800" href="./login">
+            here!
+          </a>
         </h1>
-        <label className="flex items-center cursor-pointer ml-2">
-          {/* 1. The hidden INPUT with specific classes */}
-          <input
-            type="checkbox"
-            name="backgroundCheckConsent"
-            checked={formData.backgroundCheckConsent}
-            onChange={handleInputChange}
-            className="custom-checkbox-input peer sr-only" // Crucial classes
-          />
-          {/* 2. The visible INDICATOR span immediately after input */}
-          <span className="custom-checkbox-indicator"></span>
-        </label>
       </div>
     </div>
   );
