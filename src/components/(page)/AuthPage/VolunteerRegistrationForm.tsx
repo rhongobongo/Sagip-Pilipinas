@@ -49,6 +49,8 @@ const VolRegistrationForm: React.FC = () => {
     roleOrCategory: '',
     idType: '',
     backgroundCheckConsent: false,
+    contactPerson: '',
+    contactPersonRelation: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +67,202 @@ const VolRegistrationForm: React.FC = () => {
     other: false, // State for the "Others" checkbox itself
   });
   const [otherSkillText, setOtherSkillText] = useState('');
+
+  const initialSocialState = {
+    // Define initial state structure
+    username: '',
+    link: '',
+    mode: 'initial' as 'initial' | 'adding' | 'editing' | 'added', // Add type assertion
+  };
+
+  const [socialLinks, setSocialLinks] = useState({
+    twitter: { ...initialSocialState },
+    facebook: { ...initialSocialState },
+    instagram: { ...initialSocialState },
+  });
+
+  // State for temporary input values during add/edit social links
+  const [editValues, setEditValues] = useState<{
+    platform: keyof typeof socialLinks | null;
+    username: string;
+    link: string;
+  }>({
+    platform: null,
+    username: '',
+    link: '',
+  });
+
+  const handleAddClick = (platform: keyof typeof socialLinks) => {
+    setEditValues({ platform, username: '', link: '' });
+    setSocialLinks((prev) => ({
+      ...prev,
+      [platform]: { ...prev[platform], mode: 'adding' },
+    }));
+  };
+
+  const handleEditClick = (platform: keyof typeof socialLinks) => {
+    const currentData = socialLinks[platform];
+    setEditValues({
+      platform,
+      username: currentData.username,
+      link: currentData.link,
+    });
+    setSocialLinks((prev) => ({
+      ...prev,
+      [platform]: { ...prev[platform], mode: 'editing' },
+    }));
+  };
+
+  const handleDeleteClick = (platform: keyof typeof socialLinks) => {
+    setSocialLinks((prev) => ({
+      ...prev,
+      [platform]: { ...initialSocialState }, // Reset to initial state
+    }));
+    if (editValues.platform === platform) {
+      setEditValues({ platform: null, username: '', link: '' });
+    }
+  };
+
+  // Handler specifically for social media input changes
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditValues((prev) => ({
+      ...prev,
+      [name]: value, // Update 'username' or 'link' in editValues
+    }));
+  };
+
+  const handleSave = (platform: keyof typeof socialLinks) => {
+    if (!editValues.username.trim()) {
+      alert('Username cannot be empty.');
+      return;
+    }
+    setSocialLinks((prev) => ({
+      ...prev,
+      [platform]: {
+        username: editValues.username.trim(),
+        link: editValues.link.trim(),
+        mode: 'added',
+      },
+    }));
+    setEditValues({ platform: null, username: '', link: '' });
+  };
+
+  const handleCancel = (platform: keyof typeof socialLinks) => {
+    const previousMode = socialLinks[platform].username ? 'added' : 'initial';
+    setSocialLinks((prev) => ({
+      ...prev,
+      [platform]: { ...prev[platform], mode: previousMode },
+    }));
+    setEditValues({ platform: null, username: '', link: '' });
+  };
+
+  const renderSocialEntry = (
+    platform: keyof typeof socialLinks,
+    IconComponent: React.ElementType,
+    platformName: string
+  ) => {
+    const { username, link, mode } = socialLinks[platform];
+    const isCurrentlyEditing = editValues.platform === platform;
+
+    switch (mode) {
+      case 'adding':
+      case 'editing':
+        return (
+          <div className="flex flex-col gap-2 w-full md:w-auto">
+            <h2 className="flex items-center gap-1 font-semibold">
+              <IconComponent className="text-2xl" /> {platformName}
+            </h2>
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={isCurrentlyEditing ? editValues.username : ''}
+              onChange={handleEditInputChange}
+              className="textbox w-full p-2 border rounded text-sm" // Added text-sm
+              required
+            />
+            <input
+              type="text"
+              name="link"
+              placeholder="Profile Link (Optional)"
+              value={isCurrentlyEditing ? editValues.link : ''}
+              onChange={handleEditInputChange}
+              className="textbox w-full p-2 border rounded text-sm" // Added text-sm
+            />
+            <div className="flex gap-2 mt-1">
+              <button
+                type="button"
+                onClick={() => handleSave(platform)}
+                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCancel(platform)}
+                className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        );
+      case 'added':
+        return (
+          <div className="flex flex-col gap-1 items-start">
+            <h2 className="flex items-center gap-1 font-semibold">
+              <IconComponent className="text-2xl" />
+              {link ? (
+                <a
+                  href={link.startsWith('http') ? link : `https://${link}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                  title={link}
+                >
+                  {username}
+                </a>
+              ) : (
+                <span>{username}</span>
+              )}
+            </h2>
+            <div className="flex gap-2 mt-1">
+              <button
+                type="button"
+                onClick={() => handleEditClick(platform)}
+                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteClick(platform)}
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        );
+      case 'initial':
+      default:
+        return (
+          <div>
+            <h1 className="flex items-center gap-1">
+              <IconComponent className="text-2xl" />
+              <button
+                className="flex items-center gap-1 px-3 py-1 rounded hover:bg-red-200"
+                type="button"
+                onClick={() => handleAddClick(platform)}
+              >
+                <CiCirclePlus /> Add Link
+              </button>
+            </h1>
+          </div>
+        );
+    }
+  };
 
   const handleSkillChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
@@ -309,6 +507,8 @@ const VolRegistrationForm: React.FC = () => {
           roleOrCategory: '',
           idType: '',
           backgroundCheckConsent: false,
+          contactPerson: '',
+          contactPersonRelation: '',
         });
 
         setSkills({
@@ -488,37 +688,18 @@ const VolRegistrationForm: React.FC = () => {
               </div>
             </div>
             <div className="flex w-full pt-4 gap-8">
-              <div className="w-full flex flex-col items-start">
-                <div className="w-full">
-                  <label className="flex justify-center font-bold -translate-x-1 translate-y-2 bg-white rounded-3xl w-1/4">
-                    Social Media:
+              <div className="w-full pt-4">
+                {' '}
+                {/* Add padding-top */}
+                <div className="relative mb-[-1rem] z-10 w-full flex justify-center md:justify-start">
+                  <label className="font-bold bg-white rounded-3xl px-4 py-1 border-2 border-[#ef8080]">
+                    Social Media (Optional):
                   </label>
-                  <div className="flex justify-center bg-white w-full text-black shadow-lg border-4 border-[#ef8080] rounded-lg p-6 gap-8">
-                    <div>
-                      <h1 className="flex items-center gap-1">
-                        <BsTwitterX className="text-2xl" />{' '}
-                        <button className="flex items-center">
-                          <CiCirclePlus /> Add Link
-                        </button>
-                      </h1>
-                    </div>
-                    <div>
-                      <h1 className="flex items-center gap-1">
-                        <FaFacebook className="text-2xl" />{' '}
-                        <button className="flex items-center">
-                          <CiCirclePlus /> Add Link
-                        </button>{' '}
-                      </h1>
-                    </div>
-                    <div>
-                      <h1 className="flex items-center gap-1">
-                        <FaInstagram className="text-2xl" />{' '}
-                        <button className="flex items-center">
-                          <CiCirclePlus /> Add Link
-                        </button>{' '}
-                      </h1>
-                    </div>
-                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row flex-wrap justify-around items-start bg-white w-full text-black shadow-lg border-2 border-[#ef8080] rounded-lg p-6 pt-8 gap-6 md:gap-8">
+                  {renderSocialEntry('twitter', BsTwitterX, 'Twitter')}
+                  {renderSocialEntry('facebook', FaFacebook, 'Facebook')}
+                  {renderSocialEntry('instagram', FaInstagram, 'Instagram')}
                 </div>
               </div>
               <div className="flex w-[100%] justify-start mt-4">
@@ -868,15 +1049,21 @@ const VolRegistrationForm: React.FC = () => {
                     <div>
                       <input
                         type="text"
+                        name="contactPerson"
+                        value={formData.contactPerson}
+                        onChange={handleInputChange}
                         className="textbox placeholder:text-gray-300 w-[80%] ml-10"
-                        placeholder="Primary Contact Person Name"
+                        placeholder="Emergency Contact Person Name"
                       />
                     </div>
                     <div>
                       <input
                         type="text"
+                        name="contactPersonRelation"
+                        value={formData.contactPersonRelation}
+                        onChange={handleInputChange}
                         className="textbox placeholder:text-gray-300 w-[80%] ml-10"
-                        placeholder="Position in organization"
+                        placeholder="Relationship with contact Person"
                       />
                     </div>
                   </div>
