@@ -563,7 +563,7 @@ const VolRegistrationForm: React.FC = () => {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="flex items-start justify-around mt-16">
+        <div className="flex items-start justify-around mt-2">
           <div className="flex justify-center mt-5 w-1/4 pl-2 flex-col items-center">
             {/* Image Upload Section */}
             <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-300 flex items-center justify-center">
