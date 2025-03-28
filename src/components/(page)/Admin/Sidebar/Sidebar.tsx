@@ -14,7 +14,7 @@ const navItems = [
     { name: "News", path: "/admin/cms", icon: <Newspaper size={20} /> },
     { name: "Organizations", path: "/admin/organizations", icon: <Building size={20} /> },
     { name: "Resources", path: "/admin/resources", icon: <Book size={20} /> },
-    { name: "Review Requests", path: "/admin/aid-requests", icon: <ClipboardList size={20} /> },
+    { name: "Review Requests", path: "/admin/review-requests", icon: <ClipboardList size={20} /> },
     { name: "Track Aid", path: "/admin/deployed-aid", icon: <Send size={20} /> },
     { name: "Volunteers", path: "/admin/volunteers", icon: <Users size={20} /> },
 ];

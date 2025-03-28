@@ -30,6 +30,7 @@ export default function SidebarItem({ icon, text, path }: Readonly<SidebarItemPr
                     className="absolute left-full ml-3 bg-gray-900 text-white text-sm rounded-md px-2 py-1 
                     opacity-0 transition-opacity group-hover:opacity-100"
                 >
+                    
                     {text}
                 </div>
             )}
