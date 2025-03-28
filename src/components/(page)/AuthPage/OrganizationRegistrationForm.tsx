@@ -977,9 +977,6 @@ const OrgRegistrationForm: React.FC = () => {
                 <div className="flex flex-col gap-2.5 w-full">
                   {/* Combined Phone Input */}
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                      +63
-                    </span>
                     <input
                       type="tel" // Use tel type for phone numbers
                       name="contactNumber"
@@ -998,8 +995,8 @@ const OrgRegistrationForm: React.FC = () => {
                           }));
                         }
                       }}
-                      className="textbox pl-12 w-full" // Add padding for "+63"
-                      placeholder="9XXXXXXXXX"
+                      className="textbox pl-12 w-full placeholder:text-gray-200" // Add padding for "+63"
+                      placeholder="+63 | 9XXXXXXXXX"
                       required
                       maxLength={10} // Max 10 digits
                     />
@@ -1010,7 +1007,7 @@ const OrgRegistrationForm: React.FC = () => {
                       name="contactPerson"
                       value={formData.contactPerson}
                       onChange={handleInputChange}
-                      className="textbox placeholder:text-gray-400 w-full"
+                      className="textbox placeholder:text-gray-200 w-full"
                       placeholder="Primary Contact Person Name"
                       required
                     />
@@ -1021,7 +1018,7 @@ const OrgRegistrationForm: React.FC = () => {
                       name="orgPosition"
                       value={formData.orgPosition}
                       onChange={handleInputChange}
-                      className="textbox placeholder:text-gray-400 w-full"
+                      className="textbox placeholder:text-gray-200 w-full"
                       placeholder="Position in organization"
                       required
                     />
@@ -1603,7 +1600,7 @@ const OrgRegistrationForm: React.FC = () => {
                 <span className="text-red-500">*</span>
               </label>
               <textarea
-                className="shortDesc" // Make sure this class provides height/styling
+                className="shortDesc placeholder:text-gray-200" // Make sure this class provides height/styling
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
