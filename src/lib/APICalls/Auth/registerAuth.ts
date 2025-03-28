@@ -272,86 +272,243 @@ export async function registerOrganization(
 }
 
 interface Volunteer {
-  name: string;
+  // Keep existing relevant fields
   email: string;
   contactNumber: string;
-  username: string;
-  profileImageUrl: string;
+  username: string; // Matches acctUsername from frontend
+  profileImageUrl: string | null;
   organizationId: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: admin.firestore.Timestamp | admin.firestore.FieldValue | string;
+  updatedAt: admin.firestore.Timestamp | admin.firestore.FieldValue | string;
   userId: string;
-}
 
+  // Fields from form
+  firstName: string;
+  middleName: string;
+  surname: string;
+  gender: string;
+  address: string;
+  areaOfOperation: string;
+  dateOfBirth: string;
+  roleOrCategory: string;
+  idType: string;
+  idPhotoUrl?: string | null;
+  skills?: string[];
+  backgroundCheckConsent?: boolean;
+
+  // --- ADDED FIELDS ---
+  contactPerson?: string; // Emergency Contact Person Name
+  contactPersonRelation?: string; // Relationship to Emergency Contact
+  socialMedia?: {
+    // Optional Social Media Map
+    [key: string]: {
+      username: string;
+      link?: string;
+    };
+  };
+  // --- END ADDED FIELDS ---
+}
+// --- End Updated Volunteer Interface ---
+
+// ... Organization interface and registerOrganization function ...
+
+// --- Start Updated registerVolunteer Function ---
 export async function registerVolunteer(formData: FormData) {
+  let userId: string | null = null;
   try {
-    // First, create the auth user to get a UID
+    const displayName =
+      `${formData.get('firstName') || ''} ${formData.get('surname') || ''}`.trim();
+
+    // 1. --- Create Auth User ---
     const userRecord = await auth.createUser({
       email: formData.get('email') as string,
       password: formData.get('password') as string,
-      displayName: formData.get('name') as string,
+      displayName: displayName || undefined,
     });
+    userId = userRecord.uid;
+    console.log(`Created auth user with ID: ${userId}`);
 
-    const userId = userRecord.uid; // Store UID to use consistently
-
-    let profileImageUrl = '';
-    const profileImage = formData.get('profileImage') as File;
-
-    if (profileImage) {
-      const bucket = storage;
-
-      const originalName = profileImage.name;
-      const fileExtension = originalName.substring(
-        originalName.lastIndexOf('.')
-      );
-
-      // Ensure the extension is included in the stored file name
-      const file = bucket.file(
-        `volunteers/${userId}/profile-image${fileExtension}`
-      );
-
-      // Convert image to Buffer
-      const imageBuffer = Buffer.from(await profileImage.arrayBuffer());
-
-      // Save the file to the storage bucket
-      await file.save(imageBuffer);
-
-      // Construct the public URL
-      profileImageUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
+    // 2. --- Handle Profile Image Upload ---
+    let profileImageUrl: string | null = null;
+    const profileImage = formData.get('profileImage') as File | null;
+    if (profileImage && profileImage.size > 0) {
+      // ... (profile image upload logic - unchanged) ...
+      try {
+        const bucket = storage;
+        const originalName = profileImage.name;
+        const fileExtension = originalName.substring(
+          originalName.lastIndexOf('.')
+        );
+        const filePath = `volunteers/${userId}/profile-image${fileExtension}`;
+        const file = bucket.file(filePath);
+        console.log(`Uploading profile image to: ${filePath}`);
+        const imageBuffer = Buffer.from(await profileImage.arrayBuffer());
+        await file.save(imageBuffer, {
+          metadata: { contentType: profileImage.type },
+        });
+        profileImageUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
+        console.log(`Profile image URL: ${profileImageUrl}`);
+      } catch (uploadError) {
+        console.error('Error uploading profile image:', uploadError);
+      }
+    } else {
+      console.log('No profile image provided or image is empty.');
     }
 
-    // Create volunteer data with the same userId
+    // 3. --- Handle ID Photo Upload ---
+    let idPhotoUrl: string | null = null;
+    const idPhoto = formData.get('idPhoto') as File | null;
+    if (idPhoto && idPhoto.size > 0) {
+      // ... (id photo upload logic - unchanged) ...
+      try {
+        const bucket = storage;
+        const originalName = idPhoto.name;
+        const fileExtension = originalName.substring(
+          originalName.lastIndexOf('.')
+        );
+        const filePath = `volunteers/${userId}/idPhoto${fileExtension}`;
+        const file = bucket.file(filePath);
+        console.log(`Uploading ID photo to: ${filePath}`);
+        const imageBuffer = Buffer.from(await idPhoto.arrayBuffer());
+        await file.save(imageBuffer, {
+          metadata: { contentType: idPhoto.type },
+        });
+        idPhotoUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
+        console.log(`ID photo URL: ${idPhotoUrl}`);
+      } catch (uploadError) {
+        console.error('Error uploading ID photo:', uploadError);
+      }
+    } else {
+      console.log('No ID photo provided or image is empty.');
+    }
+
+    // 4. --- Parse Skills ---
+    let skillsArray: string[] = [];
+    const skillsJson = formData.get('skills') as string | null;
+    if (skillsJson) {
+      // ... (skills parsing logic - unchanged) ...
+      try {
+        skillsArray = JSON.parse(skillsJson);
+        console.log('Parsed skills:', skillsArray);
+      } catch (parseError) {
+        console.error('Error parsing skills JSON:', parseError);
+      }
+    } else {
+      console.log('No skills data found in form.');
+    }
+
+    // 5. --- Handle Consent ---
+    const consentString = formData.get('backgroundCheckConsent') as
+      | string
+      | null;
+    const hasConsent = consentString === 'true';
+    console.log(`Background Check Consent: ${consentString} -> ${hasConsent}`);
+
+    // --- START: 6. Handle Social Media Data ---
+    const socialMediaData: {
+      [key: string]: { username: string; link?: string };
+    } = {};
+    // Twitter
+    const twitterUsername = formData.get('social_twitter_username') as string;
+    if (twitterUsername?.trim()) {
+      socialMediaData.twitter = { username: twitterUsername.trim() };
+      const twitterLink = formData.get('social_twitter_link') as string;
+      if (twitterLink?.trim())
+        socialMediaData.twitter.link = twitterLink.trim();
+    }
+    // Facebook
+    const facebookUsername = formData.get('social_facebook_username') as string;
+    if (facebookUsername?.trim()) {
+      socialMediaData.facebook = { username: facebookUsername.trim() };
+      const facebookLink = formData.get('social_facebook_link') as string;
+      if (facebookLink?.trim())
+        socialMediaData.facebook.link = facebookLink.trim();
+    }
+    // Instagram
+    const instagramUsername = formData.get(
+      'social_instagram_username'
+    ) as string;
+    if (instagramUsername?.trim()) {
+      socialMediaData.instagram = { username: instagramUsername.trim() };
+      const instagramLink = formData.get('social_instagram_link') as string;
+      if (instagramLink?.trim())
+        socialMediaData.instagram.link = instagramLink.trim();
+    }
+    // --- END: 6. Handle Social Media Data ---
+
+    // 7. --- Prepare Complete Volunteer Data for Firestore ---
     const volunteerData: Volunteer = {
-      name: formData.get('name') as string,
+      firstName: (formData.get('firstName') as string) || '',
+      middleName: (formData.get('middleName') as string) || '',
+      surname: (formData.get('surname') as string) || '',
       email: formData.get('email') as string,
-      contactNumber: formData.get('contactNumber') as string,
-      username: formData.get('username') as string,
-      profileImageUrl,
-      organizationId: formData.get('organization') as string, // Match the field name from the form
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      userId: userId, // Use the same userId from auth
+      gender: (formData.get('gender') as string) || '',
+      address: (formData.get('address') as string) || '',
+      areaOfOperation: (formData.get('areaOfOperation') as string) || '',
+      contactNumber: (formData.get('contactNumber') as string) || '',
+      dateOfBirth: (formData.get('dateOfBirth') as string) || '',
+      username: (formData.get('acctUsername') as string) || '',
+      organizationId: (formData.get('organization') as string) || '',
+      roleOrCategory: (formData.get('roleOrCategory') as string) || '',
+      idType: (formData.get('idType') as string) || '',
+
+      profileImageUrl: profileImageUrl,
+      idPhotoUrl: idPhotoUrl,
+
+      skills: skillsArray.length > 0 ? skillsArray : undefined,
+      backgroundCheckConsent: hasConsent,
+
+      // --- ADDED FIELDS ---
+      contactPerson: (formData.get('contactPerson') as string) || undefined, // Add contact person
+      contactPersonRelation:
+        (formData.get('contactPersonRelation') as string) || undefined, // Add relationship
+      // Add socialMedia map only if it has entries
+      ...(Object.keys(socialMediaData).length > 0 && {
+        socialMedia: socialMediaData,
+      }),
+      // --- END ADDED FIELDS ---
+
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      userId: userId,
     };
 
-    // Create volunteer document with the userId as the document ID
+    // 8. --- Save Volunteer Data to Firestore ---
+    console.log(
+      'Saving volunteer data:',
+      JSON.stringify(volunteerData, null, 2)
+    );
     await db.collection('volunteers').doc(userId).set(volunteerData);
 
-    // Create user document with the same userId
-    await db
-      .collection('users')
-      .doc(userId)
-      .set({
-        role: 'volunteer',
-        organizationId: formData.get('organization') as string, // Match the field name from the form
-        createdAt: new Date().toISOString(),
-      });
+    // 9. --- Save Basic User Role Info ---
+    await db.collection('users').doc(userId).set({
+      role: 'volunteer',
+      organizationId: volunteerData.organizationId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      // Optional: add displayName or other refs if needed in 'users' collection
+      // displayName: displayName
+    });
 
-    console.log(`Successfully created volunteer with ID: ${userId}`);
+    console.log(
+      `Successfully created volunteer and user documents with ID: ${userId}`
+    );
     return { success: true, message: 'Registration successful!' };
   } catch (error) {
+    // ... (Error handling and Auth User Cleanup - unchanged) ...
     let errorMessage = 'Registration failed. Please try again.';
     console.error('Error during volunteer registration:', error);
-
+    if (userId) {
+      try {
+        console.log(`Attempting to delete orphaned auth user: ${userId}`);
+        await auth.deleteUser(userId);
+        console.log(`Successfully deleted orphaned auth user: ${userId}`);
+      } catch (deleteError) {
+        console.error(
+          `Failed to delete orphaned auth user ${userId}:`,
+          deleteError
+        );
+      }
+    }
     if (error instanceof Error && 'code' in error) {
       const errorCode = (error as { code: string }).code;
       if (errorCode === 'auth/email-already-exists') {
@@ -361,12 +518,8 @@ export async function registerVolunteer(formData: FormData) {
         errorMessage = 'Invalid email format.';
       } else if (errorCode === 'auth/weak-password') {
         errorMessage = 'Password is too weak. Please use a stronger password.';
-      } else if (errorCode === 'auth/uid-already-exists') {
-        errorMessage =
-          'Username is already taken. Please choose a different username.';
       }
     }
-
     return { success: false, message: errorMessage };
   }
 }
