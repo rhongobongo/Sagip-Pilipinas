@@ -1,9 +1,9 @@
 const AnalyticsPage = () => {
-    return (
-        <div className="container text-black h-[93vh]">
-            <p>Analytics content goes here...</p>
-        </div>
-    );
+  return (
+      <div className="container text-black h-[93vh]">
+          <p>Review Requests Admin</p>
+      </div>
+  );
 }
 
 export default AnalyticsPage;

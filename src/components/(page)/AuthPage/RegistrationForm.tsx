@@ -95,7 +95,7 @@ const RegistrationForm: React.FC = () => {
                   onMouseEnter={() => setHoveredButton('organization')}
                   onMouseLeave={() => setHoveredButton(null)}
                 >
-                  <img src="/ORGANIZATION.svg" alt="" className="w-full" />
+                  <img src="/Organization.svg" alt="" className="w-full" />
                   <h1 className="font-[550] font-inter">ORGANIZATION</h1>
                 </button>
               </div>
@@ -107,7 +107,7 @@ const RegistrationForm: React.FC = () => {
                   onMouseEnter={() => setHoveredButton('volunteer')}
                   onMouseLeave={() => setHoveredButton(null)}
                 >
-                  <img src="/VOLUNTEER.svg" alt="" className="w-full" />
+                  <img src="/Volunteer.svg" alt="" className="w-full" />
                   <h1 className="font-[550] font-inter">VOLUNTEER</h1>
                 </button>
               </div>
