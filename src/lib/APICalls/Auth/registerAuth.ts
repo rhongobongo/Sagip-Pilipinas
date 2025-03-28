@@ -267,42 +267,60 @@ export async function registerOrganization(
       `Organization ${name} registered successfully with ID: ${userId}`
     );
     return { success: true, message: 'Registration successful!' };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // <--- Change 'any' to 'unknown'
     let errorMessage = 'Registration failed. Please try again.';
-    console.error('Error during organization registration:', error);
+    console.error('Error during volunteer registration:', error);
 
-    if (error.code) {
-      const errorCode = error.code;
+    // --- Auth User Cleanup Logic (remains the same) ---
+    if (userId) {
+      try {
+        console.log(`Attempting to delete orphaned auth user: ${userId}`);
+        await auth.deleteUser(userId);
+        console.log(`Successfully deleted orphaned auth user: ${userId}`);
+      } catch (deleteError) {
+        console.error(
+          `Failed to delete orphaned auth user ${userId}:`,
+          deleteError
+        );
+      }
+    }
+
+    // --- Type Guarding for 'error' (Type checking required for 'unknown') ---
+    // Check if it looks like a Firebase Auth Error (has a 'code' property)
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      // We can reasonably assume 'message' also exists for these errors
+      const firebaseError = error as { code: string; message: string }; // Assert type after check
+      const errorCode = firebaseError.code;
+      // Use the specific error message from Firebase by default
+      errorMessage = firebaseError.message;
+
+      // Refine the message for known common codes
       if (
         errorCode === 'auth/email-already-exists' ||
         errorCode === 'auth/email-already-in-use'
       ) {
-        errorMessage = 'This email is already registered.';
+        errorMessage =
+          'This email is already registered. Please use a different email.';
       } else if (errorCode === 'auth/invalid-email') {
         errorMessage = 'Invalid email format.';
       } else if (errorCode === 'auth/weak-password') {
-        errorMessage = 'Password is too weak (at least 6 characters).';
-      } else if (error.message) {
-        errorMessage = error.message;
+        errorMessage = 'Password is too weak. Please use a stronger password.';
       }
+      // For other Firebase error codes, the default firebaseError.message will be used.
     } else if (error instanceof Error) {
+      // Handle generic JavaScript Error objects
       errorMessage = error.message;
+    } else {
+      // Handle cases where something other than an Error object was thrown
+      // (e.g., a string, number, etc.) - Less common but possible
+      try {
+        errorMessage = JSON.stringify(error); // Try to stringify if it's an object/array
+      } catch {
+        errorMessage = String(error); // Fallback to basic string conversion
+      }
     }
 
-    // Attempt to delete the created auth user if Firestore save failed
-    if (userId) {
-      // Check if userId was obtained before the error
-      try {
-        // --- FIX: Ensure userId (capital i) is used ---
-        await auth.deleteUser(userId);
-        console.log(
-          `Cleaned up created auth user ${userId} due to Firestore error.`
-        );
-      } catch (deleteError) {
-        // --- FIX: Ensure userId (capital i) is used ---
-        console.error(`Failed to clean up auth user ${userId}:`, deleteError);
-      }
-    }
     return { success: false, message: errorMessage };
   }
 }

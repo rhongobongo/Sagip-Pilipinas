@@ -1124,7 +1124,7 @@ const VolRegistrationForm: React.FC = () => {
                           National ID (PhilSys ID)
                         </option>
                         <option value="drivers-license">
-                          Driver's License (LTO)
+                          Driver&apos;s License (LTO)
                         </option>
                         <option value="sss-id">
                           Social Security System (SSS) ID
@@ -1140,7 +1140,7 @@ const VolRegistrationForm: React.FC = () => {
                           Professional Regulation Commission (PRC) ID
                         </option>
                         <option value="voters-id">
-                          COMELEC Voter's ID or Voter's Certification
+                          COMELEC Voter&apos;s ID or Voter&apos;s Certification
                         </option>
                         <option value="ibp-id">
                           Integrated Bar of the Philippines (IBP) ID
@@ -1156,7 +1156,7 @@ const VolRegistrationForm: React.FC = () => {
                           Alien Certificate of Registration (ACR) I-Card
                         </option>
                         <option value="seamans-book">
-                          Seaman's Book (SIRB)
+                          Seaman&apos;s Book (SIRB)
                         </option>
                       </select>
                     </div>
