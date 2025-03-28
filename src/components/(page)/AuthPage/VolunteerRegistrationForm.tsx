@@ -658,10 +658,21 @@ const VolRegistrationForm: React.FC = () => {
                   className="textbox w-full placeholder:text-black"
                   type="text"
                   name="contactNumber"
-                  placeholder="+63 |"
                   value={formData.contactNumber}
-                  onChange={handleInputChange}
+                  onChange={(e) => {
+                    // Allow only numbers and limit length (e.g., 10 digits after +63)
+                    const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                    if (numericValue.length <= 10) {
+                      handleInputChange(e); // Call original handler if valid
+                      setFormData((prev) => ({
+                        ...prev,
+                        contactNumber: numericValue,
+                      }));
+                    }
+                  }}
+                  placeholder="+63 | 9XXXXXXXXX"
                   required
+                  maxLength={10} // Max 10 digits
                 />
               </div>
               <div className="items-center w-full">
@@ -1042,10 +1053,24 @@ const VolRegistrationForm: React.FC = () => {
                         type="text"
                         name="contactPersonNumber"
                         value={formData.contactPersonNumber}
-                        onChange={handleInputChange}
+                        onChange={(e) => {
+                          // Allow only numbers and limit length (e.g., 10 digits after +63)
+                          const numericValue = e.target.value.replace(
+                            /[^0-9]/g,
+                            ''
+                          );
+                          if (numericValue.length <= 10) {
+                            handleInputChange(e); // Call original handler if valid
+                            setFormData((prev) => ({
+                              ...prev,
+                              contactPersonNumber: numericValue,
+                            }));
+                          }
+                        }}
                         className="textbox placeholder:text-black w-[86.5%]"
-                        placeholder="+63 |"
+                        placeholder="+63 | 9XXXXXXXXX"
                         required
+                        maxLength={10} // Max 10 digits
                       />
                     </div>
                     <div>
