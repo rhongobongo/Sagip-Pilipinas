@@ -49,6 +49,7 @@ const VolRegistrationForm: React.FC = () => {
     roleOrCategory: '',
     idType: '',
     backgroundCheckConsent: false,
+    contactPersonNumber: '',
     contactPerson: '',
     contactPersonRelation: '',
   });
@@ -508,6 +509,7 @@ const VolRegistrationForm: React.FC = () => {
           idType: '',
           backgroundCheckConsent: false,
           contactPerson: '',
+          contactPersonNumber: '',
           contactPersonRelation: '',
         });
 
@@ -1038,8 +1040,8 @@ const VolRegistrationForm: React.FC = () => {
                     <div>
                       <input
                         type="text"
-                        name="contactNumber"
-                        value={formData.contactNumber}
+                        name="contactPersonNumber"
+                        value={formData.contactPersonNumber}
                         onChange={handleInputChange}
                         className="textbox placeholder:text-black w-[86.5%]"
                         placeholder="+63 |"

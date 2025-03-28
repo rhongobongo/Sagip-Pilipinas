@@ -311,6 +311,7 @@ interface Volunteer {
   // Keep existing relevant fields
   email: string;
   contactNumber: string;
+  contactPersonNumber: string;
   username: string; // Matches acctUsername from frontend
   profileImageUrl: string | null;
   organizationId: string;
@@ -482,6 +483,8 @@ export async function registerVolunteer(formData: FormData) {
       address: (formData.get('address') as string) || '',
       areaOfOperation: (formData.get('areaOfOperation') as string) || '',
       contactNumber: (formData.get('contactNumber') as string) || '',
+      contactPersonNumber:
+        (formData.get('contactPersonNumber') as string) || '',
       dateOfBirth: (formData.get('dateOfBirth') as string) || '',
       username: (formData.get('acctUsername') as string) || '',
       organizationId: (formData.get('organization') as string) || '',
