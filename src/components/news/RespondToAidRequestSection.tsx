@@ -22,7 +22,7 @@ const RespondToAidRequestSection: React.FC<RespondToAidRequestSectionProps> = ({
     <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-800 p-4 rounded-md shadow-sm mb-6">
       <h3 className="text-lg font-semibold mb-2">Respond to this Request</h3>
       <p className="text-sm mb-1">
-        This aid request is located approximately <span className="font-bold">{distance?.toFixed(1) ?? 'N/A'} km</span> from your organization's registered location ({organizationName}).
+        This aid request is located approximately <span className="font-bold">{distance?.toFixed(1) ?? 'N/A'} km</span> from your organization&apos;s registered location ({organizationName}).
       </p>
       <p className="text-sm mb-3">
         Your assistance may be valuable here. Would you like to assess this request further or initiate a response?
