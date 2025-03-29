@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { RequestPin } from '@/types/types';
 import { requestAid } from '@/components/map/SubmitAid';
 import { uploadImage } from './uploadImage';
-import { format } from 'date-fns';
+import { format } from 'date-fns'; 
 
 interface RequestFormProps {
   pin: RequestPin | null;
@@ -28,16 +28,14 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false); // New state for dialog
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isSubmittingConfirmation, setIsSubmittingConfirmation] =
-    useState(false); // New state for confirmation submission
+    useState(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       setImage(selectedFile);
-
-      // Create a preview URL for the image
       const reader = new FileReader();
       reader.onload = (event) => {
         setImagePreview(event.target?.result as string);
@@ -51,63 +49,44 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
     setImagePreview(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsConfirmationOpen(true); // Open the confirmation dialog
-    console.log('reached');
-    if (!pin || !image) return;
-
-    console.log('reached 2');
-    const imageURL = await uploadImage(image);
-
-    const formattedDate = format(new Date(), 'MMMM dd, yyyy');
-    const formattedTime = format(new Date(), 'h:mm a');
-
-    Object.assign(pin, {
-      name,
-      contactNum,
-      location,
-      calamityLevel,
-      calamityType,
-      shortDesc,
-      imageURL,
-      submissionDate: formattedDate,
-      submissionTime: formattedTime,
-    });
-
-    await requestAid(pin);
+    setIsConfirmationOpen(true);
   };
 
   const confirmSubmission = async () => {
-    setIsSubmittingConfirmation(true); // Set submitting state to true
+    setIsSubmittingConfirmation(true);
     if (!pin || !image) {
+      alert("Error: Location pin or image missing. Please try again.");
+      setIsConfirmationOpen(false);
       setIsSubmittingConfirmation(false);
       return;
     }
 
     try {
       const imageURL = await uploadImage(image);
-      const formattedDate = format(new Date(), 'MMMM dd, yyyy'); // Corrected date format
+
+      const formattedDate = format(new Date(), 'MMMM dd, yyyy');
       const formattedTime = format(new Date(), 'h:mm a');
 
       Object.assign(pin, {
         name,
         contactNum,
-        location: `${latitude?.toFixed(6)}, ${longitude?.toFixed(6)}`, // Include location here
+        location: `${latitude?.toFixed(6)}, ${longitude?.toFixed(6)}`,
         calamityLevel,
         calamityType: calamityType === 'other' ? otherCalamity : calamityType,
         aidRequest: aidRequest === 'other' ? otherAidRequest : aidRequest,
         shortDesc,
         imageURL,
-        submissionDate: formattedDate,
+        submissionDate: formattedDate, 
         submissionTime: formattedTime,
-        coordinates: { latitude, longitude }, // Ensure coordinates are included
+        coordinates: { latitude, longitude },
       });
 
       await requestAid(pin);
-      setIsConfirmationOpen(false); // Close the dialog after submission
+      setIsConfirmationOpen(false);
       window.location.reload();
-      alert('Request submitted successfully!'); // Example success message
+      alert('Request submitted successfully!');
     } catch (error: unknown) {
       console.error('Error submitting request:', error);
       if (error instanceof Error) {
@@ -116,13 +95,14 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
         alert('Failed to submit request: An unknown error occurred.');
         console.error('Unknown error:', error);
       }
+  
     } finally {
-      setIsSubmittingConfirmation(false); // Set submitting state back to false
+      setIsSubmittingConfirmation(false);
     }
   };
 
   const cancelSubmission = () => {
-    setIsConfirmationOpen(false); // Close the dialog
+    setIsConfirmationOpen(false);
   };
 
   useEffect(() => {
@@ -139,8 +119,10 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
     <form onSubmit={handleSubmit} className="text-black font-sans">
       <div className="opacity-60 flex justify-evenly gap-[36rem] -translate-y-6">
         <div className="">
+       
           <p>Date: {format(new Date(), 'MMMM dd, yyyy')}</p>
           <p>Time: {format(new Date(), 'h:mm a')}</p>
+      
         </div>
         <div className="text-wrap">
           Note: Place a pin in the map and fill out all necessary inormation
@@ -148,7 +130,8 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
         </div>
       </div>
 
-      <div className="flex justify-center items-center w-full gap-20">
+       {/* Rest of the JSX remains the same */}
+       <div className="flex justify-center items-center w-full gap-20">
         <div className="ml-5 grid gap-2 w-1/3">
           <div className="flex items-center">
             <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
@@ -192,8 +175,6 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
           </div>
           {calamityType === 'other' && (
             <div className="flex items-center mt-2">
-              {' '}
-              {/* Added mt-2 for spacing */}
               <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
                 Input Calamity:
               </label>
@@ -204,28 +185,6 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
               />
             </div>
           )}
-          {/* <div className="flex items-center">
-            <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
-              Date:
-            </label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2 border rounded-2xl bg-red-400"
-            />
-          </div> */}
-          {/* <div className="flex items-center">
-            <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
-              Location:
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full px-4 py-2 border rounded-2xl bg-red-400"
-            />
-          </div> */}
         </div>
         <div className="grid gap-2 w-1/3">
           <div className="flex items-center">
@@ -244,7 +203,6 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
               {latitude !== null ? latitude.toFixed(6) : 'Not selected'}
             </p>
           </div>
-
           <div className="flex items-center">
             <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
               Calamity Level:
@@ -280,8 +238,6 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
           </div>
           {aidRequest === 'other' && (
             <div className="flex items-center mt-2">
-              {' '}
-              {/* Added mt-2 for spacing */}
               <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
                 Input Aid:
               </label>
@@ -335,8 +291,6 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
               </button>
             )}
           </div>
-
-          {/* Image Preview */}
           {imagePreview && (
             <div className="mt-3 border rounded-lg p-2 bg-gray-100">
               <img
@@ -366,31 +320,36 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
       </div>
       {/* Confirmation Dialog */}
       {isConfirmationOpen && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center text-white">
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center text-white z-50"> {/* Added z-index */}
           <div className="bg-[#211E1E] p-8 rounded-md shadow-lg w-2/5">
-            <div className="flex mb-4 -translate-x-3">
-              <img // Warning Image
-                src="/Warning.svg" // Replace with the correct path to your image
+            <div className="flex mb-4 items-center"> {/* Adjusted alignment */}
+              <img
+                src="/Warning.svg" // Ensure path is correct
                 alt="Warning Symbol"
-                width="48" // Adjust size as needed
-                height="48"
-                className="-translate-y-3"
+                width="32"
+                height="32"
+                className="mr-3"
               />
               <p className="text-lg font-bold">Confirm Submission</p>
             </div>
-            <p>Submit your aid request?</p>
+            <p className='mb-4'>Submit your aid request?</p>
             <div className="flex justify-end mt-6">
               <button
                 type="button"
                 onClick={cancelSubmission}
                 className=" hover:bg-gray-600 px-4 py-2 rounded-md mr-2 font-normal"
+                disabled={isSubmittingConfirmation}
               >
                 No
               </button>
               <button
                 type="button"
                 onClick={confirmSubmission}
-                className="bg-green-500 hover:bg-green-600 text-black px-4 py-2 rounded-md font-semibold"
+                className={`px-4 py-2 rounded-md font-semibold ${
+                    isSubmittingConfirmation
+                      ? 'bg-gray-400 text-gray-700 cursor-not-allowed' // Adjusted disabled style
+                      : 'bg-green-500 hover:bg-green-600 text-black'
+                  }`}
                 disabled={isSubmittingConfirmation}
               >
                 {isSubmittingConfirmation ? 'Submitting...' : 'Yes'}
