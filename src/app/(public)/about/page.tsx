@@ -1,3 +1,4 @@
+
 const AboutPage: React.FC = () => {
 
     return (
@@ -6,3 +7,4 @@ const AboutPage: React.FC = () => {
 };
 
 export default AboutPage;
+``
