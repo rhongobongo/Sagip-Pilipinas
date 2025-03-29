@@ -30,6 +30,7 @@ export const authConfig = {
     enableCustomToken: false,
 };
 
+// Function is already correctly implemented with await, just keeping it for completeness
 export const getAuthTokens = async (cookies: ReadonlyRequestCookies) => {
     return await getTokens(cookies, {
         apiKey: serverConfig.firebaseApiKey,
@@ -42,7 +43,7 @@ export const getAuthTokens = async (cookies: ReadonlyRequestCookies) => {
             clientEmail: process.env.FIREBASE_CLIENT_EMAIL as string,
             privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n') as string,
         },
-    })
+    });
 };
 
 const MiddlewareFirebaseAdmin = getFirebaseAuth({

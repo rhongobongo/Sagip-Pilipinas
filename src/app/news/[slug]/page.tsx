@@ -1,9 +1,9 @@
-
 import { db } from '@/lib/Firebase-Admin'; 
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import ClientMapWrapper from '@/components/map/ClientMapWrapper'; 
 import * as admin from 'firebase-admin';
+import RespondToAidRequestSection from '@/components/news/RespondToAidRequestSection';
 import type { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 
 import { getAuthTokens } from '@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge'; 
@@ -48,12 +48,13 @@ function getCoords(data: any): Coordinates | null {
     }
     return null;
 }
+
 async function getCurrentUserSession(): Promise<{ userId: string | null }> {
     try {
-        // Explicitly assert the type of the return value of cookies()
-        const cookieStore = cookies() as ReadonlyRequestCookies;
+        // Get cookies and properly await them
+        const cookieStore = await cookies();
 
-        // Now pass the asserted value
+        // Now pass the cookie store to get auth tokens
         const tokens = await getAuthTokens(cookieStore);
 
         if (!tokens) {
@@ -66,14 +67,16 @@ async function getCurrentUserSession(): Promise<{ userId: string | null }> {
         return { userId: null };
     }
 }
+
 interface NewsPageProps {
     params: { slug: string };
 }
 
 // --- Main Page Component ---
 export default async function NewsPage({ params }: NewsPageProps) {
-
-    const slug = params.slug;
+    // Make sure to await params before using its properties
+    const { slug } = await params;
+    
     if (!slug) {
         return notFound();
     }
@@ -295,25 +298,3 @@ const EmergencyContacts = () => (
         </ul>
     </DetailCard>
 );
-
-const RespondToAidRequestSection = ({ aidRequestId, distance, organizationName }: { aidRequestId: string; distance: number | null; organizationName: string }) => {
-    // Button currently uses a placeholder alert.
-    // TODO: Implement actual functionality (Server Action or Client Component logic)
-    return (
-        <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-800 p-4 rounded-md shadow-sm mb-6">
-            <h3 className="text-lg font-semibold mb-2">Respond to this Request</h3>
-            <p className="text-sm mb-1">
-                This aid request is located approximately <span className="font-bold">{distance?.toFixed(1) ?? 'N/A'} km</span> from your organization's registered location ({organizationName}).
-            </p>
-            <p className="text-sm mb-3">
-                Your assistance may be valuable here. Would you like to assess this request further or initiate a response?
-            </p>
-            <button
-                 onClick={() => alert(`(Placeholder) Button clicked for aid request: ${aidRequestId}. Implement actual action.`)}
-                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 ease-in-out"
-             >
-                Send Help / Respond
-            </button>
-        </div>
-    );
-};
