@@ -25,7 +25,7 @@ interface ClientMapWrapperProps {
 export default function ClientMapWrapper({ pin, options, autoZoom = true }: ClientMapWrapperProps) {
     const mapRef = useRef<MapRef>(null);
 
-    const formattedPin: DefaultPin = {
+    const formattedPin = {
         id: pin.id,
         coordinates: {
             latitude: pin.coordinates.latitude,

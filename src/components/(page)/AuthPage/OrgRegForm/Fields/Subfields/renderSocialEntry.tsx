@@ -5,22 +5,13 @@ import { CiCirclePlus } from "react-icons/ci";
 import { SocialLinks } from "../../types";
 
 // Renamed to uppercase to follow React component naming convention
-const SocialEntry = ({
-    platform,
-    IconComponent,
-    platformName
-}: {
-    platform: keyof SocialLinks;
-    IconComponent: React.ElementType;
-    platformName: string;
-}) => {
-    const {
-        socialLinks,
-        setSocialLinks,
-        editValues,
-        setEditValues,
-        setError,
-    } = useOrgRegForm();
+const SocialEntry = (
+    platform: keyof SocialLinks,
+    IconComponent: React.ElementType,
+    platformName: string
+) => {
+    const { socialLinks, setSocialLinks, editValues, setEditValues, setError } =
+        useOrgRegForm();
 
     const { username, link, mode } = socialLinks[platform];
     const isCurrentlyEditing = editValues.platform === platform;
@@ -28,7 +19,7 @@ const SocialEntry = ({
     /** Handles when a user clicks "Add Link" */
     const handleAddClick = () => {
         setEditValues({ platform, username: "", link: "" });
-        setSocialLinks(prev => ({
+        setSocialLinks((prev) => ({
             ...prev,
             [platform]: { username: "", link: "", mode: "adding" },
         }));
@@ -37,7 +28,7 @@ const SocialEntry = ({
     /** Handles when a user clicks "Edit" */
     const handleEditClick = () => {
         setEditValues({ platform, username, link });
-        setSocialLinks(prev => ({
+        setSocialLinks((prev) => ({
             ...prev,
             [platform]: { ...prev[platform], mode: "editing" },
         }));
@@ -46,12 +37,12 @@ const SocialEntry = ({
     /** Handles input change when editing */
     const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setEditValues(prev => ({ ...prev, [name]: value }));
+        setEditValues((prev) => ({ ...prev, [name]: value }));
     };
 
     /** Handles deleting a social link */
     const handleDeleteClick = () => {
-        setSocialLinks(prev => ({
+        setSocialLinks((prev) => ({
             ...prev,
             [platform]: { username: "", link: "", mode: "initial" }, // Reset dynamically
         }));
@@ -62,9 +53,12 @@ const SocialEntry = ({
 
     /** Handles canceling an edit */
     const handleCancel = () => {
-        setSocialLinks(prev => ({
+        setSocialLinks((prev) => ({
             ...prev,
-            [platform]: { ...prev[platform], mode: username ? "added" : "initial" },
+            [platform]: {
+                ...prev[platform],
+                mode: username ? "added" : "initial",
+            },
         }));
         setEditValues({ platform: null, username: "", link: "" });
     };
@@ -75,7 +69,7 @@ const SocialEntry = ({
             setError("Username cannot be empty.");
             return;
         }
-        setSocialLinks(prev => ({
+        setSocialLinks((prev) => ({
             ...prev,
             [platform]: {
                 username: editValues.username,
@@ -136,7 +130,11 @@ const SocialEntry = ({
                         <IconComponent className="text-2xl" />
                         {link ? (
                             <a
-                                href={link.startsWith("http") ? link : `https://${link}`}
+                                href={
+                                    link.startsWith("http")
+                                        ? link
+                                        : `https://${link}`
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="hover:underline"
