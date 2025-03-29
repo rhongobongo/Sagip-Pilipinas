@@ -35,7 +35,15 @@ function deg2rad(deg: number): number {
     return deg * (Math.PI / 180);
 }
 
-function getCoords(data: any): Coordinates | null {
+// Define more specific type to replace 'any'
+interface GeoData {
+    latitude?: number;
+    longitude?: number;
+    lat?: number;
+    lng?: number;
+}
+
+function getCoords(data: GeoData | admin.firestore.GeoPoint | null): Coordinates | null {
     if (!data) return null;
     if (data instanceof admin.firestore.GeoPoint) {
         return { latitude: data.latitude, longitude: data.longitude };

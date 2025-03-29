@@ -4,11 +4,16 @@ import { useOrgRegForm } from "../../OrgRegFormContext";
 import { CiCirclePlus } from "react-icons/ci";
 import { SocialLinks } from "../../types";
 
-const renderSocialEntry = (
-    platform: keyof SocialLinks, 
-    IconComponent: React.ElementType, 
-    platformName: string
-) => {
+// Renamed to uppercase to follow React component naming convention
+const SocialEntry = ({
+    platform,
+    IconComponent,
+    platformName
+}: {
+    platform: keyof SocialLinks;
+    IconComponent: React.ElementType;
+    platformName: string;
+}) => {
     const {
         socialLinks,
         setSocialLinks,
@@ -180,4 +185,4 @@ const renderSocialEntry = (
     }
 };
 
-export default renderSocialEntry;
+export default SocialEntry;

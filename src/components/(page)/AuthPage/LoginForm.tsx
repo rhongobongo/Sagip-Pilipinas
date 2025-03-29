@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -227,7 +226,7 @@ const LoginForm: React.FC = () => {
                     {/* Optional: Add Sign Up link */}
                     <div className="mt-6 text-center">
                         <p className="text-sm text-gray-600">
-                            Don't have an account?{' '}
+                            Don&apos;t have an account?{' '}
                             <a href="/register" className="font-medium text-blue-600 hover:underline">
                                 Sign Up
                             </a>
