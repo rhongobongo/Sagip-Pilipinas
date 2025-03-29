@@ -7,6 +7,7 @@ import { loginWithCredentials } from '@/lib/APICalls/Auth/login';
 import OrgRegistrationForm from './OrganizationRegistrationForm';
 import VolRegistrationForm from './VolunteerRegistrationForm';
 import React, { useState } from 'react';
+import OrgRegFormContainer from './OrgRegForm/OrgRegFormContainer';
 
 const RegistrationForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -133,7 +134,7 @@ const RegistrationForm: React.FC = () => {
         </div>
         <div className="flex justify-center pt-8">
           {showVolunteerForm && <VolRegistrationForm />}
-          {showOrganizationForm && <OrgRegistrationForm />}
+          {showOrganizationForm && <OrgRegFormContainer />}
         </div>
       </div>
     </div>
