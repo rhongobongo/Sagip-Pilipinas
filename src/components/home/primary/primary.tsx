@@ -76,7 +76,7 @@ const Primary: React.FC = () => {
   return (
     <div className="relative h-screen">
 
-      <div className="absolute inset-0 bg-black bg-opacity-70 mix-blend-multiply" />
+      <div className="absolute inset-0 bg-black bg-opacity-50 mix-blend-multiply" />
       <Image
         src="/home-image/image.jpg"
         alt="Young girl in 'Save the Children' poncho"

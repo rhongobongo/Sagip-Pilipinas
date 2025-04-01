@@ -23,21 +23,20 @@ const LocationList: React.FC<LocationListProps> = ({ pinData, onSelectPin }) => 
     }
 
     return (
-        <div className="flex flex-col gap-4 h-full">
-            <div className="grid grid-cols-3 gap-0 text-black w-full h-20 rounded-3xl items-center justify-center bg-[#BE8E8E]">
+        <div className="flex flex-col gap-4" style={{ height: "75vh" }}>
+            <div className="grid grid-cols-3 gap-0 text-black w-full rounded-3xl items-center justify-center font-bold text-white">
                 {regions.map((r) => (
                     <button
                         key={r}
                         onClick={() => setRegionEvent(r)}
-                        className={`flex-grow h-full flex items-center justify-center transition-colors duration-200 rounded-3xl ${region === r ? "text-white bg-black" : "text-black hover:bg-gray-300"
-                            }`}
+                        className={`h-12 flex items-center justify-center transition-colors duration-200 rounded-3xl ${region === r ? "text-black bg-[#F3F3F3] border-black border-4 h-full" : "hover:text-black hover:bg-[#F3F3F3]"}`}
                     >
                         {r}
                     </button>
                 ))}
             </div>
 
-            <div className="flex-grow overflow-y-auto border border-gray-300 rounded-lg max-h-[70vh]">
+            <div className="flex-grow overflow-y-auto rounded-lg max-h-[75vh] border-4 border-black bg-[#F3F3F3]">
                 {pinData.length > 0 && region !== "" ? (
                     <ul>
                         {pinData
@@ -60,8 +59,6 @@ const LocationList: React.FC<LocationListProps> = ({ pinData, onSelectPin }) => 
                 )}
             </div>
         </div>
-
-
     );
 };
 

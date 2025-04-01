@@ -4,6 +4,24 @@ import { MainPin } from "@/types/types";
 import { OrganizationPin } from "@/types/PinTypes";
 import MapSectionInteractive from "./MapSectionInteractive";
 
+const MapSection: React.FC = async () => {
+
+    const pins = await fetchPins();
+    return (
+        <div className="h-[105vh] w-full bg-[#F3F3F3] flex items-center justify-center">
+            <div className="mx-auto bg-[#8F0022] w-[1400px] rounded-xl py-2 mt-5 mb-5">
+                <div className="font-semibold text-center text-3xl text-black tracking-wide rounded-full
+                    bg-[#F3F3F3] border-4 border-black p-3 max-w-4xl mx-auto flex items-center mb-3 mt-3">
+                    <img src="/home-image/pin.png" className="w-10 h-10 ml-9 mr-3"/>
+                    KNOW YOUR NEAREST DISTRIBUTION CENTER!
+                </div>
+                <MapSectionInteractive locations={locations}></MapSectionInteractive>
+            </div>
+            
+        </div>
+    )
+}
+
 const fetchPins = async (): Promise<MainPin[]> => {
     const snapshot = await db.collection("map").get();
     return snapshot.docs.map((doc) => {
@@ -121,31 +139,6 @@ const locations: OrganizationPin[] = [
         name: "Batangas City",
         location: "P. Burgos Street, Batangas City"
     },
-    {
-        id: "16",
-        coordinates: { latitude: 13.8407, longitude: 121.5463 },
-        region: "LUZON",
-        name: "Batangas City",
-        location: "P. Burgos Street, Batangas City"
-    },
-    {
-        id: "17",
-        coordinates: { latitude: 13.8357, longitude: 121.5463 },
-        region: "LUZON",
-        name: "Batangas City",
-        location: "P. Burgos Street, Batangas City"
-    }
 ];
-
-const MapSection: React.FC = async () => {
-
-    const pins = await fetchPins();
-    return (
-        <div className="h-screen w-full bg-[#D9D9D9]">
-            <div className="pt-8 font-semibold text-center text-4xl text-black">KNOW YOUR NEAREST DISTRIBUTION CENTER</div>
-            <MapSectionInteractive locations={locations}></MapSectionInteractive>
-        </div>
-    )
-}
 
 export default MapSection;
