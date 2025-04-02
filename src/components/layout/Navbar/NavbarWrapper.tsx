@@ -3,9 +3,9 @@ import Navbar from "./Navbar";
 
 const NavbarWrapper = async () => {
     const headersList = await headers();
-    const currentPath = headersList.get("x-original-url") ?? "/";
+    const currentPath = headersList.get("x-pathname") ?? "/";
 
-    if (currentPath.startsWith("/admin")) {
+    if (currentPath.startsWith(`/admin`)) {
         return null;
     }
 

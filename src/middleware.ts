@@ -1,26 +1,29 @@
-import MiddlewareFirebaseAdmin, { authConfig } from "@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge";
-import {
-    NextResponse,
-    NextRequest
-} from "next/server";
-import {
-    authMiddleware,
-    redirectToLogin
-} from "next-firebase-auth-edge";
+import MiddlewareFirebaseAdmin, {
+    authConfig,
+} from "@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge";
+import { NextResponse, NextRequest } from "next/server";
+import { authMiddleware, redirectToLogin } from "next-firebase-auth-edge";
 
-const PUBLIC_PATHS = ['/', '/about', '/contact-us', '/map', '/request-aid', '/404'];
-const AUTH_PATHS = ['/register', '/login', 'forget-password'];
+const PUBLIC_PATHS = [
+    "/",
+    "/about",
+    "/contact-us",
+    "/map",
+    "/request-aid",
+    "/404",
+];
+const AUTH_PATHS = ["/register", "/login", "forget-password"];
 const ADMIN_PATH_REGEX = /^\/admin(?:\/([a-zA-Z0-9-]+))?(?:\/|$)/;
 
 export default async function middleware(request: NextRequest) {
-
     const { nextUrl } = request;
     const isAdminRoute = ADMIN_PATH_REGEX.test(nextUrl.pathname);
+    const pathname = request.nextUrl.pathname;
 
     return authMiddleware(request, {
-        loginPath: '/api/login',
-        logoutPath: '/api/logout',
-        refreshTokenPath: '/api/refresh-token',
+        loginPath: "/api/login",
+        logoutPath: "/api/logout",
+        refreshTokenPath: "/api/refresh-token",
         enableMultipleCookies: authConfig.enableMultipleCookies,
         apiKey: authConfig.apiKey,
         cookieName: authConfig.cookieName,
@@ -30,38 +33,48 @@ export default async function middleware(request: NextRequest) {
         enableCustomToken: authConfig.enableCustomToken,
 
         handleValidToken: async ({ token, decodedToken }, headers) => {
-
             if (isAdminRoute) {
-                const user = await MiddlewareFirebaseAdmin.getUser(decodedToken.uid);
+                const user = await MiddlewareFirebaseAdmin.getUser(
+                    decodedToken.uid
+                );
                 if (!user?.customClaims?.admin) {
-                    return NextResponse.redirect(new URL('/403', request.url));
+                    return NextResponse.redirect(new URL("/403", request.url));
                 }
             }
             return NextResponse.next({
                 request: {
                     headers,
                 },
+                headers: {
+                    'x-pathname': pathname,
+                },
             });
         },
 
         handleInvalidToken: async (_reason) => {
             if (isAdminRoute) {
-                return NextResponse.redirect(new URL('/404', request.url));
+                return NextResponse.redirect(new URL("/404", request.url));
             }
             return redirectToLogin(request, {
-                path: '/login',
-                publicPaths: [...PUBLIC_PATHS, ...AUTH_PATHS]
-            })
-        }
-    })
+                path: "/login",
+                publicPaths: [...PUBLIC_PATHS, ...AUTH_PATHS],
+            });
+        },
+    });
 }
 
 export const config = {
     matcher: [
-        '/',
-        '/((?!_next|favicon.ico|__/auth|__/firebase|.*\\.).*)',
-        '/api/login',
-        '/api/logout',
-        '/api/refresh-token'
-    ]
+        "/",
+        "/((?!_next|favicon.ico|__/auth|__/firebase|.*\\.).*)",
+        "/api/login",
+        "/api/logout",
+        "/api/refresh-token",
+    ],
+};
+
+const setPath = (req: NextRequest) => {
+    const pathname = req.nextUrl.pathname;
+    const res = NextResponse.next();
+    res.headers.set("x-pathname", pathname);
 };
