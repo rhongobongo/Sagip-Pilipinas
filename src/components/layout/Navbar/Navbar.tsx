@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { useAuth } from "@/stores/AuthStores/AuthContext";
+import { cookies } from "next/headers";
+import { getAuthTokens } from "@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge";
 
 interface LinkInterface {
     displayName: string;
     href: string;
 }
 
-const Navbar = () => {
+const Navbar = async () => {
 
-    const {user} = useAuth()
+    const cookieStore = await cookies();
+    const user = await getAuthTokens(cookieStore);
 
     const linksArray: LinkInterface[] = [
         { displayName: "Home", href: "/" },

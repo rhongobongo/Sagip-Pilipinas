@@ -1,16 +1,15 @@
-"use client";
-
-import { usePathname } from "next/navigation";
+import { headers } from "next/headers";
 import Navbar from "./Navbar";
 
-const NavbarWrapper = () => {
-    const pathname = usePathname();
+const NavbarWrapper = async () => {
+    const headersList = await headers();
+    const currentPath = headersList.get("x-original-url") ?? "/";
 
-    if (pathname.startsWith("/admin")) {
+    if (currentPath.startsWith("/admin")) {
         return null;
     }
 
     return <Navbar />;
-}
+};
 
 export default NavbarWrapper;
