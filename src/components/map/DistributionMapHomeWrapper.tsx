@@ -19,7 +19,7 @@ const DistributionMapHomeWrapper: React.FC<DistributionMapHomeWrapperProps> = ({
 
     const mapContainerStyle: React.CSSProperties = {
         width: "100%",
-        height: "80vh",
+        height: "75vh",
         borderRadius: "2%",
         border: "4px solid #000000", 
         overflow: "hidden",
