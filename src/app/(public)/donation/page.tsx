@@ -1,8 +1,11 @@
-const DonationPage: React.FC = () => {
+import DonationPageForm from '@/components/(page)/donationPage/donationPageForm';
 
-    return (
-        <div>DonationPage</div>
-    )
+const DonationPage: React.FC = () => {
+  return (
+    <div>
+      <DonationPageForm />
+    </div>
+  );
 };
 
 export default DonationPage;
