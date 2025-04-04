@@ -42,7 +42,7 @@ const NewsGrid = ({ newsItems }: NewsGridProps) => {
 
     return (
         <div className="mx-auto px-4 bg-[#F3F3F3]">
-            <div className="mx-auto p-8 bg-[#8F0022] border-4 max-w-[1500px] rounded-xl">
+            <div className="mx-auto p-8 bg-[#8F0022] max-w-[1500px] rounded-xl">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold text-white drop-shadow-[2px_2px_2px_black]">
                         Latest News

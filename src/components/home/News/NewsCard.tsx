@@ -15,7 +15,7 @@ interface NewsItem {
 const NewsCard = ({ item }: { item: NewsItem }) => {
     return (
         <Link href={`/news/${item.slug}`} key={item.id}>
-            <div className="border-4 border-black rounded-2xl hover:shadow-[0px_10px_30px_rgba(0,0,0,0.7)] transition-shadow duration-300">
+            <div className="border-2 border-black rounded-2xl hover:shadow-[0px_10px_30px_rgba(0,0,0,0.7)] transition-shadow duration-300">
                 <div className="relative h-48">
                     {item.imageUrl ? (
                         <Image
@@ -23,7 +23,7 @@ const NewsCard = ({ item }: { item: NewsItem }) => {
                             alt={item.title || "News image"}
                             fill
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            className="object-cover rounded-2xl border-2 border-black p2"
+                            className="rounded-2xl border-2 border-black"
                         />
                     ) : (
                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
