@@ -51,7 +51,6 @@ interface Organization {
 }
 // --- END MODIFIED Organization Interface ---
 
-
 // Helper function to safely get string value from FormData
 function getString(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -95,13 +94,19 @@ export async function registerOrganization(
     const latitude = parseFloat(latitudeStr);
     const longitude = parseFloat(longitudeStr);
     if (isNaN(latitude) || isNaN(longitude)) {
-       // Check specifically if they were provided but invalid
-       if (latitudeStr || longitudeStr) {
-           return { success: false, message: 'Invalid location coordinates provided.' };
-       } else {
-           // Or if they were completely missing (if making required on backend too)
-           return { success: false, message: 'Location coordinates are required.'};
-       }
+      // Check specifically if they were provided but invalid
+      if (latitudeStr || longitudeStr) {
+        return {
+          success: false,
+          message: 'Invalid location coordinates provided.',
+        };
+      } else {
+        // Or if they were completely missing (if making required on backend too)
+        return {
+          success: false,
+          message: 'Location coordinates are required.',
+        };
+      }
     }
 
     // 1. Create Firebase Auth user
@@ -119,24 +124,24 @@ export async function registerOrganization(
 
     if (profileImage) {
       try {
-         const bucket = storage;
-         // Use a consistent file extension extraction method
-         const fileExtension = profileImage.name.includes('.')
-             ? profileImage.name.substring(profileImage.name.lastIndexOf('.'))
-             : ''; // Handle cases with no extension
-         const filePath = `organizations/${userId}/profile-image${fileExtension}`;
-         const file = bucket.file(filePath);
-         await file.save(Buffer.from(await profileImage.arrayBuffer()), {
-             metadata: { contentType: profileImage.type },
-         });
-         await file.makePublic();
-         // Ensure publicUrl() is the correct method or construct URL manually if needed
-         profileImageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
-         console.log(`Profile image uploaded to: ${profileImageUrl}`);
+        const bucket = storage;
+        // Use a consistent file extension extraction method
+        const fileExtension = profileImage.name.includes('.')
+          ? profileImage.name.substring(profileImage.name.lastIndexOf('.'))
+          : ''; // Handle cases with no extension
+        const filePath = `organizations/${userId}/profile-image${fileExtension}`;
+        const file = bucket.file(filePath);
+        await file.save(Buffer.from(await profileImage.arrayBuffer()), {
+          metadata: { contentType: profileImage.type },
+        });
+        await file.makePublic();
+        // Ensure publicUrl() is the correct method or construct URL manually if needed
+        profileImageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+        console.log(`Profile image uploaded to: ${profileImageUrl}`);
       } catch (uploadError) {
-          console.error("Error uploading profile image:", uploadError);
-          // Decide if this is a critical error or if registration can continue without image
-          // profileImageUrl will remain empty if upload fails
+        console.error('Error uploading profile image:', uploadError);
+        // Decide if this is a critical error or if registration can continue without image
+        // profileImageUrl will remain empty if upload fails
       }
     } else {
       console.log('No profile image provided or found in FormData.');
@@ -148,7 +153,10 @@ export async function registerOrganization(
     if (sponsorsJson) {
       try {
         // Expecting an array of objects like { name: string, other: string }
-        const sponsorsBase = JSON.parse(sponsorsJson) as Omit<SponsorData, 'imageUrl'>[];
+        const sponsorsBase = JSON.parse(sponsorsJson) as Omit<
+          SponsorData,
+          'imageUrl'
+        >[];
         // Initialize with imageUrl as undefined
         sponsors = sponsorsBase.map((s) => ({ ...s, imageUrl: undefined }));
       } catch (e) {
@@ -166,9 +174,11 @@ export async function registerOrganization(
 
       if (sponsorImageFile) {
         const bucket = storage;
-         const fileExtension = sponsorImageFile.name.includes('.')
-             ? sponsorImageFile.name.substring(sponsorImageFile.name.lastIndexOf('.'))
-             : '';
+        const fileExtension = sponsorImageFile.name.includes('.')
+          ? sponsorImageFile.name.substring(
+              sponsorImageFile.name.lastIndexOf('.')
+            )
+          : '';
         // Sanitize name for use in path
         const sanitizedSponsorName = sponsor.name.replace(/[^a-zA-Z0-9]/g, '_');
         const filePath = `organizations/${userId}/sponsors/${sanitizedSponsorName}_${Date.now()}${fileExtension}`; // Add timestamp for uniqueness
@@ -177,15 +187,24 @@ export async function registerOrganization(
         sponsorImageUploadPromises.push(
           (async () => {
             try {
-              await file.save(Buffer.from(await sponsorImageFile.arrayBuffer()), {
-                metadata: { contentType: sponsorImageFile.type },
-              });
+              await file.save(
+                Buffer.from(await sponsorImageFile.arrayBuffer()),
+                {
+                  metadata: { contentType: sponsorImageFile.type },
+                }
+              );
               await file.makePublic();
               // Update the imageUrl in the sponsors array (ensure index is correct)
-              sponsors[index].imageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
-              console.log(`Sponsor image for ${sponsor.name} uploaded to: ${sponsors[index].imageUrl}`);
+              sponsors[index].imageUrl =
+                `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+              console.log(
+                `Sponsor image for ${sponsor.name} uploaded to: ${sponsors[index].imageUrl}`
+              );
             } catch (uploadError) {
-              console.error(`Failed to upload image for sponsor ${sponsor.name}:`, uploadError);
+              console.error(
+                `Failed to upload image for sponsor ${sponsor.name}:`,
+                uploadError
+              );
               // imageUrl remains undefined for this sponsor
             }
           })()
@@ -196,54 +215,85 @@ export async function registerOrganization(
     await Promise.allSettled(sponsorImageUploadPromises);
     console.log('Sponsor images processed.');
 
-
     // 4. Process Social Media Links
     const socialMedia: Organization['socialMedia'] = {};
     const platforms = ['twitter', 'facebook', 'instagram'];
     platforms.forEach((platform) => {
       const username = getString(formData, `social_${platform}_username`);
       if (username) {
-         // Define the structure for each platform
-         const platformData: { username: string; link?: string } = { username: username };
-         const link = getString(formData, `social_${platform}_link`);
-         if (link) {
-            platformData.link = link;
-         }
-         // Assign to the correct key in socialMedia object
-         socialMedia[platform as keyof typeof socialMedia] = platformData;
+        // Define the structure for each platform
+        const platformData: { username: string; link?: string } = {
+          username: username,
+        };
+        const link = getString(formData, `social_${platform}_link`);
+        if (link) {
+          platformData.link = link;
+        }
+        // Assign to the correct key in socialMedia object
+        socialMedia[platform as keyof typeof socialMedia] = platformData;
       }
     });
-
 
     // 5. Process Aid Stock Details
     const aidStock: AidStockDetails = {};
     // Iterate through expected aid types to check availability and details
-    const allAidTypes = [ 'food', 'clothing', 'medicalSupplies', 'shelter', 'searchAndRescue', 'financialAssistance', 'counseling', 'technicalSupport'];
-    allAidTypes.forEach(aidId => {
-        const isAvailable = getString(formData, `aid_${aidId}_available`) === 'true';
-        if (isAvailable) {
-            aidStock[aidId] = { available: true };
-            // Find all details associated with this aidId
-            for (const [key, value] of formData.entries()) {
-                if (key.startsWith(`aid_${aidId}_`) && key !== `aid_${aidId}_available`) {
-                    const field = key.substring(`aid_${aidId}_`.length);
-                    const stringValue = getString(formData, key); // Use helper to get string value
-                    const numValue = Number(stringValue);
+    const allAidTypes = [
+      'food',
+      'clothing',
+      'medicalSupplies',
+      'shelter',
+      'searchAndRescue',
+      'financialAssistance',
+      'counseling',
+      'technicalSupport',
+    ];
+    allAidTypes.forEach((aidId) => {
+      const isAvailable =
+        getString(formData, `aid_${aidId}_available`) === 'true';
+      if (isAvailable) {
+        aidStock[aidId] = { available: true };
+        // Find all details associated with this aidId
+        for (const [key, value] of formData.entries()) {
+          if (
+            key.startsWith(`aid_${aidId}_`) &&
+            key !== `aid_${aidId}_available`
+          ) {
+            const field = key.substring(`aid_${aidId}_`.length);
+            const stringValue = getString(formData, key); // Use helper to get string value
+            const numValue = Number(stringValue);
 
-                    // Define fields expected to be numbers
-                    const numericFields = [ 'foodPacks', 'male', 'female', 'children', 'kits', 'tents', 'blankets', 'rescueKits', 'rescuePersonnel', 'totalFunds', 'counselors', 'hours', 'vehicles', 'communication'];
+            // Define fields expected to be numbers
+            const numericFields = [
+              'foodPacks',
+              'male',
+              'female',
+              'children',
+              'kits',
+              'tents',
+              'blankets',
+              'rescueKits',
+              'rescuePersonnel',
+              'totalFunds',
+              'counselors',
+              'hours',
+              'vehicles',
+              'communication',
+            ];
 
-                    if (numericFields.includes(field) && !isNaN(numValue)) {
-                        aidStock[aidId][field] = numValue;
-                    } else if (stringValue) { // Store non-empty strings for non-numeric fields
-                        aidStock[aidId][field] = stringValue;
-                    }
-                }
+            if (numericFields.includes(field) && !isNaN(numValue)) {
+              aidStock[aidId][field] = numValue;
+            } else if (stringValue) {
+              // Store non-empty strings for non-numeric fields
+              aidStock[aidId][field] = stringValue;
             }
+          }
         }
+      }
     });
-    console.log('Aid Stock details processed:', JSON.stringify(aidStock, null, 2));
-
+    console.log(
+      'Aid Stock details processed:',
+      JSON.stringify(aidStock, null, 2)
+    );
 
     // 6. Prepare Organization Data for Firestore
     const orgType = getString(formData, 'type');
@@ -291,7 +341,10 @@ export async function registerOrganization(
 
     // 7. Save Organization Data to Firestore
     // Ensure data conforms to Partial<Organization> before setting
-    await db.collection('organizations').doc(userId).set(organizationData as Organization); // Cast after construction
+    await db
+      .collection('organizations')
+      .doc(userId)
+      .set(organizationData as Organization); // Cast after construction
 
     // 8. [Optional] Set Custom Claims (Example)
     // Consider adding roles for easier frontend/backend access control
@@ -301,7 +354,6 @@ export async function registerOrganization(
       `Organization ${name} registered successfully with ID: ${userId}`
     );
     return { success: true, message: 'Registration successful!' };
-
   } catch (error: unknown) {
     // Error handling remains largely the same as provided in the previous fetched content
     let errorMessage = 'Registration failed. Please try again.';
@@ -333,7 +385,8 @@ export async function registerOrganization(
         errorCode === 'auth/email-already-exists' ||
         errorCode === 'auth/email-already-in-use'
       ) {
-        errorMessage = 'This email is already registered. Please use a different email or log in.';
+        errorMessage =
+          'This email is already registered. Please use a different email or log in.';
       } else if (errorCode === 'auth/invalid-email') {
         errorMessage = 'The email address provided is not valid.';
       } else if (errorCode === 'auth/weak-password') {
@@ -344,15 +397,17 @@ export async function registerOrganization(
       // Handle generic JavaScript Error objects
       errorMessage = error.message;
     } else {
-       // Handle non-standard errors
-      try { errorMessage = JSON.stringify(error); }
-      catch { errorMessage = String(error); }
+      // Handle non-standard errors
+      try {
+        errorMessage = JSON.stringify(error);
+      } catch {
+        errorMessage = String(error);
+      }
     }
 
     return { success: false, message: errorMessage };
   }
 }
-
 
 // --- Volunteer Interface (Keep as is from fetched content) ---
 interface Volunteer {
@@ -381,162 +436,240 @@ interface Volunteer {
   contactPerson?: string;
   contactPersonRelation?: string;
   socialMedia?: {
-    [key: string]: {
-      username: string;
-      link?: string;
-    };
+    // <-- New definition matching Organization
+    twitter?: { username: string; link?: string };
+    facebook?: { username: string; link?: string };
+    instagram?: { username: string; link?: string };
   };
 }
+
+// And initialize like this:
+const socialMediaData: Volunteer['socialMedia'] = {};
 
 // --- registerVolunteer Function (Keep as is from fetched content) ---
 export async function registerVolunteer(formData: FormData) {
   let userId: string | null = null;
   try {
-      // 1. --- Create Auth User ---
-       const displayName = `${getString(formData, 'firstName')} ${getString(formData, 'surname')}`.trim();
-       const userRecord = await auth.createUser({
-         email: getString(formData, 'email'),
-         password: getString(formData, 'password'),
-         displayName: displayName || undefined,
-       });
-       userId = userRecord.uid;
-       console.log(`Created volunteer auth user with ID: ${userId}`);
+    // 1. --- Create Auth User ---
+    const displayName =
+      `${getString(formData, 'firstName')} ${getString(formData, 'surname')}`.trim();
+    const userRecord = await auth.createUser({
+      email: getString(formData, 'email'),
+      password: getString(formData, 'password'),
+      displayName: displayName || undefined,
+    });
+    userId = userRecord.uid;
+    console.log(`Created volunteer auth user with ID: ${userId}`);
 
-      // 2. --- Handle Profile Image Upload ---
-      let profileImageUrl: string | null = null;
-      const profileImage = getFile(formData, 'profileImage');
-      if (profileImage) {
-          try {
-              const bucket = storage;
-              const fileExtension = profileImage.name.includes('.') ? profileImage.name.substring(profileImage.name.lastIndexOf('.')) : '';
-              const filePath = `volunteers/${userId}/profile-image${fileExtension}`;
-              const file = bucket.file(filePath);
-              await file.save(Buffer.from(await profileImage.arrayBuffer()), { metadata: { contentType: profileImage.type } });
-              await file.makePublic();
-              profileImageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
-              console.log(`Volunteer profile image URL: ${profileImageUrl}`);
-          } catch (uploadError) {
-              console.error('Error uploading volunteer profile image:', uploadError);
-          }
-      } else {
-          console.log('No volunteer profile image provided.');
+    // 2. --- Handle Profile Image Upload ---
+    let profileImageUrl: string | null = null;
+    const profileImage = getFile(formData, 'profileImage');
+    if (profileImage) {
+      try {
+        const bucket = storage;
+        const fileExtension = profileImage.name.includes('.')
+          ? profileImage.name.substring(profileImage.name.lastIndexOf('.'))
+          : '';
+        const filePath = `volunteers/${userId}/profile-image${fileExtension}`;
+        const file = bucket.file(filePath);
+        await file.save(Buffer.from(await profileImage.arrayBuffer()), {
+          metadata: { contentType: profileImage.type },
+        });
+        await file.makePublic();
+        profileImageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+        console.log(`Volunteer profile image URL: ${profileImageUrl}`);
+      } catch (uploadError) {
+        console.error('Error uploading volunteer profile image:', uploadError);
       }
+    } else {
+      console.log('No volunteer profile image provided.');
+    }
 
+    // 3. --- Handle ID Photo Upload ---
+    let idPhotoUrl: string | null = null;
+    const idPhoto = getFile(formData, 'idPhoto');
+    if (idPhoto) {
+      try {
+        const bucket = storage;
+        const fileExtension = idPhoto.name.includes('.')
+          ? idPhoto.name.substring(idPhoto.name.lastIndexOf('.'))
+          : '';
+        const filePath = `volunteers/${userId}/idPhoto${fileExtension}`;
+        const file = bucket.file(filePath);
+        await file.save(Buffer.from(await idPhoto.arrayBuffer()), {
+          metadata: { contentType: idPhoto.type },
+        });
+        await file.makePublic();
+        idPhotoUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+        console.log(`ID photo URL: ${idPhotoUrl}`);
+      } catch (uploadError) {
+        console.error('Error uploading ID photo:', uploadError);
+      }
+    } else {
+      console.log('No ID photo provided.');
+    }
 
-      // 3. --- Handle ID Photo Upload ---
-       let idPhotoUrl: string | null = null;
-       const idPhoto = getFile(formData, 'idPhoto');
-       if (idPhoto) {
-           try {
-               const bucket = storage;
-               const fileExtension = idPhoto.name.includes('.') ? idPhoto.name.substring(idPhoto.name.lastIndexOf('.')) : '';
-               const filePath = `volunteers/${userId}/idPhoto${fileExtension}`;
-               const file = bucket.file(filePath);
-               await file.save(Buffer.from(await idPhoto.arrayBuffer()), { metadata: { contentType: idPhoto.type } });
-               await file.makePublic();
-               idPhotoUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
-               console.log(`ID photo URL: ${idPhotoUrl}`);
-           } catch (uploadError) {
-               console.error('Error uploading ID photo:', uploadError);
-           }
-       } else {
-           console.log('No ID photo provided.');
-       }
+    // 4. --- Parse Skills ---
+    let skillsArray: string[] = [];
+    const skillsJson = getString(formData, 'skills');
+    if (skillsJson) {
+      try {
+        skillsArray = JSON.parse(skillsJson);
+      } catch (parseError) {
+        console.error('Error parsing skills JSON:', parseError);
+      }
+    } else {
+      console.log('No skills data found.');
+    }
 
-      // 4. --- Parse Skills ---
-       let skillsArray: string[] = [];
-       const skillsJson = getString(formData, 'skills');
-       if (skillsJson) {
-           try { skillsArray = JSON.parse(skillsJson); }
-           catch (parseError) { console.error('Error parsing skills JSON:', parseError); }
-       } else { console.log('No skills data found.'); }
+    // 5. --- Handle Consent ---
+    const consentString = getString(formData, 'backgroundCheckConsent');
+    const hasConsent = consentString === 'true';
+    console.log(`Background Check Consent: ${consentString} -> ${hasConsent}`);
 
+    // 6. --- Handle Social Media Data ---
+    // Define a type for the structure we are building
+    type SocialMediaLinks = {
+      [key in 'twitter' | 'facebook' | 'instagram']?: {
+        username: string;
+        link?: string;
+      };
+    };
 
-      // 5. --- Handle Consent ---
-       const consentString = getString(formData, 'backgroundCheckConsent');
-       const hasConsent = consentString === 'true';
-       console.log(`Background Check Consent: ${consentString} -> ${hasConsent}`);
+    // Initialize an empty object with this specific type
+    const constructedSocialMediaData: SocialMediaLinks = {};
 
+    ['twitter', 'facebook', 'instagram'].forEach((platform) => {
+      const username = getString(formData, `social_${platform}_username`);
+      if (username) {
+        // Assert the type of platform to be one of the specific keys
+        const key = platform as keyof SocialMediaLinks; // or 'twitter' | 'facebook' | 'instagram'
 
-      // 6. --- Handle Social Media Data ---
-      const socialMediaData: Volunteer['socialMedia'] = {};
-      ['twitter', 'facebook', 'instagram'].forEach(platform => {
-          const username = getString(formData, `social_${platform}_username`);
-          if (username) {
-              socialMediaData[platform] = { username };
-              const link = getString(formData, `social_${platform}_link`);
-              if (link) socialMediaData[platform].link = link;
-          }
+        // Assign the object - TS should now accept this
+        constructedSocialMediaData[key] = { username };
+
+        const link = getString(formData, `social_${platform}_link`);
+
+        // Add link if provided (check existence of key for safety, though likely redundant now)
+        if (link && constructedSocialMediaData[key]) {
+          // Non-null assertion is okay here as we just assigned it
+          constructedSocialMediaData[key]!.link = link;
+        }
+      }
+    });
+    console.log(
+      'Constructed social media data:',
+      JSON.stringify(constructedSocialMediaData)
+    ); // Add logging
+
+    // 7. --- Prepare Complete Volunteer Data for Firestore ---
+    // Define the base object WITHOUT socialMedia initially
+    // Use Omit to create a type excluding socialMedia from the full Volunteer type
+    const volunteerDataBase: Omit<Volunteer, 'socialMedia'> = {
+      firstName: getString(formData, 'firstName'),
+      middleName: getString(formData, 'middleName'),
+      surname: getString(formData, 'surname'),
+      email: getString(formData, 'email'),
+      gender: getString(formData, 'gender'),
+      address: getString(formData, 'address'),
+      areaOfOperation: getString(formData, 'areaOfOperation'),
+      contactNumber: getString(formData, 'contactNumber'),
+      contactPersonNumber: getString(formData, 'contactPersonNumber'),
+      dateOfBirth: getString(formData, 'dateOfBirth'),
+      username: getString(formData, 'acctUsername'), // Ensure this matches your form field name
+      organizationId: getString(formData, 'organization'),
+      roleOrCategory: getString(formData, 'roleOrCategory'),
+      idType: getString(formData, 'idType'),
+      profileImageUrl: profileImageUrl,
+      idPhotoUrl: idPhotoUrl,
+      skills: skillsArray.length > 0 ? skillsArray : undefined,
+      backgroundCheckConsent: hasConsent,
+      contactPerson: getString(formData, 'contactPerson') || undefined,
+      contactPersonRelation:
+        getString(formData, 'contactPersonRelation') || undefined,
+      // socialMedia is omitted here for now
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      userId: userId,
+    };
+
+    // Create the final object, starting with the base, using Partial<Volunteer>
+    const volunteerData: Partial<Volunteer> = { ...volunteerDataBase };
+
+    // *** Conditionally add socialMedia (replicated pattern) ***
+    if (Object.keys(constructedSocialMediaData).length > 0) {
+      // Assign the object we built, which matches the Volunteer['socialMedia'] structure
+      volunteerData.socialMedia = constructedSocialMediaData;
+    }
+
+    // 8. --- Save Volunteer Data to Firestore ---
+    console.log(
+      'Saving volunteer data:',
+      JSON.stringify(volunteerData, null, 2) // Logs the object that might or might not have socialMedia
+    );
+    // Save the object. Firestore handles missing optional fields fine.
+    // Cast to Volunteer or Partial<Volunteer> as appropriate for your Firestore setup.
+    await db
+      .collection('volunteers')
+      .doc(userId)
+      .set(volunteerData as Volunteer);
+
+    // 9. --- Save Basic User Role Info ---
+    await db
+      .collection('users')
+      .doc(userId)
+      .set({
+        role: 'volunteer',
+        organizationId: volunteerData.organizationId,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        displayName: displayName || volunteerData.username, // Use constructed name or username
       });
 
-      // 7. --- Prepare Complete Volunteer Data for Firestore ---
-       const volunteerData: Volunteer = {
-           firstName: getString(formData, 'firstName'),
-           middleName: getString(formData, 'middleName'),
-           surname: getString(formData, 'surname'),
-           email: getString(formData, 'email'),
-           gender: getString(formData, 'gender'),
-           address: getString(formData, 'address'),
-           areaOfOperation: getString(formData, 'areaOfOperation'),
-           contactNumber: getString(formData, 'contactNumber'),
-           contactPersonNumber: getString(formData, 'contactPersonNumber'),
-           dateOfBirth: getString(formData, 'dateOfBirth'),
-           username: getString(formData, 'acctUsername'),
-           organizationId: getString(formData, 'organization'),
-           roleOrCategory: getString(formData, 'roleOrCategory'),
-           idType: getString(formData, 'idType'),
-           profileImageUrl: profileImageUrl,
-           idPhotoUrl: idPhotoUrl,
-           skills: skillsArray.length > 0 ? skillsArray : undefined,
-           backgroundCheckConsent: hasConsent,
-           contactPerson: getString(formData, 'contactPerson') || undefined,
-           contactPersonRelation: getString(formData, 'contactPersonRelation') || undefined,
-           socialMedia: Object.keys(socialMediaData).length > 0 ? socialMediaData : undefined,
-           createdAt: admin.firestore.FieldValue.serverTimestamp(), // Use server timestamp
-           updatedAt: admin.firestore.FieldValue.serverTimestamp(), // Use server timestamp
-           userId: userId,
-       };
-
-      // 8. --- Save Volunteer Data to Firestore ---
-      console.log('Saving volunteer data:', JSON.stringify(volunteerData, null, 2));
-      await db.collection('volunteers').doc(userId).set(volunteerData);
-
-      // 9. --- Save Basic User Role Info ---
-      await db.collection('users').doc(userId).set({
-          role: 'volunteer',
-          organizationId: volunteerData.organizationId,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          displayName: displayName || volunteerData.username // Use constructed name or username
-      });
-
-      console.log(`Successfully created volunteer and user documents with ID: ${userId}`);
-      return { success: true, message: 'Registration successful!' };
-
+    console.log(
+      `Successfully created volunteer and user documents with ID: ${userId}`
+    );
+    return { success: true, message: 'Registration successful!' };
   } catch (error) {
-     // Error handling for volunteer registration (similar logic as organization)
-     let errorMessage = 'Volunteer registration failed. Please try again.';
-     console.error('Error during volunteer registration:', error);
-     if (userId) { /* Auth cleanup */
-         try { await auth.deleteUser(userId); console.log(`Deleted orphaned volunteer auth user: ${userId}`); }
-         catch (deleteError) { console.error(`Failed to delete orphaned volunteer auth user ${userId}:`, deleteError); }
-     }
-      // Refine error message based on error type/code
-      if (typeof error === 'object' && error !== null && 'code' in error) {
-           const firebaseError = error as { code: string; message: string };
-           errorMessage = firebaseError.message; // Default
-           const errorCode = firebaseError.code;
-           if (errorCode === 'auth/email-already-exists' || errorCode === 'auth/email-already-in-use') {
-               errorMessage = 'This email is already registered. Please use a different email or log in.';
-           } else if (errorCode === 'auth/invalid-email') {
-               errorMessage = 'The email address provided is not valid.';
-           } else if (errorCode === 'auth/weak-password') {
-               errorMessage = 'The password provided is too weak.';
-           }
-       } else if (error instanceof Error) {
-           errorMessage = error.message;
-       } else {
-           try { errorMessage = JSON.stringify(error); } catch { errorMessage = String(error); }
-       }
-     return { success: false, message: errorMessage };
+    // Error handling for volunteer registration (similar logic as organization)
+    let errorMessage = 'Volunteer registration failed. Please try again.';
+    console.error('Error during volunteer registration:', error);
+    if (userId) {
+      /* Auth cleanup */
+      try {
+        await auth.deleteUser(userId);
+        console.log(`Deleted orphaned volunteer auth user: ${userId}`);
+      } catch (deleteError) {
+        console.error(
+          `Failed to delete orphaned volunteer auth user ${userId}:`,
+          deleteError
+        );
+      }
+    }
+    // Refine error message based on error type/code
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      const firebaseError = error as { code: string; message: string };
+      errorMessage = firebaseError.message; // Default
+      const errorCode = firebaseError.code;
+      if (
+        errorCode === 'auth/email-already-exists' ||
+        errorCode === 'auth/email-already-in-use'
+      ) {
+        errorMessage =
+          'This email is already registered. Please use a different email or log in.';
+      } else if (errorCode === 'auth/invalid-email') {
+        errorMessage = 'The email address provided is not valid.';
+      } else if (errorCode === 'auth/weak-password') {
+        errorMessage = 'The password provided is too weak.';
+      }
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    } else {
+      try {
+        errorMessage = JSON.stringify(error);
+      } catch {
+        errorMessage = String(error);
+      }
+    }
+    return { success: false, message: errorMessage };
   }
 }
