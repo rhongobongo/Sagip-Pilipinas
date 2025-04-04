@@ -15,7 +15,7 @@ interface NewsItem {
 const NewsCard = ({ item }: { item: NewsItem }) => {
     return (
         <Link href={`/news/${item.slug}`} key={item.id}>
-            <div className="border-2 border-black rounded-2xl hover:shadow-[0px_10px_30px_rgba(0,0,0,0.7)] transition-shadow duration-300">
+            <div className="border-2 border-black rounded-2xl hover:shadow-[0px_10px_30px_rgba(0,0,0,0.7)] transition-shadow duration-300 bg-[#A11234]">
                 <div className="relative h-48">
                     {item.imageUrl ? (
                         <Image
@@ -38,7 +38,7 @@ const NewsCard = ({ item }: { item: NewsItem }) => {
                 </div>
 
                 <div className="p-1">
-                    <div className="p-3 rounded-md bg-[#8F0022]">
+                    <div className="p-3 rounded-md">
                         <h2 className="font-medium text-lg line-clamp-2 mb-2">{item.title || "News Title"}</h2>
                         <p className="text-white text-sm line-clamp-4">{item.summary || "No summary available"}</p>
 
