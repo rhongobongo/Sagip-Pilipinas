@@ -484,6 +484,25 @@ const VolRegistrationForm: React.FC = () => {
         // formDataObj.append('skills', selectedSkills.join(','));
       }
 
+      // *** ADD THIS BLOCK TO APPEND SOCIAL MEDIA DATA ***
+      Object.entries(socialLinks).forEach(([platform, data]) => {
+        // Check if the link was explicitly added and has a username
+        if (data.mode === 'added' && data.username.trim()) {
+          formDataObj.append(
+            `social_${platform}_username`, // e.g., social_twitter_username
+            data.username.trim()
+          );
+          // Only append link if it's not empty
+          if (data.link.trim()) {
+            formDataObj.append(
+              `social_${platform}_link`, // e.g., social_twitter_link
+              data.link.trim()
+            );
+          }
+        }
+      });
+      // *** END OF BLOCK TO ADD ***
+
       // Call the registerVolunteer function
       const response = await registerVolunteer(formDataObj);
 
