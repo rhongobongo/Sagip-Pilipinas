@@ -6,6 +6,7 @@ import { MapRef } from './GoogleMapComponent';
 import { RequestPin } from '@/types/types';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/Firebase/Firebase'; // Make sure this is your client-side Firebase import
+import { CiCircleAlert } from 'react-icons/ci';
 
 // Use dynamic import with ssr: false for the map component
 const DynamicMap = dynamic(() => import('./GoogleMapComponent'), {
@@ -28,14 +29,14 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
   const [pins, setPins] = useState<RequestPin[]>(initialPins);
   const [selectedPin, setSelectedPin] = useState<RequestPin | null>(null);
   const mapRef = useRef<MapRef>(null);
-  
+
   useEffect(() => {
     // Fetch aid requests on component mount
     const fetchAidRequests = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, 'aidRequest'));
         const aidRequests: RequestPin[] = [];
-        
+
         querySnapshot.forEach((doc) => {
           const data = doc.data();
           aidRequests.push({
@@ -54,10 +55,10 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
             submissionTime: data.submissionTime,
           });
         });
-        
+
         setPins(aidRequests);
       } catch (error) {
-        console.error("Error fetching aid requests:", error);
+        console.error('Error fetching aid requests:', error);
       }
     };
 
@@ -69,7 +70,7 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
     if (onPinSelect) {
       onPinSelect(pin);
     }
-    
+
     // Zoom to the selected pin
     if (mapRef.current?.zoomMarker) {
       mapRef.current.zoomMarker(pin);
@@ -77,12 +78,12 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
@@ -90,30 +91,59 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
     <div className="flex h-screen w-screen">
       {/* Left panel - Aid request list */}
       <div className="w-1/3 h-full bg-white p-4 overflow-y-auto shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Aid Requests</h2>
-        
+        <h2 className="text-xl font-bold mb-4 text-black">Aid Requests</h2>
+
         {selectedPin && (
-          <div className="bg-blue-50 p-4 mb-6 rounded-lg border border-blue-200">
-            <h3 className="text-lg font-semibold text-blue-700">Selected Request</h3>
+          <div className="bg-red-50 p-4 mb-6 rounded-lg border border-red-200 text-black">
+            <h3 className="text-lg font-semibold text-red-700">
+              Selected Request
+            </h3>
             <div className="mt-2">
-              <p className="font-semibold">Name: <span className="font-normal">{selectedPin.name}</span></p>
-              <p className="font-semibold">Contact: <span className="font-normal">{selectedPin.contactNum}</span></p>
-              <p className="font-semibold">Calamity Type: <span className="font-normal">{selectedPin.calamityType}</span></p>
-              <p className="font-semibold">Level: <span className="font-normal">{selectedPin.calamityLevel}</span></p>
-              <p className="font-semibold">Date: <span className="font-normal">{formatDate(selectedPin.submissionDate || '')}</span></p>
-              <p className="font-semibold">Time: <span className="font-normal">{selectedPin.submissionTime}</span></p>
-              <p className="font-semibold">Location: <span className="font-normal">
-                {selectedPin.coordinates?.latitude.toFixed(6)}, {selectedPin.coordinates?.longitude.toFixed(6)}
-              </span></p>
+              <p className="font-semibold">
+                Name: <span className="font-normal">{selectedPin.name}</span>
+              </p>
+              <p className="font-semibold">
+                Contact:{' '}
+                <span className="font-normal">{selectedPin.contactNum}</span>
+              </p>
+              <p className="font-semibold">
+                Calamity Type:{' '}
+                <span className="font-normal">{selectedPin.calamityType}</span>
+              </p>
+              <p className="font-semibold">
+                Level:{' '}
+                <span className="font-normal">{selectedPin.calamityLevel}</span>
+              </p>
+              <p className="font-semibold">
+                Date:{' '}
+                <span className="font-normal">
+                  {formatDate(selectedPin.submissionDate || '')}
+                </span>
+              </p>
+              <p className="font-semibold">
+                Time:{' '}
+                <span className="font-normal">
+                  {selectedPin.submissionTime}
+                </span>
+              </p>
+              <p className="font-semibold">
+                Location:{' '}
+                <span className="font-normal">
+                  {selectedPin.coordinates?.latitude.toFixed(6)},{' '}
+                  {selectedPin.coordinates?.longitude.toFixed(6)}
+                </span>
+              </p>
               <p className="font-semibold mt-2">Description:</p>
-              <p className="bg-white p-2 rounded mt-1 border">{selectedPin.shortDesc}</p>
-              
+              <p className="bg-white p-2 rounded mt-1 border">
+                {selectedPin.shortDesc}
+              </p>
+
               {selectedPin.imageURL && (
                 <div className="mt-3">
                   <p className="font-semibold">Image:</p>
-                  <img 
-                    src={selectedPin.imageURL} 
-                    alt="Aid request" 
+                  <img
+                    src={selectedPin.imageURL}
+                    alt="Aid request"
                     className="mt-1 rounded-md w-full object-cover max-h-48"
                   />
                 </div>
@@ -122,26 +152,37 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
           </div>
         )}
 
-        <div className="space-y-2">
+        <div className="space-y-2 text-black">
           {pins.map((pin) => (
-            <div 
-              key={pin.id} 
+            <div
+              key={pin.id}
               className={`p-3 rounded-md cursor-pointer hover:bg-gray-100 border transition-colors ${
-                selectedPin?.id === pin.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                selectedPin?.id === pin.id
+                  ? 'border-red-500 bg-red-50'
+                  : 'border-gray-200'
               }`}
               onClick={() => handlePinSelect(pin)}
             >
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="font-medium">{pin.name}</h3>
-                  <p className="text-sm text-gray-600">{pin.calamityType} - Level {pin.calamityLevel}</p>
+                  <p className="text-sm text-gray-600">
+                    {pin.calamityType} - Level {pin.calamityLevel}
+                  </p>
                 </div>
-                <span className="text-xs text-gray-500">{formatDate(pin.submissionDate || '')}</span>
+                <span className="text-xs text-gray-500">
+                  {formatDate(pin.submissionDate || '')}
+                </span>
+                <div className="h-full mb-auto">
+                  <CiCircleAlert className="text-red-800 text-2xl" />
+                </div>
               </div>
-              <p className="text-sm mt-1 text-gray-700 line-clamp-2">{pin.shortDesc}</p>
+              <p className="text-sm mt-1 text-gray-700 line-clamp-2">
+                {pin.shortDesc}
+              </p>
             </div>
           ))}
-          
+
           {pins.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               No aid requests available
