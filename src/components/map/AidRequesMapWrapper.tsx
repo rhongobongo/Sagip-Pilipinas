@@ -156,10 +156,10 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
           {pins.map((pin) => (
             <div
               key={pin.id}
-              className={`p-3 rounded-md cursor-pointer hover:bg-gray-100 border transition-colors ${
+              className={`p-3 rounded-md cursor-pointer hover:bg-red-100 border transition-colors ${
                 selectedPin?.id === pin.id
                   ? 'border-red-500 bg-red-50'
-                  : 'border-gray-200'
+                  : 'border-red-200'
               }`}
               onClick={() => handlePinSelect(pin)}
             >
