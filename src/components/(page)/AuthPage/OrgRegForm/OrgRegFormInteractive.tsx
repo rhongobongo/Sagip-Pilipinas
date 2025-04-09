@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { OrgRegFormContext } from "./OrgRegFormContext";
 import OrgRegFormImage from "./OrgRegFormImage";
 import { AidTypeId, aidTypes } from "./types";
-import { registerOrganization } from "@/lib/APICalls/Auth/registerAuth";
+import { registerOrganization } from "@/lib/APICalls/Auth/registerOrganization";
 import OrgRegFormFields from "./OrgRegFormFields";
 import LocationPickerModal from "@/components/map/LocationPickerModal";
 
