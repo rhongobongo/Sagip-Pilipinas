@@ -137,3 +137,30 @@ input.peer:checked + .radio-container::after {
 }
 
 /* Random shiet */
+.pinkContainerBorder {
+  width: 100%;
+  color: #000000; /* Equivalent to text-black */
+  border-width: 2px; /* Equivalent to border-2 */
+  border-color: #ef8080; /* Equivalent to border-[#ef8080] */
+  border-style: solid; /* Default border style with Tailwind borders */
+  border-radius: 0.5rem; /* Equivalent to rounded-lg (assuming 1rem = 16px) */
+  padding-left: 1.5rem; /* Equivalent to px-6 (6 * 0.25rem) */
+  padding-right: 1.5rem; /* Equivalent to px-6 */
+  padding-bottom: 1.5rem; /* Equivalent to pb-6 */
+  padding-top: 2rem; /* Equivalent to pt-8 (8 * 0.25rem) */
+  /* Equivalent to shadow-lg - based on Tailwind's default theme */
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.pinkBorder {
+  border-width: 2px; /* Equivalent to border-2 */
+  border-color: #ef8080; /* Equivalent to border-[#ef8080] */
+  border-style: solid; /* Default border style with Tailwind borders */
+  border-radius: 0.5rem; /* Equivalent to rounded-lg (assuming 1rem = 16px) */
+  padding-left: 1.5rem; /* Equivalent to px-6 (6 * 0.25rem) */
+  padding-right: 1.5rem; /* Equivalent to px-6 */
+  padding-bottom: 1.5rem; /* Equivalent to pb-6 */
+  padding-top: 2rem; /* Equivalent to pt-8 (8 * 0.25rem) */
+}
