@@ -2,13 +2,13 @@
 
 import DistributionMapHomeWrapper from "@/components/map/DistributionMapHomeWrapper"
 import LocationList from "./LocationList"
-import { OrganizationPin } from "@/types/PinTypes"
+import { OrgPin } from "./MapSection"
 
 import { useState } from "react"
 
-const MapSectionInteractive: React.FC<{ locations: OrganizationPin[] }> = ({ locations }) => {
+const MapSectionInteractive: React.FC<{ locations: OrgPin[] }> = ({ locations }) => {
 
-    const [selectedPin, setSelectedPin] = useState<OrganizationPin | null>(null);
+    const [selectedPin, setSelectedPin] = useState<OrgPin | null>(null);
 
 
     return (

@@ -1,4 +1,4 @@
-import { db, storage, auth } from "@/lib/Firebase-Admin";
+import { storage, auth } from "@/lib/Firebase-Admin";
 
 export const updateProfileImage = async (image: File, uid: string, userType: string) => {
     try {
@@ -16,7 +16,7 @@ export const updateProfileImage = async (image: File, uid: string, userType: str
         await file.makePublic();
         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
         await auth.updateUser(uid, { photoURL: publicUrl });
-        await db.collection(userType).doc(uid).update({ profileImage: publicUrl });
+        return publicUrl;
     }
     catch (error) {
         console.error("Error updating profile image:", error);

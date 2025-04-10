@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { OrganizationPin } from "@/types/PinTypes";
+import { OrgPin } from "./MapSection";
 import { LocationMember } from "./LocationMember";
 
 interface LocationListProps {
-    pinData: OrganizationPin[];
-    onSelectPin: (pin: OrganizationPin | null) => void;
+    pinData: OrgPin[];
+    onSelectPin: (pin: OrgPin | null) => void;
 }
 
 const LocationList: React.FC<LocationListProps> = ({ pinData, onSelectPin }) => {
@@ -24,7 +24,7 @@ const LocationList: React.FC<LocationListProps> = ({ pinData, onSelectPin }) => 
 
     return (
         <div className="flex flex-col gap-4" style={{ height: "75vh" }}>
-            <div className="grid grid-cols-3 gap-0 text-black w-full rounded-3xl items-center justify-center font-bold text-white">
+            <div className="grid grid-cols-3 gap-0 text-black w-full rounded-3xl items-center justify-center font-bold">
                 {regions.map((r) => (
                     <button
                         key={r}
