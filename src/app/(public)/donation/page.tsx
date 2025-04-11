@@ -1,16 +1,39 @@
-// Make sure this file is NOT marked with 'use client';
-// Example location: app/donation/page.tsx (or similar, depending on your routing)
-
 import React from 'react';
 import { cookies } from 'next/headers';
 import { getTokens } from 'next-firebase-auth-edge';
 import { authConfig } from '@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge'; // Your auth config
 import { db as adminDb } from '@/lib/Firebase-Admin'; // Import the ADMIN SDK Firestore instance!
-
+import { db } from "@/lib/Firebase-Admin";
+import { RequestPin } from "@/types/types";
+import { GeoPoint, Timestamp } from "firebase-admin/firestore";
 import DonationPageForm from '@/components/(page)/donationPage/donationPageForm';
-import DonationPageMap from '@/components/(page)/donationPage/donationPageMap';
+import DonationMapWrapper from '@/components/map/DonationMapWrapper';
 
-// Define the shape of the data you expect to fetch
+const fetchAidRequests = async (): Promise<RequestPin[]> => {
+  const snapshot = await db.collection("aidRequest").get();
+  return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      const { latitude, longitude } = (data.coordinates as GeoPoint);
+      
+      return {
+          id: doc.id,
+          name: data.name || "",
+          contactNum: data.contactNumber || "",
+          calamityLevel: data.calamityLevel || "",
+          calamityType: data.calamityType || "",
+          shortDesc: data.shortDesc || "",
+          imageURL: data.imageUrl,
+          coordinates: { 
+              latitude, 
+              longitude 
+          },
+          submissionDate: data.submissionDate || 
+              (data.timestamp ? (data.timestamp as Timestamp).toDate().toISOString().split('T')[0] : ""),
+          submissionTime: data.submissionTime || "",
+      };
+  });
+};
+
 interface OrganizationData {
   name?: string;
   location?: string;
@@ -61,6 +84,8 @@ interface OrganizationData {
 
 // Make the component async
 const DonationPage = async () => {
+  const aidRequests = await fetchAidRequests();
+  
   let organizationData: OrganizationData | null = null;
   let errorMessage: string | null = null;
   let userId: string | null = null;
@@ -199,10 +224,7 @@ const DonationPage = async () => {
         </div>
         <div className="flex flex-col">
           <div>
-            <DonationPageMap />
-            <h2 className="w-full p-12 bg-green-300 text-center text-2xl">
-              THIS IS THE MAP!!!
-            </h2>
+            <DonationMapWrapper initialPins={aidRequests} />
           </div>
           <div>
             {/* Pass the fetched data as a prop now, including aid stock info */}
