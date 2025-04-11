@@ -1,10 +1,8 @@
 import { db } from "@/lib/Firebase-Admin";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import ClientMapWrapper from "@/components/map/ClientMapWrapper";
 import * as admin from "firebase-admin";
 import RespondToAidRequestSection from "@/components/news/RespondToAidRequestSection";
-import type { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
 import { getAuthTokens } from "@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge";
 import { cookies } from "next/headers";
@@ -79,9 +77,6 @@ async function getCurrentUserSession(): Promise<{ userId: string | null }> {
     }
 }
 
-interface NewsPageProps {
-    params: { slug: string };
-}
 
 // --- Main Page Component ---
 export default async function NewsPage({
