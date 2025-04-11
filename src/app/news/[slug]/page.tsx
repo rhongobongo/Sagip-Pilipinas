@@ -8,11 +8,8 @@ import type { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension
 
 import { getAuthTokens } from "@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge";
 import { cookies } from "next/headers";
-
-// --- Import the EXTERNAL ImageCard Client Component ---
 import ImageCard from "@/components/ui/ImageCard"; // Adjust path as needed
 
-// --- Helper Functions (Defined directly in this file) ---
 interface Coordinates {
     latitude: number;
     longitude: number;

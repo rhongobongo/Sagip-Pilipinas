@@ -9,7 +9,6 @@ import { db as adminDb } from '@/lib/Firebase-Admin'; // Import the ADMIN SDK Fi
 
 import DonationPageForm from '@/components/(page)/donationPage/donationPageForm';
 import DonationPageMap from '@/components/(page)/donationPage/donationPageMap';
-import { Timestamp } from 'firebase-admin/firestore'; // Use admin timestamp if needed
 
 // Define the shape of the data you expect to fetch
 interface OrganizationData {
@@ -17,7 +16,47 @@ interface OrganizationData {
   location?: string;
   contactNumber?: string;
   email?: string;
-  // Add other fields from your Firestore document if needed
+  // Update to match the structure from registerOrganization
+  aidStock?: {
+    food?: {
+      available: boolean;
+      foodPacks?: number;
+    };
+    clothing?: {
+      available: boolean;
+      male?: number;
+      female?: number;
+      children?: number;
+    };
+    medicalSupplies?: {
+      available: boolean;
+      kits?: number;
+    };
+    shelter?: {
+      available: boolean;
+      tents?: number;
+      blankets?: number;
+    };
+    searchAndRescue?: {
+      available: boolean;
+      rescueKits?: number;
+      rescuePersonnel?: number;
+    };
+    financialAssistance?: {
+      available: boolean;
+      totalFunds?: number;
+    };
+    counseling?: {
+      available: boolean;
+      counselors?: number;
+      hours?: number;
+    };
+    technicalSupport?: {
+      available: boolean;
+      vehicles?: number;
+      communication?: number;
+    };
+  };
 }
 
 // Make the component async
@@ -39,20 +78,58 @@ const DonationPage = async () => {
         const orgDocRef = adminDb.collection('organizations').doc(userId);
         const docSnap = await orgDocRef.get(); // Fetches the DocumentSnapshot
 
-        // --- *** THE FIX IS HERE *** ---
-        // Change from docSnap.exists() to docSnap.exists (property, not method)
+        // Using docSnap.exists property, not method
         if (docSnap.exists) {
-          // --- *** END FIX *** ---
-
-          const data = docSnap.data(); // data() method is correct
+          const data = docSnap.data();
           // Optional: Check if data is actually defined after calling .data()
           if (data) {
+            // Extract the organization data directly matching your interface
             organizationData = {
               name: data.name,
               location: data.location,
               contactNumber: data.contactNumber,
               email: data.email,
-              // Add other fields as needed
+              // Map aidStock if it exists, otherwise set up default values
+              aidStock: data.aidStock || {
+                food: { 
+                  available: false, 
+                  foodPacks: 20 
+                },
+                clothing: { 
+                  available: false, 
+                  male: 50, 
+                  female: 50, 
+                  children: 30 
+                },
+                medicalSupplies: { 
+                  available: false, 
+                  kits: 25 
+                },
+                shelter: { 
+                  available: false, 
+                  tents: 20, 
+                  blankets: 100 
+                },
+                searchAndRescue: { 
+                  available: false, 
+                  rescueKits: 10, 
+                  rescuePersonnel: 5 
+                },
+                financialAssistance: { 
+                  available: false, 
+                  totalFunds: 50000 
+                },
+                counseling: { 
+                  available: false, 
+                  counselors: 5, 
+                  hours: 40 
+                },
+                technicalSupport: { 
+                  available: false, 
+                  vehicles: 3, 
+                  communication: 10 
+                }
+              }
             };
             console.log(
               'Server Component: Org Data Fetched:',
@@ -122,16 +199,14 @@ const DonationPage = async () => {
         </div>
         <div className="flex flex-col">
           <div>
-            <DonationPageMap></DonationPageMap>
+            <DonationPageMap />
             <h2 className="w-full p-12 bg-green-300 text-center text-2xl">
               THIS IS THE MAP!!!
             </h2>
           </div>
           <div>
-            {/* Pass the fetched data as a prop now, instead of the ID */}
-            <DonationPageForm
-              fetchedOrgData={organizationData}
-            ></DonationPageForm>
+            {/* Pass the fetched data as a prop now, including aid stock info */}
+            <DonationPageForm fetchedOrgData={organizationData} />
           </div>
         </div>
       </div>
