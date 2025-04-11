@@ -88,7 +88,7 @@ const DonationMapWrapper: React.FC<DonationMapWrapperProps> = ({
   };
 
   return (
-    <div className="flex h-screen w-screen">
+    <div className="flex h-screen w-90">
       {/* Left panel - Aid request list */}
       <div className="w-1/3 h-full bg-white p-4 overflow-y-auto shadow-lg">
         <h2 className="text-xl font-bold mb-4 text-black">Aid Requests</h2>
