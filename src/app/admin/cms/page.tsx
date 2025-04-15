@@ -19,7 +19,7 @@ const AdminDashboard: React.FC = () => {
     'Resources',
     'Review Aid Requests',
     'Track Deployed Aid',
-    'Volunteers'
+    'Analytics'
   ];
 
   return (

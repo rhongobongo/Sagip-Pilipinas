@@ -16,7 +16,7 @@ const navItems = [
     { name: "Resources", path: "/admin/resources", icon: <Book size={20} /> },
     { name: "Review Requests", path: "/admin/review-requests", icon: <ClipboardList size={20} /> },
     { name: "Track Aid", path: "/admin/deployed-aid", icon: <Send size={20} /> },
-    { name: "Volunteers", path: "/admin/volunteers", icon: <Users size={20} /> },
+    { name: "Analytics", path: "/admin/analytics", icon: <Users size={20} /> },
 ];
 
 export default function Sidebar() {

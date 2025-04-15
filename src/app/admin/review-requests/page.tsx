@@ -1,7 +1,6 @@
 'use client';
 import React, { useState } from 'react';
 
-// Define Section IDs as constants for consistency
 const SECTION_IDS = {
   ALL: 'all-requests-section',
   PENDING: 'pending-requests-section',
@@ -9,10 +8,9 @@ const SECTION_IDS = {
   COMPLETED: 'completed-requests-section',
 };
 
-// --- Reusable Header Component (For Inside Boxes, but with Clickable Nav) ---
 type RequestListHeaderProps = {
-  activeTab: 'All Aid Requests' | 'Pending Requests' | 'Approved Requests' | 'Completed Requests'; // Which tab to highlight
-  onNavClick: (sectionId: string) => void; // Function to handle click/scroll
+  activeTab: 'All Aid Requests' | 'Pending Requests' | 'Approved Requests' | 'Completed Requests';
+  onNavClick: (sectionId: string) => void;
 };
 
 const RequestListHeader: React.FC<RequestListHeaderProps> = ({ activeTab, onNavClick }) => {
@@ -22,40 +20,33 @@ const RequestListHeader: React.FC<RequestListHeaderProps> = ({ activeTab, onNavC
     { id: SECTION_IDS.APPROVED, label: 'Approved Requests' },
     { id: SECTION_IDS.COMPLETED, label: 'Completed Requests' },
   ];
-  const activeBgColor = 'bg-red-700'; // Adjusted to red-700 as seen in user's code paste
-  const activeBorderColor = 'border-red-700'; // Matching border
+  const activeBgColor = 'bg-red-700';
+  const activeBorderColor = 'border-red-700';
 
   const getTabClass = (tabId: string) => {
-    // Base classes: Oblong shape, padding, transitions, transparent border, pointer cursor
     const baseClasses = "py-1.5 px-6 text-sm font-medium cursor-pointer transition-all duration-200 ease-in-out rounded-full border-2 border-transparent";
 
-    // Inactive tab style
     const inactiveClasses = "text-gray-600 hover:bg-gray-100 hover:border-gray-300";
 
-    // Active tab style (based on the 'activeTab' prop matching the tab's label)
     const activeClasses = `${activeBgColor} text-white ${activeBorderColor} shadow`;
 
-    // Check if the current tab's LABEL matches the activeTab prop for styling
     const currentTabLabel = tabs.find(t => t.id === tabId)?.label;
     return `${baseClasses} ${activeTab === currentTabLabel ? activeClasses : inactiveClasses}`;
   };
 
-  // Handle click: prevent default anchor jump, call parent handler
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
       event.preventDefault();
-      onNavClick(sectionId); // Trigger scroll/action defined in parent
+      onNavClick(sectionId);
   };
 
   return (
-    // Container for the header tabs: Evenly spaced
     <div className="flex w-full flex-wrap sm:flex-nowrap justify-around items-center border-b border-gray-200 px-2 sm:px-4 py-3 bg-white rounded-t-lg">
       {tabs.map(tab => (
-        // Use anchor tags for navigation
         <a
           key={tab.id}
-          href={`#${tab.id}`} // href for semantic meaning/fallback
-          onClick={(e) => handleClick(e, tab.id)} // Click triggers page scroll
-          className={`${getTabClass(tab.id)} mb-1 sm:mb-0 text-center`} // Style based on activeTab prop
+          href={`#${tab.id}`}
+          onClick={(e) => handleClick(e, tab.id)}
+          className={`${getTabClass(tab.id)} mb-1 sm:mb-0 text-center`}
         >
           {tab.label}
         </a>
@@ -63,10 +54,8 @@ const RequestListHeader: React.FC<RequestListHeaderProps> = ({ activeTab, onNavC
     </div>
   );
 };
-// --- End Reusable Header Component ---
 
 
-// TypeScript type for request details
 type RequestDetails = {
     id: string;
     requesterName: string;
@@ -76,10 +65,9 @@ type RequestDetails = {
     aidType: string;
     date: string;
     time: string;
-    status?: 'pending' | 'approved' | 'completed'; // Status field
+    status?: 'pending' | 'approved' | 'completed';
 };
 
-// Predefined Aid Types
 const AID_TYPES = [
     'Medical Supplies',
     'Clothes',
@@ -101,15 +89,11 @@ const mockRequests: RequestDetails[] = [
     { id: '1105-9253-60', requesterName: 'Robert Brown', contactNumber: '0933-444-5555', location: 'Cebu City, Cebu', calamityType: 'Typhoon', aidType: 'Water', date: 'March 29, 2025', time: '02:00 PM', status: 'completed' },
 ];
 
-// Main Component
 const AidRequestsList: React.FC = () => {
-    // State and Filter Logic
     const [filterType, setFilterType] = useState('');
     const [filterValue, setFilterValue] = useState('');
     const [locationInput, setLocationInput] = useState('');
-    // No 'activeSection' state needed here for styling, highlighting is local to each header
 
-    // Filtering logic
     const disasterTypes = [...new Set(mockRequests.map(request => request.calamityType))];
     const dates = [...new Set(mockRequests.map(request => request.date))];
     const filterOptions = [
@@ -141,16 +125,14 @@ const AidRequestsList: React.FC = () => {
         return generalFilterPass;
     });
 
-    // Create lists based on status *after* general filtering
     const allFilteredRequests = generallyFilteredRequests;
     const pendingRequests = generallyFilteredRequests.filter(request => request.status === 'pending');
     const approvedRequests = generallyFilteredRequests.filter(request => request.status === 'approved');
     const completedRequests = generallyFilteredRequests.filter(request => request.status === 'completed');
 
-    const welcomeHeaderBgColor = 'bg-red-800'; // Define the class name
-    const BOX_CONTENT_HEIGHT = 'h-[350px]'; // Define height for consistency
+    const welcomeHeaderBgColor = 'bg-red-800';
+    const BOX_CONTENT_HEIGHT = 'h-[350px]';
 
-    // Function to handle navigation clicks and scroll the page
     const handleNavClick = (sectionId: string) => {
         const element = document.getElementById(sectionId);
         setTimeout(() => {
@@ -311,7 +293,6 @@ const AidRequestsList: React.FC = () => {
                 <div className={`${BOX_CONTENT_HEIGHT} overflow-y-auto custom-red-scrollbar`}>
                     {approvedRequests.length > 0 ? (
                          approvedRequests.map((request, index) => (
-                            // ****** CORRECTED LAYOUT FOR THIS BOX ******
                             <div key={`${request.id}-approved-${index}`} className="px-4 py-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 text-black font-inter text-sm">
                                 {/* Row 1: Request ID (Full Width) */}
                                 <p className="text-base mb-2"> {/* Added bottom margin */}
@@ -351,7 +332,7 @@ const AidRequestsList: React.FC = () => {
                                      </div>
                                 </div>
                             </div>
-                           // ****** END OF CORRECTED LAYOUT ******
+
                          ))
                      ) : ( <div className="p-10 text-center text-gray-500">No approved requests match filters.</div> )}
                 </div>
@@ -367,7 +348,6 @@ const AidRequestsList: React.FC = () => {
                  <div className={`${BOX_CONTENT_HEIGHT} overflow-y-auto custom-red-scrollbar`}>
                     {completedRequests.length > 0 ? (
                          completedRequests.map((request, index) => (
-                            // ****** UPDATED LAYOUT FOR THIS BOX ******
                             <div key={`${request.id}-completed-${index}`} className="px-4 py-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 text-black font-inter text-sm">
                                 {/* Row 1: Request ID (Full Width) */}
                                 <p className="text-base mb-2">
@@ -405,13 +385,13 @@ const AidRequestsList: React.FC = () => {
                                 </div>
                                 {/* "Completed On" (request.date) removed */}
                             </div>
-                           // ****** END OF UPDATED LAYOUT ******
+                           
                          ))
                      ) : ( <div className="p-10 text-center text-gray-500">No completed requests match filters.</div> )}
                  </div>
              </div>
 
-        </div> // End of main page container
+        </div>
     );
 }
 
