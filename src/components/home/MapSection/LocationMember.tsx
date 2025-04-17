@@ -7,12 +7,12 @@ export const LocationMember: React.FC<{
 }> = ({ pin, onClick }) => {
   return (
     <button
-      className={`mt-3 mx-4 grid grid-cols-5 items-center text-black transform translate-x-5 w-[90%] p-2
+      className={`grid grid-cols-5 text-black transform w-[93%] p-2 m-4 mx-auto
             rounded-xl hover:scale-105 hover:bg-red-500 hover:text-white focus:scale-105 focus:bg-red-600 focus:text-white duration-500`}
       onClick={onClick}
     >
       <div className="flex items-center">
-        <PiMapPinFill className="w-10 h-10 translate-x-5" />
+        <PiMapPinFill className="w-7 h-7 md:w-10 md:h-10" />
       </div>
 
       <div className="col-span-4 grid grid-rows-[1fr_auto] text-[1.5em] text-left -ml-6">

@@ -55,7 +55,7 @@ const LocationList: React.FC<LocationListProps> = ({
         ))}
       </div>
 
-      <div className="flex-grow overflow-y-auto rounded-lg max-h-[75vh] border-4 border-black bg-[#F3F3F3]">
+      <div className="flex-grow overflow-y-auto rounded-lg max-h-[75vh] border-4 border-black bg-[#F3F3F3] items-center justify-center flex-col">
         {pinData.length > 0 && region !== '' ? (
           <ul>
             {pinData

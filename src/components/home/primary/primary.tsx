@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation'; // Import useRouter for redirection
 
 const images = [
   {
@@ -72,9 +73,10 @@ const images = [
 const Primary: React.FC = () => {
   const [highlighted, setHighlighted] = useState<number | null>(null);
   const [hovered, setHovered] = useState<number | null>(null);
+  const router = useRouter(); // Initialize router
 
   return (
-    <div className="relative h-screen">
+    <div className="relative h-screen overflow-hidden">
       <div className="absolute inset-0 bg-black bg-opacity-70 mix-blend-multiply" />
       <Image
         src="/home-image/image.jpg"
@@ -85,15 +87,12 @@ const Primary: React.FC = () => {
         blurDataURL="data:image/jpeg;base64,..."
       />
 
-      <div className="absolute inset-0 px-6 md:px-12 flex flex-col md:flex-row items-center justify-left ml-10 h-full">
-        <div
-          className="relative w-full md:w-[45%] h-full top-6"
-          style={{ aspectRatio: '4/5' }}
-        >
+      <div className="relative inset-0 flex flex-col md:flex-row items-center justify-left ml-10 mb-10 h-full w-full">
+        <div className="relative w-3/4 h-full justify-center items-center md:w-[45%] md:h-full top-6 md:block hidden">
           <div className="relative w-full h-full">
             {highlighted !== null && (
               <div
-                className="absolute left-[55%] top-[41%] transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-2/5 rounded-lg shadow-2xl z-20"
+                className="absolute left-[55%] top-[41%] transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-2/5 rounded-lg shadow-2xl z-20 "
                 style={{
                   boxShadow: '0px 15px 40px rgb(0, 0, 0)',
                 }}
@@ -210,40 +209,40 @@ const Primary: React.FC = () => {
             })}
           </div>
         </div>
-      </div>
-
-      <div className="absolute inset-0 px-6 md:px-12 flex-col md:flex-row items-center flex justify-end h-full">
-        <div className="relative w-full md:w-6/12 flex flex-col items-end md:items-end md:pl-24 mr-10 -mt-20">
-          <h1 className="text-3xl font-black uppercase tracking-wide md:text-right mb-8 w-full text-white">
-            GABAY SA GITNA NG UNOS,
-            <br />
-            MULING BUBUHAYIN ANG PAG-ASA
-          </h1>
-          <p className="text-lg text-gray-200 mb-5 justify md:text-justify">
-            When disaster strikes, every second counts.
-          </p>
-          <p className="text-lg text-gray-200 mb-5 justify md:text-justify w-full">
-            SAGIP PILIPINAS connects volunteers and organizations to those in
-            need, streamlining relief efforts for a faster, more effective
-            response. Coordinating aid, tracking resources, and mobilizing
-            support, all made easier, ensuring that help reaches
-            disaster-affected communities when they need it most.
-          </p>
-          <p className="text-lg text-gray-200 mb-12 justify md:text-justify">
-            Join us in making a difference. DONATE/SIGN UP NOW!
-          </p>
-          <button
-            className="bg-red-600 px-8 py-4 rounded-full text-white font-bold 
+        <div className="flex-col md:flex-row items-center flex justify-center w-full h-1/3 md:h-full md:w-[45%] md:mx-auto">
+          <div className="h-full text-start mr-16 xl:mt-48 mt-24">
+            <h1 className="text-lg md:text-lg lg:text-2xl font-black uppercase text-start tracking-wide md:text-right mb-8 w-full text-white">
+              GABAY SA GITNA NG UNOS,
+              <br />
+              MULING BUBUHAYIN ANG PAG-ASA
+            </h1>
+            <p className="text-sm md:text-base lg:text-lg text-gray-200 mb-5 justify text-start md:text-justify w-full text-wrap">
+              When disaster strikes, every second counts.
+            </p>
+            <p className="text-sm md:text-base lg:text-lg text-gray-200 mb-5 justify md:text-justify w-full text-wrap">
+              SAGIP PILIPINAS connects volunteers and organizations to those in
+              need, streamlining relief efforts for a faster, more effective
+              response. Coordinating aid, tracking resources, and mobilizing
+              support, all made easier, ensuring that help reaches
+              disaster-affected communities when they need it most.
+            </p>
+            <p className="text-sm md:text-base lg:text-lg text-gray-200 mb-5 lg:mb-12 justify md:text-justify w-full text-wrap">
+              Join us in making a difference. DONATE/SIGN UP NOW!
+            </p>
+            <button
+              className="bg-red-600 px-8 py-4 rounded-full text-white font-bold 
             hover:bg-red-700 transition transform-gpu mb-6 md:mb-0"
-          >
-            DONATE →
-          </button>
+              onClick={() => router.push('/map')}
+            >
+              DONATE →
+            </button>
+          </div>
         </div>
-      </div>
 
-      <p className="absolute top-[77%] left-[28%] transform -translate-x-1/2 text-sm text-black-400 opacity-75">
-        Hover over photos; click to enlarge
-      </p>
+        <p className="hidden md:block absolute top-[77%] left-[25%] transform -translate-x-1/2 text-sm text-black-400 opacity-75">
+          Hover over photos; click to enlarge
+        </p>
+      </div>
     </div>
   );
 };
