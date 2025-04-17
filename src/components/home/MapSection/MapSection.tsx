@@ -13,18 +13,20 @@ export interface OrgPin extends DefaultPin {
 const MapSection: React.FC = async () => {
   const pins = await fetchPins();
   return (
-    <div className="h-full w-full bg-[#F3F3F3] flex items-center justify-center">
+    <div className="h-full w-full bg-[#F3F3F3] flex items-center justify-center lg:text-lg md:text-base text-sm">
       <div className="mx-auto bg-gray-200 w-full">
         <div
-          className="font-semibold text-center text-3xl text-black tracking-wide rounded-full
-                    bg-[#F3F3F3] border-4 border-black p-3 max-w-4xl mx-auto flex items-center mb-3 mt-3"
+          className="w-full font-semibold text-center text-black tracking-wide rounded-full
+                    bg-[#F3F3F3] border-4 border-black p-3 max-w-lg md:max-w-4xl mx-auto flex items-center justify-center mb-3 mt-3"
         >
           <img
             src="/home-image/pin.png"
             className="w-10 h-10 ml-9 mr-3"
             alt="pin"
           />
-          <div>KNOW YOUR NEAREST DISTRIBUTION CENTER!</div>
+          <div className="lg:text-3xl md:text-base text-sm">
+            KNOW YOUR NEAREST DISTRIBUTION CENTER!
+          </div>
         </div>
         <MapSectionInteractive locations={pins}></MapSectionInteractive>
       </div>
