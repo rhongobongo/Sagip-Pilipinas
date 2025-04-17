@@ -14,6 +14,8 @@ import {
 } from '@/components/(page)/AuthPage/OrgRegForm/types'; // Adjust path as needed
 
 // Define interfaces matching your data structure
+// Update the UserProfile type definitions
+// In EditProfileForm.tsx
 interface VolunteerProfile {
   userId: string;
   firstName?: string;
@@ -22,12 +24,8 @@ interface VolunteerProfile {
   roleOrCategory?: string;
   skills?: string[];
   organizationId?: string;
-  socialMedia?: {
-    facebook?: string;
-    twitter?: string;
-    instagram?: string;
-    [key: string]: string | undefined;
-  };
+  // Add this line:
+  socialMedia?: Record<string, string>;
 }
 
 interface OrganizationProfile {
@@ -43,17 +41,9 @@ interface OrganizationProfile {
       [key: string]: any;
     };
   };
-  sponsors?: {
-    name: string;
-    other: string;
-    imageUrl?: string;
-  }[];
-  socialMedia?: {
-    facebook?: string;
-    twitter?: string;
-    instagram?: string;
-    [key: string]: string | undefined;
-  };
+  sponsors?: Sponsor[];
+  // Add this line:
+  socialMedia?: Record<string, string>;
 }
 
 type UserProfile = VolunteerProfile | OrganizationProfile;
@@ -83,7 +73,6 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
   // State for aid stock management (organizations only)
   const [aidStock, setAidStock] = useState<{[key: string]: any}>({});
 
-  // Fetch profile data on component mount
   useEffect(() => {
     const fetchData = async () => {
       if (!userId) {
@@ -103,22 +92,41 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
           setProfile(null);
           setUserType('unknown');
         } else if (result.profile) {
-          setProfile(result.profile);
+          // Create a copy of the profile with socialMedia property if it doesn't exist
+          const profileWithDefaults = {
+            ...result.profile,
+            socialMedia: result.profile.socialMedia || {}
+          };
+          
+          setProfile(profileWithDefaults);
           setUserType(result.userType);
           
           // Initialize social media links from profile
-          if (result.profile.socialMedia) {
-            setSocialLinks(result.profile.socialMedia);
-          }
+          setSocialLinks(profileWithDefaults.socialMedia);
           
           // Initialize sponsors for organizations
-          if (result.userType === 'organization' && (result.profile as OrganizationProfile).sponsors) {
-            setSponsors((result.profile as OrganizationProfile).sponsors || []);
-          }
-          
-          // Initialize aid stock for organizations
-          if (result.userType === 'organization' && (result.profile as OrganizationProfile).aidStock) {
-            setAidStock((result.profile as OrganizationProfile).aidStock || {});
+          if (result.userType === 'organization') {
+            const orgProfile = profileWithDefaults as OrganizationProfile;
+            
+            // Set sponsors with defaults if not present
+            const sponsorsList = orgProfile.sponsors || [];
+            const formattedSponsors = sponsorsList.map(sponsor => ({
+              id: typeof sponsor === 'object' && sponsor !== null ? 
+                (sponsor as any).id || Date.now().toString() : 
+                Date.now().toString(),
+              name: typeof sponsor === 'object' && sponsor !== null ? 
+                (sponsor as any).name || '' : '',
+              other: typeof sponsor === 'object' && sponsor !== null ? 
+                (sponsor as any).other || '' : '',
+              photoFile: null,
+              photoPreview: typeof sponsor === 'object' && sponsor !== null ? 
+                (sponsor as any).imageUrl || null : null
+            }));
+            
+            setSponsors(formattedSponsors);
+            
+            // Set aid stock with defaults if not present
+            setAidStock(orgProfile.aidStock || {});
           }
         } else {
           setError('Profile data not found.');
@@ -134,7 +142,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
         setIsLoading(false);
       }
     };
-
+  
     fetchData();
   }, [userId]);
 

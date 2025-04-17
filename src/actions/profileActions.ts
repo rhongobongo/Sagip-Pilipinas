@@ -17,6 +17,7 @@ interface VolunteerProfile {
     skills?: string[]; // Example field
     availability?: string; // Example field
     // Add other volunteer-specific fields
+    socialMedia?: Record<string, string>; // Add this field
     updatedAt?: string; // Changed from FieldValue | Timestamp | string
 }
 
@@ -30,6 +31,7 @@ interface OrganizationProfile {
     contactPerson?: string;
     orgPosition?: string;
     // Add other organization-specific fields
+    socialMedia?: Record<string, string>; // Add this field
     updatedAt?: string; // Changed from FieldValue | Timestamp | string
     coordinates?: { latitude: number; longitude: number }; // Plain JS version of GeoPoint
 }
@@ -110,6 +112,11 @@ export async function getProfileData(userId: string): Promise<FetchResult> {
             const rawData = volunteerDoc.data();
             const profileData = convertFirestoreData({ userId, ...rawData }) as VolunteerProfile;
             
+            // Ensure socialMedia is initialized
+            if (!profileData.socialMedia) {
+                profileData.socialMedia = {};
+            }
+            
             return { profile: profileData, userType: 'volunteer' };
         }
 
@@ -122,6 +129,11 @@ export async function getProfileData(userId: string): Promise<FetchResult> {
             // Get the raw data and convert to plain JS objects
             const rawData = orgDoc.data();
             const profileData = convertFirestoreData({ userId, ...rawData }) as OrganizationProfile;
+            
+            // Ensure socialMedia is initialized
+            if (!profileData.socialMedia) {
+                profileData.socialMedia = {};
+            }
             
             return { profile: profileData, userType: 'organization' };
         }
@@ -158,23 +170,41 @@ export async function updateProfileData(
 
     try {
         const updateData: { [key: string]: any } = {};
+        const socialMediaData: Record<string, string> = {};
+        let hasSocialMedia = false;
 
         // Iterate over FormData entries and build the update object
-        // Note: This assumes form field names directly match Firestore field names
-        // You might need more specific logic based on your form structure
         for (const [key, value] of formData.entries()) {
-            // Skip empty values unless you specifically want to clear fields
-            if (value !== null && value !== undefined && value !== '') {
-                 // Basic handling for potential array fields (like 'skills')
-                 // This is a simple example; robust parsing might be needed
-                 if (key === 'skills' && typeof value === 'string') {
-                    // Assuming skills are comma-separated in the input
-                    updateData[key] = value.split(',').map(s => s.trim()).filter(s => s);
-                 } else if (typeof value === 'string') {
-                    updateData[key] = value;
-                 }
-                 // Add handling for other data types (numbers, booleans) if necessary
+            // Handle social media fields separately
+            if (key.startsWith('socialMedia.') && typeof value === 'string') {
+                const platform = key.split('.')[1]; // Extract the platform name
+                if (value.trim()) {
+                    socialMediaData[platform] = value.trim();
+                    hasSocialMedia = true;
+                }
             }
+            // Basic handling for potential array fields (like 'skills')
+            else if (key === 'skills' && typeof value === 'string') {
+                // Assuming skills are comma-separated in the input
+                updateData[key] = value.split(',').map(s => s.trim()).filter(s => s);
+            }
+            // Handle JSON stringified objects
+            else if ((key === 'sponsors' || key === 'aidStock') && typeof value === 'string') {
+                try {
+                    updateData[key] = JSON.parse(value);
+                } catch (e) {
+                    console.error(`Error parsing ${key} JSON:`, e);
+                }
+            }
+            // Handle regular string values
+            else if (typeof value === 'string' && value.trim() !== '') {
+                updateData[key] = value.trim();
+            }
+        }
+
+        // Add social media data to update object if there are any entries
+        if (hasSocialMedia) {
+            updateData.socialMedia = socialMediaData;
         }
 
         // Always add/update the 'updatedAt' timestamp
