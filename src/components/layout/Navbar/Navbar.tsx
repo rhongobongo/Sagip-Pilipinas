@@ -16,6 +16,8 @@ const Navbar = async () => {
     { displayName: 'Map', href: '/map' },
     { displayName: 'Request Aid', href: '/request-aid' },
     { displayName: 'Learn More', href: '/learnmore' },
+    { displayName: 'My Profile', href: '/' },
+    { displayName: 'Log out', href: '/' },
     ...(!user ? [{ displayName: 'Register Now', href: '/register' }] : []),
   ];
 
