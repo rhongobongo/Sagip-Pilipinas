@@ -135,11 +135,11 @@ export const donate = async (
 
         console.log("Transaction completed successfully.");
         return { success: true, donationUID };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Transaction failed:", error);
         return {
             success: false,
-            error: error.message ?? "An error occurred during the donation.",
+            error: error instanceof Error ? error.message : "An error occurred during the donation."
         };
     }
 };

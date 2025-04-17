@@ -38,12 +38,22 @@ interface OrganizationProfile {
   aidStock?: {
     [aidId: string]: {
       available: boolean;
-      [key: string]: any;
+      [key: string]: unknown; // Replace any with unknown
     };
   };
   sponsors?: Sponsor[];
   // Add this line:
   socialMedia?: Record<string, string>;
+}
+
+// Define a type for sponsor data
+interface SponsorData {
+  id: string;
+  name: string;
+  other: string;
+  photoFile: File | null;
+  photoPreview: string | null;
+  imageUrl?: string;
 }
 
 type UserProfile = VolunteerProfile | OrganizationProfile;
@@ -66,12 +76,12 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
   const [socialLinks, setSocialLinks] = useState<{[platform: string]: string}>({});
   
   // State for sponsor management (organizations only)
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [sponsors, setSponsors] = useState<SponsorData[]>([]);
   const [currentSponsor, setCurrentSponsor] = useState<{name: string, other: string}>({name: '', other: ''});
   const [editingSponsorIndex, setEditingSponsorIndex] = useState<number | null>(null);
   
   // State for aid stock management (organizations only)
-  const [aidStock, setAidStock] = useState<{[key: string]: any}>({});
+  const [aidStock, setAidStock] = useState<{[key: string]: Record<string, unknown>}>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,18 +120,21 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
             
             // Set sponsors with defaults if not present
             const sponsorsList = orgProfile.sponsors || [];
-            const formattedSponsors = sponsorsList.map(sponsor => ({
-              id: typeof sponsor === 'object' && sponsor !== null ? 
-                (sponsor as any).id || Date.now().toString() : 
-                Date.now().toString(),
-              name: typeof sponsor === 'object' && sponsor !== null ? 
-                (sponsor as any).name || '' : '',
-              other: typeof sponsor === 'object' && sponsor !== null ? 
-                (sponsor as any).other || '' : '',
-              photoFile: null,
-              photoPreview: typeof sponsor === 'object' && sponsor !== null ? 
-                (sponsor as any).imageUrl || null : null
-            }));
+            const formattedSponsors = sponsorsList.map(sponsor => {
+              const sponsorObj = sponsor as unknown as Record<string, unknown>;
+              return {
+                id: typeof sponsorObj === 'object' && sponsorObj !== null ? 
+                  (sponsorObj.id as string) || Date.now().toString() : 
+                  Date.now().toString(),
+                name: typeof sponsorObj === 'object' && sponsorObj !== null ? 
+                  (sponsorObj.name as string) || '' : '',
+                other: typeof sponsorObj === 'object' && sponsorObj !== null ? 
+                  (sponsorObj.other as string) || '' : '',
+                photoFile: null,
+                photoPreview: typeof sponsorObj === 'object' && sponsorObj !== null ? 
+                  (sponsorObj.imageUrl as string) || null : null
+              };
+            });
             
             setSponsors(formattedSponsors);
             
@@ -469,7 +482,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                 {/* Contact Person Position */}
                 <div className="mb-4">
                   <label htmlFor="orgPosition" className="block mb-1 font-medium">
-                    Contact Person's Position:
+                    Contact Person&apos;s Position:
                   </label>
                   <input
                     type="text"
@@ -487,7 +500,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                 
                 <div className="space-y-4">
                   {aidTypes.map(aidType => {
-                    const isAvailable = (aidStock[aidType.id]?.available) || false;
+                    const isAvailable = (aidStock[aidType.id]?.available as boolean) || false;
                     
                     return (
                       <div key={aidType.id} className="border p-3 rounded">
@@ -513,7 +526,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                   <input
                                     type="number"
                                     id="food-packs"
-                                    value={aidStock.food?.foodPacks || ''}
+                                    value={aidStock.food?.foodPacks as string || ''}
                                     onChange={(e) => handleAidStockChange('food', 'foodPacks', e.target.value)}
                                     className="w-full p-1 border rounded"
                                     min="0"
@@ -524,7 +537,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                   <input
                                     type="text"
                                     id="food-category"
-                                    value={aidStock.food?.category || ''}
+                                    value={aidStock.food?.category as string || ''}
                                     onChange={(e) => handleAidStockChange('food', 'category', e.target.value)}
                                     className="w-full p-1 border rounded"
                                   />
@@ -540,7 +553,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="clothing-male"
-                                      value={aidStock.clothing?.male || ''}
+                                      value={aidStock.clothing?.male as string || ''}
                                       onChange={(e) => handleAidStockChange('clothing', 'male', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"
@@ -551,7 +564,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="clothing-female"
-                                      value={aidStock.clothing?.female || ''}
+                                      value={aidStock.clothing?.female as string || ''}
                                       onChange={(e) => handleAidStockChange('clothing', 'female', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"
@@ -562,7 +575,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="clothing-children"
-                                      value={aidStock.clothing?.children || ''}
+                                      value={aidStock.clothing?.children as string || ''}
                                       onChange={(e) => handleAidStockChange('clothing', 'children', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"
@@ -579,7 +592,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                   <input
                                     type="number"
                                     id="medical-kits"
-                                    value={aidStock.medicalSupplies?.kits || ''}
+                                    value={aidStock.medicalSupplies?.kits as string || ''}
                                     onChange={(e) => handleAidStockChange('medicalSupplies', 'kits', e.target.value)}
                                     className="w-full p-1 border rounded"
                                     min="0"
@@ -590,7 +603,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                   <input
                                     type="text"
                                     id="medical-type"
-                                    value={aidStock.medicalSupplies?.kitType || ''}
+                                    value={aidStock.medicalSupplies?.kitType as string || ''}
                                     onChange={(e) => handleAidStockChange('medicalSupplies', 'kitType', e.target.value)}
                                     className="w-full p-1 border rounded"
                                   />
@@ -606,7 +619,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="shelter-tents"
-                                      value={aidStock.shelter?.tents || ''}
+                                      value={aidStock.shelter?.tents as string || ''}
                                       onChange={(e) => handleAidStockChange('shelter', 'tents', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"
@@ -617,7 +630,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="shelter-blankets"
-                                      value={aidStock.shelter?.blankets || ''}
+                                      value={aidStock.shelter?.blankets as string || ''}
                                       onChange={(e) => handleAidStockChange('shelter', 'blankets', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"
@@ -635,7 +648,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="rescue-kits"
-                                      value={aidStock.searchAndRescue?.rescueKits || ''}
+                                      value={aidStock.searchAndRescue?.rescueKits as string || ''}
                                       onChange={(e) => handleAidStockChange('searchAndRescue', 'rescueKits', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"
@@ -646,7 +659,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="rescue-personnel"
-                                      value={aidStock.searchAndRescue?.rescuePersonnel || ''}
+                                      value={aidStock.searchAndRescue?.rescuePersonnel as string || ''}
                                       onChange={(e) => handleAidStockChange('searchAndRescue', 'rescuePersonnel', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"
@@ -664,7 +677,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="financial-funds"
-                                      value={aidStock.financialAssistance?.totalFunds || ''}
+                                      value={aidStock.financialAssistance?.totalFunds as string || ''}
                                       onChange={(e) => handleAidStockChange('financialAssistance', 'totalFunds', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"
@@ -675,7 +688,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="text"
                                       id="financial-currency"
-                                      value={aidStock.financialAssistance?.currency || ''}
+                                      value={aidStock.financialAssistance?.currency as string || ''}
                                       onChange={(e) => handleAidStockChange('financialAssistance', 'currency', e.target.value)}
                                       className="w-full p-1 border rounded"
                                     />
@@ -692,7 +705,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="counseling-counselors"
-                                      value={aidStock.counseling?.counselors || ''}
+                                      value={aidStock.counseling?.counselors as string || ''}
                                       onChange={(e) => handleAidStockChange('counseling', 'counselors', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"
@@ -703,7 +716,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="counseling-hours"
-                                      value={aidStock.counseling?.hours || ''}
+                                      value={aidStock.counseling?.hours as string || ''}
                                       onChange={(e) => handleAidStockChange('counseling', 'hours', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"
@@ -721,7 +734,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="technical-vehicles"
-                                      value={aidStock.technicalSupport?.vehicles || ''}
+                                      value={aidStock.technicalSupport?.vehicles as string || ''}
                                       onChange={(e) => handleAidStockChange('technicalSupport', 'vehicles', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"
@@ -732,7 +745,7 @@ export default function EditProfileForm({ userId, organizations = [] }: EditProf
                                     <input
                                       type="number"
                                       id="technical-communication"
-                                      value={aidStock.technicalSupport?.communication || ''}
+                                      value={aidStock.technicalSupport?.communication as string || ''}
                                       onChange={(e) => handleAidStockChange('technicalSupport', 'communication', e.target.value)}
                                       className="w-full p-1 border rounded"
                                       min="0"

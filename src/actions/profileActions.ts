@@ -37,14 +37,14 @@ interface OrganizationProfile {
     aidStock?: {
         [aidId: string]: {
             available: boolean;
-            [key: string]: any;
+            [key: string]: unknown;
         };
     };
     sponsors?: Array<{
         id: string;
         name: string;
         other: string;
-        photoFile?: any;
+        photoFile?: File;
         photoPreview?: string | null;
     }>;
 }
@@ -58,26 +58,31 @@ interface FetchResult {
     error?: string;
 }
 
+// Define a generic FirestoreData type for converting Firestore objects
+type FirestoreData = Record<string, unknown>;
+
 /**
  * Helper function to convert Firestore objects to plain JS objects
  * @param data - The data object containing potential Firestore specific objects
  * @returns A plain JavaScript object with serializable values
  */
-function convertFirestoreData(data: any): any {
+function convertFirestoreData(data: FirestoreData): FirestoreData {
     if (!data) return data;
     
-    const result: any = {};
+    const result: FirestoreData = {};
     
     Object.keys(data).forEach(key => {
         const value = data[key];
         
         // Handle Timestamp objects
-        if (value && typeof value === 'object' && value.toDate && typeof value.toDate === 'function') {
+        if (value && typeof value === 'object' && 
+            'toDate' in value && typeof value.toDate === 'function') {
             // Convert Timestamp to ISO string
             result[key] = value.toDate().toISOString();
         }
         // Handle GeoPoint objects
-        else if (value && typeof value === 'object' && value._latitude !== undefined && value._longitude !== undefined) {
+        else if (value && typeof value === 'object' && 
+                '_latitude' in value && '_longitude' in value) {
             // Convert GeoPoint to plain object
             result[key] = {
                 latitude: value._latitude,
@@ -86,12 +91,12 @@ function convertFirestoreData(data: any): any {
         }
         // Handle nested objects
         else if (value && typeof value === 'object' && !Array.isArray(value)) {
-            result[key] = convertFirestoreData(value);
+            result[key] = convertFirestoreData(value as FirestoreData);
         }
         // Handle arrays (in case they contain Firestore objects)
         else if (Array.isArray(value)) {
             result[key] = value.map(item => 
-                typeof item === 'object' ? convertFirestoreData(item) : item
+                typeof item === 'object' ? convertFirestoreData(item as FirestoreData) : item
             );
         }
         // Pass through other values
@@ -122,8 +127,9 @@ export async function getProfileData(userId: string): Promise<FetchResult> {
         if (volunteerDoc.exists) {
             console.log(`Found profile in 'volunteers' for user: ${userId}`);
             // Get the raw data and convert to plain JS objects
-            const rawData = volunteerDoc.data();
-            const profileData = convertFirestoreData({ userId, ...rawData }) as VolunteerProfile;
+            const rawData = volunteerDoc.data() as FirestoreData;
+            const convertedData = convertFirestoreData(rawData as FirestoreData);
+            const profileData: VolunteerProfile = { userId, ...convertedData };
             
             // Ensure socialMedia is initialized
             if (!profileData.socialMedia) {
@@ -140,9 +146,9 @@ export async function getProfileData(userId: string): Promise<FetchResult> {
         if (orgDoc.exists) {
             console.log(`Found profile in 'organizations' for user: ${userId}`);
             // Get the raw data and convert to plain JS objects
-            const rawData = orgDoc.data();
-            const profileData = convertFirestoreData({ userId, ...rawData }) as OrganizationProfile;
-            
+            const rawData = orgDoc.data() as FirestoreData;
+            const convertedData = convertFirestoreData(rawData as FirestoreData);
+        const profileData: OrganizationProfile = { userId, ...convertedData };
             // Ensure socialMedia is initialized
             if (!profileData.socialMedia) {
                 profileData.socialMedia = {};
@@ -162,13 +168,21 @@ export async function getProfileData(userId: string): Promise<FetchResult> {
     }
 }
 
+// Define a type for AidStock data
+interface AidStockData {
+    [aidId: string]: {
+        available?: boolean;
+        [key: string]: unknown;
+    } | null;
+}
+
 /**
  * Processes aidStock data, converting numeric string values to numbers
  * @param aidStockData - The raw aidStock data from form
  * @returns Processed aidStock object with proper data types
  */
-function processAidStock(aidStockData: any): any {
-    const result: any = {};
+function processAidStock(aidStockData: AidStockData): AidStockData {
+    const result: AidStockData = {};
     
     // Numeric fields in each aid type that should be converted from string to number
     const numericFields: Record<string, string[]> = {
@@ -198,11 +212,13 @@ function processAidStock(aidStockData: any): any {
         // Convert numeric fields to numbers
         if (numericFields[aidId]) {
             numericFields[aidId].forEach(field => {
-                if (aidData[field] !== undefined && aidData[field] !== null && aidData[field] !== '') {
+                if (field in aidData && aidData[field] !== undefined && aidData[field] !== null && aidData[field] !== '') {
                     // Try to convert to number
                     const numValue = Number(aidData[field]);
                     if (!isNaN(numValue)) {
-                        result[aidId][field] = numValue;
+                        if (result[aidId]) {
+                            (result[aidId] as Record<string, unknown>)[field] = numValue;
+                        }
                     }
                 }
             });
@@ -210,6 +226,13 @@ function processAidStock(aidStockData: any): any {
     });
     
     return result;
+}
+
+// Define a type for the update data
+interface UpdateData {
+    [key: string]: unknown;
+    socialMedia?: Record<string, string>;
+    updatedAt?: FieldValue;
 }
 
 /**
@@ -232,7 +255,7 @@ export async function updateProfileData(
     const docRef = db.collection(collectionName).doc(userId);
 
     try {
-        const updateData: { [key: string]: any } = {};
+        const updateData: UpdateData = {};
         const socialMediaData: Record<string, string> = {};
         let hasSocialMedia = false;
 
@@ -262,7 +285,7 @@ export async function updateProfileData(
             // Handle aidStock JSON with numeric conversion
             else if (key === 'aidStock' && typeof value === 'string') {
                 try {
-                    const parsedAidStock = JSON.parse(value);
+                    const parsedAidStock = JSON.parse(value) as AidStockData;
                     updateData[key] = processAidStock(parsedAidStock);
                 } catch (e) {
                     console.error(`Error parsing aidStock JSON:`, e);
