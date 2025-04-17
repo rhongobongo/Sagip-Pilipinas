@@ -1,3 +1,5 @@
+"use server"
+
 import { storage, auth } from "@/lib/Firebase-Admin";
 
 export const updateProfileImage = async (image: File, uid: string, userType: string) => {

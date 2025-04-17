@@ -23,7 +23,7 @@ export const donate = async (
     id: string
 ) => {
     console.log("Details:", details);
-
+    let donationUID: string = "";
     try {
         await db.runTransaction(async (transaction: Transaction) => {
             const orgRef = db.collection("organizations").doc(id);
@@ -34,6 +34,8 @@ export const donate = async (
             const currentStock: AidDetails = orgData?.aidStock ?? {};
 
             const donationRef = db.collection("donations").doc();
+
+            donationUID = donationRef.id;
 
             console.log("Current Stock:", currentStock);
 
@@ -132,10 +134,16 @@ export const donate = async (
         });
 
         console.log("Transaction completed successfully.");
-    } catch (error) {
+        return { success: true, donationUID };
+    } catch (error: any) {
         console.error("Transaction failed:", error);
+        return {
+            success: false,
+            error: error.message ?? "An error occurred during the donation.",
+        };
     }
 };
+
 
 const donateFood = (
     transaction: Transaction,

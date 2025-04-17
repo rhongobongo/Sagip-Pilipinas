@@ -14,7 +14,7 @@ import {
     CounselingDetails,
     TechnicalSupportDetails,
 } from "./types";
-import { donate } from "@/lib/APICalls/Donation/donate";
+import { donate, uploadDonation } from "@/lib/APICalls/Donation";
 
 // Updated interface to match the server component
 interface OrganizationData {
@@ -364,12 +364,16 @@ const DonationPageForm: React.FC<DonationPageFormProps> = ({
         }
 
         if (!fetchedOrgData) return;
-        await donate(
+        const response = await donate(
             checkedDonationTypesToSend,
             filteredDonationDetails,
             donationDate,
             fetchedOrgData.id
         );
+        if (response.success) {
+            if (!donationImage || !response.donationUID) return;
+            await uploadDonation(donationImage, response.donationUID);
+        }
     };
 
     // Display loading or message if data hasn't been fetched yet
@@ -1160,7 +1164,11 @@ const DonationPageForm: React.FC<DonationPageFormProps> = ({
                     >
                         Donation Photo:
                     </label>
-                    <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:bg-gray-50 min-h-[100px]">
+
+                    <label
+                        htmlFor="donation_photo_input"
+                        className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:bg-gray-50 min-h-[100px]"
+                    >
                         {imagePreview ? (
                             <img
                                 src={imagePreview}
@@ -1177,7 +1185,7 @@ const DonationPageForm: React.FC<DonationPageFormProps> = ({
                             className="sr-only"
                             onChange={handleImageChange}
                         />
-                    </div>
+                    </label>
                 </div>
 
                 {/* Estimated Drop-off Date */}
