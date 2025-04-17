@@ -88,9 +88,9 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
   };
 
   return (
-    <div className="flex h-screen w-screen">
+    <div className="w-full h-full flex-col sm:flex sm:flex-row sm:h-screen sm:w-screen">
       {/* Left panel - Aid request list */}
-      <div className="w-1/3 h-full bg-white p-4 overflow-y-auto shadow-lg">
+      <div className="w-full h-1/2 sm:w-1/3 sm:h-full bg-white p-4 overflow-y-auto shadow-lg">
         <h2 className="text-xl font-bold mb-4 text-black">Aid Requests</h2>
 
         {selectedPin && (
@@ -134,7 +134,7 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
                 </span>
               </p>
               <p className="font-semibold mt-2">Description:</p>
-              <p className="bg-white p-2 rounded mt-1 border">
+              <p className="bg-white p-2 rounded mt-1 border overflow-x-auto">
                 {selectedPin.shortDesc}
               </p>
 
@@ -192,7 +192,7 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
       </div>
 
       {/* Right panel - Map */}
-      <div className="w-2/3 h-full">
+      <div className="w-full h-1/2 sm:w-2/3 sm:h-full">
         <DynamicMap
           ref={mapRef}
           pins={pins}
