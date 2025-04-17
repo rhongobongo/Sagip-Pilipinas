@@ -55,7 +55,7 @@ const NewsGrid = ({ newsItems }: NewsGridProps) => {
               placeholder="Search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="border border-gray-300 rounded-full px-6 text-black py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-black font-bold"
+              className="border w-full border-gray-300 rounded-full px-6 text-black py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-black font-bold"
             />
             <svg
               className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
