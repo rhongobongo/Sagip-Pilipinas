@@ -34,6 +34,19 @@ interface OrganizationProfile {
     socialMedia?: Record<string, string>; // Add this field
     updatedAt?: string; // Changed from FieldValue | Timestamp | string
     coordinates?: { latitude: number; longitude: number }; // Plain JS version of GeoPoint
+    aidStock?: {
+        [aidId: string]: {
+            available: boolean;
+            [key: string]: any;
+        };
+    };
+    sponsors?: Array<{
+        id: string;
+        name: string;
+        other: string;
+        photoFile?: any;
+        photoPreview?: string | null;
+    }>;
 }
 
 type UserProfile = VolunteerProfile | OrganizationProfile;
@@ -150,6 +163,56 @@ export async function getProfileData(userId: string): Promise<FetchResult> {
 }
 
 /**
+ * Processes aidStock data, converting numeric string values to numbers
+ * @param aidStockData - The raw aidStock data from form
+ * @returns Processed aidStock object with proper data types
+ */
+function processAidStock(aidStockData: any): any {
+    const result: any = {};
+    
+    // Numeric fields in each aid type that should be converted from string to number
+    const numericFields: Record<string, string[]> = {
+        'food': ['foodPacks'],
+        'clothing': ['male', 'female', 'children'],
+        'medicalSupplies': ['kits'],
+        'shelter': ['tents', 'blankets'],
+        'searchAndRescue': ['rescueKits', 'rescuePersonnel'],
+        'financialAssistance': ['totalFunds'],
+        'counseling': ['counselors', 'hours'],
+        'technicalSupport': ['vehicles', 'communication']
+    };
+    
+    // Process each aid type in the aidStock
+    Object.keys(aidStockData).forEach(aidId => {
+        const aidData = aidStockData[aidId];
+        
+        // Skip if aidData is null or not an object
+        if (!aidData || typeof aidData !== 'object') {
+            result[aidId] = aidData;
+            return;
+        }
+        
+        // Create a copy of the aid data
+        result[aidId] = { ...aidData };
+        
+        // Convert numeric fields to numbers
+        if (numericFields[aidId]) {
+            numericFields[aidId].forEach(field => {
+                if (aidData[field] !== undefined && aidData[field] !== null && aidData[field] !== '') {
+                    // Try to convert to number
+                    const numValue = Number(aidData[field]);
+                    if (!isNaN(numValue)) {
+                        result[aidId][field] = numValue;
+                    }
+                }
+            });
+        }
+    });
+    
+    return result;
+}
+
+/**
  * Updates profile data in Firestore.
  * @param userId - The ID of the user whose profile to update.
  * @param userType - The type of user ('volunteer' or 'organization').
@@ -189,11 +252,20 @@ export async function updateProfileData(
                 updateData[key] = value.split(',').map(s => s.trim()).filter(s => s);
             }
             // Handle JSON stringified objects
-            else if ((key === 'sponsors' || key === 'aidStock') && typeof value === 'string') {
+            else if (key === 'sponsors' && typeof value === 'string') {
                 try {
                     updateData[key] = JSON.parse(value);
                 } catch (e) {
                     console.error(`Error parsing ${key} JSON:`, e);
+                }
+            }
+            // Handle aidStock JSON with numeric conversion
+            else if (key === 'aidStock' && typeof value === 'string') {
+                try {
+                    const parsedAidStock = JSON.parse(value);
+                    updateData[key] = processAidStock(parsedAidStock);
+                } catch (e) {
+                    console.error(`Error parsing aidStock JSON:`, e);
                 }
             }
             // Handle regular string values
