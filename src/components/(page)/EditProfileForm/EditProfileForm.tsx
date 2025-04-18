@@ -442,8 +442,8 @@ export default function EditProfileForm({
             )}
             {imageFile && !isCompressing && (
               <p className="text-xs text-gray-500 mt-2">
-                New image selected: {imageFile.name}. Click "Save Changes" to
-                apply.
+                New image selected: {imageFile.name}. Click &quot;Save
+                Changes&quot; to apply.
               </p>
             )}
           </div>

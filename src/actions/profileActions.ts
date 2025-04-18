@@ -52,6 +52,13 @@ interface OrganizationProfile {
   }>;
 }
 
+interface RawSponsorData {
+  id: string;
+  name: string;
+  other: string;
+  imageUrl?: string | null; // Type matching the structure after JSON.parse
+}
+
 type UserProfile = VolunteerProfile | OrganizationProfile;
 type UserType = 'volunteer' | 'organization' | 'unknown';
 
@@ -280,7 +287,9 @@ export async function updateProfileData(
       // Sponsors
       else if (key === 'sponsors' && typeof value === 'string') {
         try {
-          const parsedSponsors = JSON.parse(value).map((s: any) => ({
+          // Use the specific type RawSponsorData instead of any
+          const parsedSponsors = JSON.parse(value).map((s: RawSponsorData) => ({
+            // <<< CORRECTED TYPE HERE
             id: s.id,
             name: s.name,
             other: s.other,
