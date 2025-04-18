@@ -5,9 +5,10 @@ import dynamic from "next/dynamic";
 import { MapRef } from "./GoogleMapComponent";
 import { RequestPin } from "@/types/types";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/lib/Firebase/Firebase"; // Make sure this is your client-side Firebase import
+import { db } from "@/lib/Firebase/Firebase";
 import { CiCircleAlert } from "react-icons/ci";
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/stores/AuthStores/AuthContext";
 
 // Use dynamic import with ssr: false for the map component
 const DynamicMap = dynamic(() => import("./GoogleMapComponent"), {
@@ -23,11 +24,12 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
     initialPins = [],
     onPinSelect,
 }) => {
-
     const router = useRouter();
     const [pins, setPins] = useState<RequestPin[]>(initialPins);
+    const [isOrg, setIsOrg] = useState(false);
     const [selectedPin, setSelectedPin] = useState<RequestPin | null>(null);
     const mapRef = useRef<MapRef>(null);
+    const auth = useAuth();
 
     useEffect(() => {
         const fetchAidRequests = async () => {
@@ -65,6 +67,17 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
         fetchAidRequests();
     }, []);
 
+    useEffect(() => {
+        const checkClaims = async () => {
+            const user = auth.user;
+            if (user?.customClaims?.organization) {
+                setIsOrg(true);
+            }
+        };
+
+        checkClaims();
+    }, []);
+
     const handlePinSelect = (pin: RequestPin) => {
         setSelectedPin(pin);
         if (onPinSelect) {
@@ -88,8 +101,8 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
     };
 
     const handleDonate = () => {
-        router.push(`/donation?aidRequestId=${selectedPin?.id}`)
-    }
+        router.push(`/donation?aidRequestId=${selectedPin?.id}`);
+    };
     return (
         <div className="flex h-screen w-screen">
             {/* Left panel - Aid request list */}
@@ -158,7 +171,6 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
                             <p className="bg-white p-2 rounded mt-1 border">
                                 {selectedPin.shortDesc}
                             </p>
-
                             {selectedPin.imageURL && (
                                 <div className="mt-3">
                                     <p className="font-semibold">Image:</p>
@@ -169,17 +181,21 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
                                     />
                                 </div>
                             )}
-
-                            <button className="bg-red-600 text-white my-3 p-3 rounded-2xl" onClick={handleDonate}>
-                                DONATE
-                            </button>
+                            {isOrg && (
+                                <button
+                                    className="bg-red-600 text-white my-3 p-3 rounded-2xl"
+                                    onClick={handleDonate}
+                                >
+                                    DONATE
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
 
                 <div className="space-y-2 text-black">
                     {pins.map((pin) => (
-                        <button
+                        <div
                             key={pin.id}
                             className={`p-3 rounded-md cursor-pointer hover:bg-red-100 border transition-colors${
                                 selectedPin?.id === pin.id
@@ -206,7 +222,7 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
                             <p className="text-sm mt-1 text-gray-700 line-clamp-2">
                                 {pin.shortDesc}
                             </p>
-                        </button>
+                        </div>
                     ))}
 
                     {pins.length === 0 && (
