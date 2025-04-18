@@ -21,7 +21,7 @@ const Navbar = async () => {
     ...(!user
       ? [{ displayName: 'Register Now', href: '/register' }]
       : [
-          { displayName: 'My Profile', href: '/editprofile' },
+          { displayName: 'My Profile', href: '/profileedit' },
           { displayName: 'Log out', href: '/test' },
         ]),
   ];
