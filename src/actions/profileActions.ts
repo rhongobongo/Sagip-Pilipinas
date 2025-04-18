@@ -1,24 +1,21 @@
 // src/actions/profileActions.ts
 'use server';
 
-import { db, auth } from '@/lib/Firebase-Admin'; // Assuming your Firebase Admin setup is here
+import { db, auth } from '@/lib/Firebase-Admin'; 
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
-// Define interfaces for the data structures (adjust based on your actual Firestore structure)
-// You might want to import these from a shared types file if you have one
 interface VolunteerProfile {
     userId: string;
     firstName?: string;
     surname?: string;
-    email?: string; // Usually from auth, but might be stored
+    email?: string; 
     contactNumber?: string;
-    username?: string; // Assuming username is stored/editable
-    description?: string; // Example field
-    skills?: string[]; // Example field
-    availability?: string; // Example field
-    // Add other volunteer-specific fields
-    socialMedia?: Record<string, string>; // Add this field
-    updatedAt?: string; // Changed from FieldValue | Timestamp | string
+    username?: string; 
+    description?: string; 
+    skills?: string[];
+    availability?: string; 
+    socialMedia?: Record<string, string>;
+    updatedAt?: string; 
 }
 
 interface OrganizationProfile {
@@ -149,7 +146,6 @@ export async function getProfileData(userId: string): Promise<FetchResult> {
             const rawData = orgDoc.data() as FirestoreData;
             const convertedData = convertFirestoreData(rawData as FirestoreData);
         const profileData: OrganizationProfile = { userId, ...convertedData };
-            // Ensure socialMedia is initialized
             if (!profileData.socialMedia) {
                 profileData.socialMedia = {};
             }

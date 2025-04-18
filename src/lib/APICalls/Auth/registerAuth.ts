@@ -1,11 +1,12 @@
 "use server";
-
 import { db, storage, auth } from "@/lib/Firebase-Admin"; // Ensure storage is exported from index
 import * as admin from "firebase-admin";
 // *** ADD GeoPoint to import ***
 import { GeoPoint } from "firebase-admin/firestore";
 import { updateProfileImage } from "../User/updateProfileImage";
 import coordinatesToDetails from "../Map/coordinatesToDetails";
+
+import * as geofire from 'geofire-common';
 
 // Interface for the final sponsor data structure in Firestore
 interface SponsorData {
@@ -31,6 +32,8 @@ interface Organization {
     location: string; // Address string
     // *** ADD coordinates field ***
     coordinates?: admin.firestore.GeoPoint; // Store as GeoPoint (making it optional for safety)
+    // *** ADDED: geohash field to interface ***
+    geohash?: string; // Geohash for location queries
     dateOfEstablishment: string;
     type: string;
     otherTypeText?: string;
@@ -284,6 +287,7 @@ export async function registerOrganization(
         // 6. Prepare Organization Data for Firestore
         const orgType = getString(formData, "type");
         // Base data structure matching the Interface (excluding conditional fields initially)
+        // *** UPDATED to include geohash ***
         const organizationDataBase = {
             userId: userId,
             name: name,
@@ -291,8 +295,10 @@ export async function registerOrganization(
             contactNumber: getString(formData, "contactNumber"),
             location: getString(formData, "location"),
             locationDetails,
-            // *** ADD: Store coordinates as GeoPoint ***
+            // *** Store coordinates as GeoPoint ***
             coordinates: new GeoPoint(latitude, longitude),
+            // *** ADDED: Calculate and add geohash ***
+            geohash: geofire.geohashForLocation([latitude, longitude]),
             dateOfEstablishment: getString(formData, "dateOfEstablishment"),
             type: orgType,
             description: getString(formData, "description"),
@@ -401,7 +407,6 @@ export async function registerOrganization(
         return { success: false, message: errorMessage };
     }
 }
-
 // --- Volunteer Interface (Keep as is from fetched content) ---
 interface Volunteer {
     // ... existing fields ...
