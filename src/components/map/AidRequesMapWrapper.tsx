@@ -170,58 +170,6 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
                                 </div>
                             )}
 
-<<<<<<< HEAD
-  return (
-    <div className="w-full h-full flex-col sm:flex sm:flex-row sm:h-screen sm:w-screen">
-      {/* Left panel - Aid request list */}
-      <div className="w-full h-1/2 sm:w-1/3 sm:h-full bg-white p-4 overflow-y-auto shadow-lg">
-        <h2 className="text-xl font-bold mb-4 text-black">Aid Requests</h2>
-
-        {selectedPin && (
-          <div className="bg-red-50 p-4 mb-6 rounded-lg border border-red-200 text-black">
-            <h3 className="text-lg font-semibold text-red-700">
-              Selected Request
-            </h3>
-            <div className="mt-2">
-              <p className="font-semibold">
-                Name: <span className="font-normal">{selectedPin.name}</span>
-              </p>
-              <p className="font-semibold">
-                Contact:{' '}
-                <span className="font-normal">{selectedPin.contactNum}</span>
-              </p>
-              <p className="font-semibold">
-                Calamity Type:{' '}
-                <span className="font-normal">{selectedPin.calamityType}</span>
-              </p>
-              <p className="font-semibold">
-                Level:{' '}
-                <span className="font-normal">{selectedPin.calamityLevel}</span>
-              </p>
-              <p className="font-semibold">
-                Date:{' '}
-                <span className="font-normal">
-                  {formatDate(selectedPin.submissionDate || '')}
-                </span>
-              </p>
-              <p className="font-semibold">
-                Time:{' '}
-                <span className="font-normal">
-                  {selectedPin.submissionTime}
-                </span>
-              </p>
-              <p className="font-semibold">
-                Location:{' '}
-                <span className="font-normal">
-                  {selectedPin.coordinates?.latitude.toFixed(6)},{' '}
-                  {selectedPin.coordinates?.longitude.toFixed(6)}
-                </span>
-              </p>
-              <p className="font-semibold mt-2">Description:</p>
-              <p className="bg-white p-2 rounded mt-1 border overflow-x-auto">
-                {selectedPin.shortDesc}
-              </p>
-=======
                             <button className="bg-red-600 text-white my-3 p-3 rounded-2xl" onClick={handleDonate}>
                                 DONATE
                             </button>
@@ -260,7 +208,6 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
                             </p>
                         </button>
                     ))}
->>>>>>> 9b89f54 (feat: added donation button in map page)
 
                     {pins.length === 0 && (
                         <div className="text-center py-8 text-gray-500">
@@ -279,24 +226,7 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
                 />
             </div>
         </div>
-<<<<<<< HEAD
-      </div>
-
-      {/* Right panel - Map */}
-      <div className="w-full h-1/2 sm:w-2/3 sm:h-full">
-        <DynamicMap
-          ref={mapRef}
-          pins={pins}
-          setPin={handlePinSelect}
-          width="100%"
-          height="100%"
-        />
-      </div>
-    </div>
-  );
-=======
     );
->>>>>>> 9b89f54 (feat: added donation button in map page)
 };
 
 export default AidRequestMapWrapper;
