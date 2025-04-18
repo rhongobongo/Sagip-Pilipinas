@@ -1,22 +1,19 @@
-/* eslint-disable @next/next/no-img-element */
-// src/components/(page)/EditProfilePage/EditProfileForm.tsx
+
 'use client';
 
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { getProfileData, updateProfileData } from '@/actions/profileActions';
 import imageCompression from 'browser-image-compression'; // *** Import compression library ***
 
-// Import types (ensure Sponsor definition matches backend expectations)
 import {
   AidTypeId,
   aidTypes,
   AidDetails,
   SocialLinks,
   SocialLink,
-  Sponsor, // Assuming Sponsor type includes imageUrl?: string | undefined
+  Sponsor,
 } from '@/components/(page)/AuthPage/OrgRegForm/types'; // Adjust path as needed
 
-// Interfaces (ensure profileImageUrl is string | undefined)
 interface VolunteerProfile {
   userId: string;
   firstName?: string;
@@ -27,7 +24,7 @@ interface VolunteerProfile {
   organizationId?: string;
   socialMedia?: Record<string, string>;
   profileImageUrl?: string | undefined; // Use undefined
-  // Add other fields if they exist in your Firestore data for volunteers
+  
 }
 
 interface OrganizationProfile {
@@ -72,6 +69,54 @@ interface EditProfileFormProps {
   userId: string;
   organizations?: { id: string; name: string }[]; // For volunteer org selection
 }
+
+const aidTypeFields = {
+  food: [
+    { name: 'foodPacks', label: 'Food Packs', type: 'number' },
+    { name: 'category', label: 'Category', type: 'text' },
+    { name: 'description', label: 'Description', type: 'text' }
+  ],
+  clothing: [
+    { name: 'male', label: 'Male Clothing', type: 'number' },
+    { name: 'female', label: 'Female Clothing', type: 'number' },
+    { name: 'children', label: 'Children Clothing', type: 'number' },
+    { name: 'notes', label: 'Notes', type: 'text' }
+  ],
+  medicalSupplies: [
+    { name: 'kits', label: 'Medical Kits', type: 'number' },
+    { name: 'medicines', label: 'Medicines', type: 'number' },
+    { name: 'equipment', label: 'Medical Equipment', type: 'number' },
+    { name: 'details', label: 'Details', type: 'text' }
+  ],
+  shelter: [
+    { name: 'tents', label: 'Tents', type: 'number' },
+    { name: 'blankets', label: 'Blankets', type: 'number' },
+    { name: 'capacity', label: 'Capacity', type: 'number' },
+    { name: 'notes', label: 'Notes', type: 'text' }
+  ],
+  searchAndRescue: [
+    { name: 'rescueKits', label: 'Rescue Kits', type: 'number' },
+    { name: 'rescuePersonnel', label: 'Rescue Personnel', type: 'number' },
+    { name: 'equipment', label: 'Equipment', type: 'number' },
+    { name: 'details', label: 'Details', type: 'text' }
+  ],
+  financialAssistance: [
+    { name: 'totalFunds', label: 'Total Funds', type: 'number' },
+    { name: 'currency', label: 'Currency', type: 'text' },
+    { name: 'notes', label: 'Notes', type: 'text' }
+  ],
+  counseling: [
+    { name: 'counselors', label: 'Counselors', type: 'number' },
+    { name: 'hours', label: 'Available Hours', type: 'number' },
+    { name: 'specialties', label: 'Specialties', type: 'text' }
+  ],
+  technicalSupport: [
+    { name: 'vehicles', label: 'Vehicles', type: 'number' },
+    { name: 'communication', label: 'Communication Devices', type: 'number' },
+    { name: 'equipment', label: 'Technical Equipment', type: 'number' },
+    { name: 'details', label: 'Details', type: 'text' }
+  ]
+};
 
 export default function EditProfileForm({
   userId,
@@ -287,29 +332,65 @@ export default function EditProfileForm({
   const handleSocialLinkChange = (platform: string, value: string) => {
     setSocialLinks((prev) => ({ ...prev, [platform]: value }));
   };
-
-  // Handle aid stock changes for organizations
-  const handleAidStockChange = (
-    aidId: string,
-    field: string,
-    value: string | boolean
-  ) => {
-    setAidStock((prev) => ({
+// Updated handler for aid stock changes
+const handleAidStockChange = (
+  aidId: string,
+  field: string,
+  value: string | boolean
+) => {
+  setAidStock((prev) => {
+    // Ensure the aid type object exists
+    const currentAidStock = prev[aidId] || { available: true };
+    
+    // For numeric fields, ensure value is a valid number or 0
+    const processedValue = 
+      aidTypeFields[aidId as keyof typeof aidTypeFields]?.find(f => f.name === field)?.type === 'number'
+        ? (value === '' ? '0' : value)  // Convert empty string to '0'
+        : value;
+        
+    // Return updated state
+    return {
       ...prev,
-      [aidId]: { ...(prev[aidId] || { available: false }), [field]: value },
-    }));
-  };
+      [aidId]: {
+        ...currentAidStock,
+        [field]: processedValue
+      }
+    };
+  });
+};
 
-  // Toggle aid type availability
-  const toggleAidAvailability = (aidId: string) => {
-    setAidStock((prev) => ({
+// Updated toggle function to initialize fields with default values
+const toggleAidAvailability = (aidId: string) => {
+  setAidStock((prev) => {
+    const isCurrentlyAvailable = !!prev[aidId]?.available;
+    
+    // If turning on and doesn't exist yet, initialize with default values
+    if (!isCurrentlyAvailable) {
+      const newAidStock = { ...prev };
+      const fieldsForType = aidTypeFields[aidId as keyof typeof aidTypeFields] || [];
+      
+      // Create object with default values
+      const newAidTypeStock: Record<string, unknown> = { available: true };
+      
+      // Set defaults (0 for numbers, empty for text)
+      fieldsForType.forEach(field => {
+        newAidTypeStock[field.name] = field.type === 'number' ? '0' : '';
+      });
+      
+      newAidStock[aidId] = newAidTypeStock;
+      return newAidStock;
+    }
+    
+    // If toggling off, just update the available flag
+    return {
       ...prev,
       [aidId]: {
         ...(prev[aidId] || {}),
-        available: !(prev[aidId] || {}).available,
-      },
-    }));
-  };
+        available: !isCurrentlyAvailable
+      }
+    };
+  });
+};
 
   // Handle sponsor form actions
   const handleAddSponsor = () => {
@@ -672,14 +753,11 @@ export default function EditProfileForm({
               </div>
 
               {/* Aid Stock Management */}
-              <div className="bg-gray-50 p-4 rounded-lg shadow">
-                <h3 className="text-xl font-semibold mb-3">
-                  Aid Stock Management
-                </h3>
+                            <div className="bg-gray-50 p-4 rounded-lg shadow">
+                <h3 className="text-xl font-semibold mb-3">Aid Stock Management</h3>
                 <div className="space-y-4">
                   {aidTypes.map((aidType) => {
-                    const isAvailable =
-                      (aidStock[aidType.id]?.available as boolean) || false;
+                    const isAvailable = (aidStock[aidType.id]?.available as boolean) || false;
                     return (
                       <div key={aidType.id} className="border p-3 rounded">
                         <div className="flex items-center mb-2">
@@ -690,61 +768,51 @@ export default function EditProfileForm({
                             onChange={() => toggleAidAvailability(aidType.id)}
                             className="mr-2"
                           />
-                          <label
-                            htmlFor={`aid-${aidType.id}`}
-                            className="font-medium"
-                          >
+                          <label htmlFor={`aid-${aidType.id}`} className="font-medium text-black">
                             {aidType.label}
                           </label>
                         </div>
                         {isAvailable && (
                           <div className="pl-6 space-y-2">
-                            {/* Dynamic inputs based on aidType.id - kept concise for brevity */}
-                            {/* Example for Food */}
-                            {aidType.id === 'food' && (
-                              <>
-                                <div>
-                                  <label className="text-sm block">
-                                    Food Packs:
-                                  </label>
+                            {/* Show all fields for this aid type */}
+                            {aidTypeFields[aidType.id as keyof typeof aidTypeFields]?.map((field) => (
+                              <div key={`${aidType.id}-${field.name}`}>
+                                <label className="text-sm block text-black">
+                                  {field.label}:
+                                </label>
+                                {field.type === 'number' ? (
                                   <input
                                     type="number"
                                     value={
-                                      (aidStock.food?.foodPacks as string) || ''
+                                      (aidStock[aidType.id]?.[field.name] as string | number) || 
+                                      (field.type === 'number' ? '0' : '')
                                     }
                                     onChange={(e) =>
                                       handleAidStockChange(
-                                        'food',
-                                        'foodPacks',
+                                        aidType.id,
+                                        field.name,
                                         e.target.value
                                       )
                                     }
-                                    className="w-full p-1 border rounded"
+                                    className="w-full p-1 border rounded text-black"
                                     min="0"
                                   />
-                                </div>
-                                <div>
-                                  <label className="text-sm block">
-                                    Category:
-                                  </label>
+                                ) : (
                                   <input
                                     type="text"
-                                    value={
-                                      (aidStock.food?.category as string) || ''
-                                    }
+                                    value={(aidStock[aidType.id]?.[field.name] as string) || ''}
                                     onChange={(e) =>
                                       handleAidStockChange(
-                                        'food',
-                                        'category',
+                                        aidType.id,
+                                        field.name,
                                         e.target.value
                                       )
                                     }
-                                    className="w-full p-1 border rounded"
+                                    className="w-full p-1 border rounded text-black"
                                   />
-                                </div>
-                              </>
-                            )}
-                            {/* Add similar conditional blocks for other aid types */}
+                                )}
+                              </div>
+                            ))}
                           </div>
                         )}
                       </div>
