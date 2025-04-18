@@ -3,6 +3,11 @@
 
 import { useRouter } from 'next/navigation';
 
+interface CustomError {
+  message: string;
+  code?: number;
+}
+
 const LogoutButton = () => {
   const router = useRouter();
 
@@ -16,8 +21,14 @@ const LogoutButton = () => {
         console.error('Server-side logout failed');
         // Optionally handle the error on the client
       }
-    } catch (error: any) {
-      console.error('Error during logout:', error);
+    } catch (error) {
+      if (typeof error === 'string') {
+        console.error('Error during logout (string):', error);
+      } else if (error instanceof Error) {
+        console.error('Error during logout (Error):', error.message);
+      } else {
+        console.error('Error during logout (unknown):', error);
+      }
     }
   };
 
