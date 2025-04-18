@@ -26,8 +26,9 @@ const LoginForm: React.FC = () => {
       toast.success('Login Successful! Redirecting...', { duration: 2000 });
 
       setTimeout(() => {
-        router.push('/');
-      }, 1500);
+        document.location.reload();
+      }, 1000);
+      router.push('/');
     } catch (backendError) {
       console.error('Backend login error:', backendError);
       let backendErrorMessage = 'Login failed during server verification.';
