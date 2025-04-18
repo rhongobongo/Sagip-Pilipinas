@@ -7,6 +7,7 @@ import { RequestPin } from '@/types/types';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/Firebase/Firebase'; // Make sure this is your client-side Firebase import
 import { CiCircleAlert } from 'react-icons/ci';
+import { useRouter } from 'next/navigation';
 
 // Use dynamic import with ssr: false for the map component
 const DynamicMap = dynamic(() => import('./GoogleMapComponent'), {
@@ -16,22 +17,18 @@ const DynamicMap = dynamic(() => import('./GoogleMapComponent'), {
 interface AidRequestMapWrapperProps {
   initialPins?: RequestPin[];
   onPinSelect?: (pin: RequestPin) => void;
-  width?: string;
-  height?: string;
 }
 
 const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
   initialPins = [],
   onPinSelect,
-  width = '100vw',
-  height = '100vh',
 }) => {
+  const router = useRouter();
   const [pins, setPins] = useState<RequestPin[]>(initialPins);
   const [selectedPin, setSelectedPin] = useState<RequestPin | null>(null);
   const mapRef = useRef<MapRef>(null);
 
   useEffect(() => {
-    // Fetch aid requests on component mount
     const fetchAidRequests = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, 'aidRequest'));
@@ -87,10 +84,13 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
     });
   };
 
+  const handleDonate = () => {
+    router.push(`/donation?aidRequestId=${selectedPin?.id}`);
+  };
   return (
-    <div className="w-full h-full flex-col sm:flex sm:flex-row sm:h-screen sm:w-screen">
+    <div className="flex flex-col md:flex-row h-screen w-screen">
       {/* Left panel - Aid request list */}
-      <div className="w-full h-1/2 sm:w-1/3 sm:h-full bg-white p-4 overflow-y-auto shadow-lg">
+      <div className="w-full h-1/2 md:w-1/3 md:h-full bg-white p-4 overflow-y-auto shadow-lg">
         <h2 className="text-xl font-bold mb-4 text-black">Aid Requests</h2>
 
         {selectedPin && (
@@ -148,15 +148,22 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
                   />
                 </div>
               )}
+
+              <button
+                className="bg-red-600 text-white my-3 p-3 rounded-2xl"
+                onClick={handleDonate}
+              >
+                DONATE
+              </button>
             </div>
           </div>
         )}
 
-        <div className="space-y-2 text-black">
+        <div className="space-y-2 text-black ">
           {pins.map((pin) => (
-            <div
+            <button
               key={pin.id}
-              className={`p-3 rounded-md cursor-pointer hover:bg-red-100 border transition-colors ${
+              className={`w-full p-3 rounded-md cursor-pointer hover:bg-red-100 border transition-colors${
                 selectedPin?.id === pin.id
                   ? 'border-red-500 bg-red-50'
                   : 'border-red-200'
@@ -165,7 +172,7 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-medium">{pin.name}</h3>
+                  <h3 className="text-start font-medium">{pin.name}</h3>
                   <p className="text-sm text-gray-600">
                     {pin.calamityType} - Level {pin.calamityLevel}
                   </p>
@@ -177,10 +184,10 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
                   <CiCircleAlert className="text-red-800 text-2xl" />
                 </div>
               </div>
-              <p className="text-sm mt-1 text-gray-700 line-clamp-2">
+              <p className="text-start text-sm mt-1 text-gray-700 line-clamp-2">
                 {pin.shortDesc}
               </p>
-            </div>
+            </button>
           ))}
 
           {pins.length === 0 && (
@@ -190,9 +197,8 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
           )}
         </div>
       </div>
-
-      {/* Right panel - Map */}
-      <div className="w-full h-1/2 sm:w-2/3 sm:h-full">
+      {/* Right panel - Aid request map */}
+      <div className="w-full h-1/2 md:w-2/3 md:h-full">
         <DynamicMap
           ref={mapRef}
           pins={pins}

@@ -2,7 +2,8 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { getAuthTokens } from '@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge';
-import MobileMenuToggle from './MobileMenuToggle'; // Ensure this path is correct
+import MobileMenuToggle from './MobileMenuToggle';
+import LogoutButton from './LogoutButton'; // Ensure this import is correct
 
 interface LinkInterface {
   displayName: string;
@@ -18,12 +19,6 @@ const Navbar = async () => {
     { displayName: 'Map', href: '/map' },
     { displayName: 'Request Aid', href: '/request-aid' },
     { displayName: 'Learn More', href: '/learnmore' },
-    ...(!user
-      ? [{ displayName: 'Register Now', href: '/register' }]
-      : [
-          { displayName: 'My Profile', href: '/editprofile' },
-          { displayName: 'Log out', href: '/test' },
-        ]),
   ];
 
   return (
@@ -52,10 +47,47 @@ const Navbar = async () => {
               </Link>
             </li>
           ))}
+          {user ? (
+            <>
+              <li>
+                <Link
+                  href="/profileedit"
+                  className="text-white px-1.5 py-0.5 inline-block text-lg font-extralight transition-all ease-in-out duration-300 hover:text-white hover:decoration-white hover:underline hover:decoration-2 hover:underline-offset-8 hover:scale-110"
+                >
+                  My Profile
+                </Link>
+              </li>
+              <li>
+                <LogoutButton /> {/* Render the client-side LogoutButton */}
+              </li>
+            </>
+          ) : (
+            <li>
+              <Link
+                href="/register"
+                className="text-white px-1.5 py-0.5 inline-block text-lg font-extralight transition-all ease-in-out duration-300 hover:text-white hover:decoration-white hover:underline hover:decoration-2 hover:underline-offset-8 hover:scale-110"
+              >
+                Register Now
+              </Link>
+            </li>
+          )}
         </ul>
 
         {/* Mobile Menu Toggle (Client Component) */}
-        <MobileMenuToggle links={linksArray} />
+        <MobileMenuToggle
+          links={
+            user
+              ? [
+                  ...linksArray,
+                  { displayName: 'My Profile', href: '/profileedit' },
+                  { displayName: 'Log out', href: '#' }, // Placeholder - needs client-side handling
+                ]
+              : [
+                  ...linksArray,
+                  { displayName: 'Register Now', href: '/register' },
+                ]
+          }
+        />
       </div>
     </nav>
   );
