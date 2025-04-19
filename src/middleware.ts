@@ -11,9 +11,17 @@ const PUBLIC_PATHS = [
     "/map",
     "/request-aid",
     "/404",
+    "/news",
 ];
 const AUTH_PATHS = ["/register", "/login", "/forgot-password"];
 const ADMIN_PATH_REGEX = /^\/admin(?:\/([a-zA-Z0-9-]+))?(?:\/|$)/;
+
+const isPublicPath = (pathname: string) => {
+    return (
+        PUBLIC_PATHS.includes(pathname) ||
+        pathname.startsWith("/news/")
+    );
+};
 
 export default async function middleware(request: NextRequest) {
     const { nextUrl } = request;
@@ -55,6 +63,14 @@ export default async function middleware(request: NextRequest) {
             if (isAdminRoute) {
                 return NextResponse.redirect(new URL("/404", request.url));
             }
+            if (isPublicPath(pathname)) {
+                return NextResponse.next({
+                    headers: {
+                        'x-pathname': pathname,
+                    },
+                });
+            }
+            
             return redirectToLogin(request, {
                 path: "/login",
                 publicPaths: [...PUBLIC_PATHS, ...AUTH_PATHS],
