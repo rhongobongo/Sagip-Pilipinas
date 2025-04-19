@@ -99,7 +99,19 @@ const LoginForm: React.FC = () => {
 
   return (
     // Note: Toaster is now likely outside this component in the main page/layout<>
-    <div className="md:h-full w-full max-w-sm bg-gradient-to-r from-[#480011] via-[#71001B] to-[#AE0029] p-6 rounded-lg shadow-xl backdrop-blur-sm">
+    <div className="h-full md:h-full w-full max-w-sm bg-gradient-to-r from-[#480011] via-[#71001B] to-[#AE0029] p-6 rounded-lg shadow-xl backdrop-blur-sm">
+      <div className="flex flex-col items-center justify-center text-white md:hidden text-center mb-8">
+        <h1 className="text-2xl lg:text-6xl font-bold mb-4 text-shadow-md underline">
+          WELCOME!
+        </h1>{' '}
+        {/* Added text shadow */}
+        <p className="text-lg lg:text-xl max-w-md text-shadow text-justify">
+          {' '}
+          {/* Added text shadow */}
+          Together, we stand strong. Welcome to Sagip Pilipinas, where every act
+          of kindness makes a difference.
+        </p>
+      </div>
       <h2 className="text-2xl font-semibold text-center mb-6 text-white">
         Login
       </h2>
@@ -183,42 +195,31 @@ const LoginPage: React.FC = () => {
       <Toaster position="top-center" reverseOrder={false} />
 
       {/* Background Container */}
-      <div className="relative min-h-screen w-full overflow-hidden bg-white md:bg-[#870020]">
+      <div className="relative min-h-screen w-full overflow-hidden  bg-[#870020]">
         {' '}
         {/* Darker Base */}
         {/* Diagonal Shape Layer */}
         <div
-          className="absolute inset-0 bg-white [clip-path:polygon(0%_0%,_60%_0%,_40%_100%,_0%_100%)]"
+          className="absolute inset-0 bg-white [clip-path:polygon(0%_0%,_100%_0%,_0%_100%,_0%_100%)] md:[clip-path:polygon(0%_0%,_60%_0%,_40%_100%,_0%_100%)]"
           // Adjust 65% and 35% to get the desired angle/position
         ></div>
         {/* Content Layer */}
-        <div className="relative z-10 flex min-h-screen items-center justify-center md:justify-around p-4 md:p-8">
+        <div className="min-w-full relative z-10 flex min-h-screen items-center justify-center md:justify-around md:w-full p-4 md:p-8">
           {/* Grid for Layout (adjust columns/gap as needed) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 w-full max-w-6xl">
             {/* Login Form Column */}
-            <div className="flex flex-col items-center justify-center text-black md:hidden text-left">
-              <h1 className="text-5xl lg:text-6xl font-bold mb-4 text-shadow-md">
-                WELCOME!
-              </h1>{' '}
-              {/* Added text shadow */}
-              <p className="text-lg lg:text-xl max-w-md text-shadow justify">
-                {' '}
-                {/* Added text shadow */}
-                Together, we stand strong. Welcome to Sagip Pilipinas, where
-                every act of kindness makes a difference.
-              </p>
-            </div>
+
             <div className="flex items-center justify-center md:justify-end md:mr-12">
               <LoginForm /> {/* Embed the LoginForm component */}
             </div>
 
             {/* Welcome Text Column */}
-            <div className="hidden md:flex flex-col items-start justify-center md:text-white text-left">
-              <h1 className="text-5xl lg:text-6xl font-bold mb-4 text-shadow-md">
+            <div className=" hidden md:flex flex-col items-end justify-center md:text-white text-left">
+              <h1 className="text-5xl lg:text-6xl font-bold mb-4 text-shadow-md underline">
                 WELCOME!
               </h1>{' '}
               {/* Added text shadow */}
-              <p className="text-lg lg:text-xl max-w-md text-shadow">
+              <p className="w-full text-lg lg:text-xl max-w-md text-shadow text-justify">
                 {' '}
                 {/* Added text shadow */}
                 Together, we stand strong. Welcome to Sagip Pilipinas, where
