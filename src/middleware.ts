@@ -12,7 +12,7 @@ const PUBLIC_PATHS = [
     "/request-aid",
     "/404",
 ];
-const AUTH_PATHS = ["/register", "/login", "forget-password"];
+const AUTH_PATHS = ["/register", "/login", "/forgot-password"];
 const ADMIN_PATH_REGEX = /^\/admin(?:\/([a-zA-Z0-9-]+))?(?:\/|$)/;
 
 export default async function middleware(request: NextRequest) {

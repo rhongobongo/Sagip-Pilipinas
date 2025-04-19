@@ -12,6 +12,7 @@ import { loginWithCredentials } from '@/lib/APICalls/Auth/login'; // Assuming lo
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
+import Link from 'next/link'; // Import Link from next/link
 
 // --- LoginForm Component (exactly as you provided) ---
 const LoginForm: React.FC = () => {
@@ -158,6 +159,15 @@ const LoginForm: React.FC = () => {
             disabled={isLoading}
           />
         </div>
+        {/* Forgot Password Link */}
+        <div className="mb-4 text-right">
+          <Link 
+            href="/forgot-password" 
+            className="text-sm text-white hover:text-red-200 underline focus:outline-none"
+          >
+            Forgot Password?
+          </Link>
+        </div>
         {/* Submit Button */}
         <button
           type="submit"
@@ -175,12 +185,12 @@ const LoginForm: React.FC = () => {
       <div className="mt-6 text-center">
         <p className="text-sm text-white">
           Don&apos;t have an account?{' '}
-          <a
+          <Link
             href="/register"
             className="font-medium text-white underline hover:text-red-200"
           >
             Sign Up
-          </a>
+          </Link>
         </p>
       </div>
     </div>
