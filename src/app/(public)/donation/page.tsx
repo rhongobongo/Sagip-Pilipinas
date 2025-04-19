@@ -1,3 +1,5 @@
+// src/app/(public)/donation/page.tsx
+
 import React from 'react';
 import { cookies } from 'next/headers';
 import { getTokens } from 'next-firebase-auth-edge';
@@ -6,9 +8,21 @@ import { authConfig } from '@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge';
 import { db } from '@/lib/Firebase-Admin';
 import { RequestPin } from '@/types/types';
 import { GeoPoint, Timestamp } from 'firebase-admin/firestore';
-import DonationPageForm from '@/components/(page)/donationPage/donationPageForm';
-import DonationMapWrapper from '@/components/map/DonationMapWrapper';
 
+// Import the page form component (already correct)
+import { default as DonationPageForm } from '@/components/(page)/donationPage/donationPageForm';
+
+// --- REMOVE the dynamic import from here ---
+// import dynamic from 'next/dynamic';
+// const DonationMapWrapper = dynamic(
+//   () => import('@/components/map/DonationMapWrapper'),
+//   { ssr: false } // <-- This was the problematic line
+// );
+
+// +++ IMPORT the new Client Component Loader +++
+import DonationMapClientLoader from '@/components/map/DonationMapClientLoader'; // Adjust path if necessary
+
+// --- Keep the fetchAidRequests function as is ---
 const fetchAidRequests = async (): Promise<RequestPin[]> => {
   const snapshot = await db.collection('aidRequest').get();
   return snapshot.docs.map((doc) => {
@@ -37,56 +51,26 @@ const fetchAidRequests = async (): Promise<RequestPin[]> => {
   });
 };
 
+// --- Keep the OrganizationData interface as is ---
 interface OrganizationData {
   id: string;
   email?: string;
   name?: string;
   location?: string;
   contactNumber?: string;
-  // Update to match the structure from registerOrganization
   aidStock?: {
-    food?: {
-      available: boolean;
-      foodPacks?: number;
-    };
-    clothing?: {
-      available: boolean;
-      male?: number;
-      female?: number;
-      children?: number;
-    };
-    medicalSupplies?: {
-      available: boolean;
-      kits?: number;
-    };
-    shelter?: {
-      available: boolean;
-      tents?: number;
-      blankets?: number;
-    };
-    searchAndRescue?: {
-      available: boolean;
-      rescueKits?: number;
-      rescuePersonnel?: number;
-    };
-    financialAssistance?: {
-      available: boolean;
-      totalFunds?: number;
-    };
-    counseling?: {
-      available: boolean;
-      counselors?: number;
-      hours?: number;
-    };
-    technicalSupport?: {
-      available: boolean;
-      vehicles?: number;
-      communication?: number;
-    };
+    food?: { available: boolean; foodPacks?: number; };
+    clothing?: { available: boolean; male?: number; female?: number; children?: number; };
+    medicalSupplies?: { available: boolean; kits?: number; };
+    shelter?: { available: boolean; tents?: number; blankets?: number; };
+    searchAndRescue?: { available: boolean; rescueKits?: number; rescuePersonnel?: number; };
+    financialAssistance?: { available: boolean; totalFunds?: number; };
+    counseling?: { available: boolean; counselors?: number; hours?: number; };
+    technicalSupport?: { available: boolean; vehicles?: number; communication?: number; };
   };
 }
 
-// Make the component async
+// --- Keep the DonationPage component structure ---
 const DonationPage = async () => {
   const aidRequests = await fetchAidRequests();
 
@@ -94,39 +78,31 @@ const DonationPage = async () => {
   let errorMessage: string | null = null;
   let userId: string | null = null;
 
+  // --- Keep the data fetching logic as is ---
   try {
-    // 1. Get logged-in user's ID server-side
     const tokens = await getTokens(await cookies(), authConfig);
 
     if (tokens) {
       userId = tokens.decodedToken.uid;
       console.log('Server Component: User ID found:', userId);
 
-      // 2. Fetch organization data using Admin SDK (bypasses rules)
       if (userId) {
         const orgDocRef = db.collection('organizations').doc(userId);
-        const docSnap = await orgDocRef.get(); // Fetches the DocumentSnapshot
+        const docSnap = await orgDocRef.get();
 
-        // Using docSnap.exists property, not method
         if (docSnap.exists) {
           const data = docSnap.data();
-          // Optional: Check if data is actually defined after calling .data()
           if (data) {
-            // Extract the organization data directly matching your interface
             organizationData = {
               name: data.name,
               location: data.location,
               contactNumber: data.contactNumber,
               id: docSnap.id,
               aidStock: data.aidStock,
-              email: docSnap.id,
+              email: data.email ?? userId, // Fallback email to userId if not present
             };
-            console.log(
-              'Server Component: Org Data Fetched:',
-              organizationData
-            );
+            console.log('Server Component: Org Data Fetched:', organizationData);
           } else {
-            // This case is less common if docSnap.exists is true, but good practice
             errorMessage = `Organization document exists but data is undefined for user ID: ${userId}`;
             console.log(errorMessage);
           }
@@ -138,7 +114,6 @@ const DonationPage = async () => {
     } else {
       errorMessage = 'User not authenticated.';
       console.log(errorMessage);
-      // Redirecting should ideally happen in middleware based on auth state
     }
   } catch (error) {
     console.error('Server Component: Error fetching organization data:', error);
@@ -148,29 +123,23 @@ const DonationPage = async () => {
     }
   }
 
+  // --- Keep the error/loading handling as is ---
   if (errorMessage) {
     return (
       <div>Error: {errorMessage} Please try logging in or contact support.</div>
     );
   }
-
   if (!organizationData && userId) {
-    // Check userId to differentiate from "not logged in"
-    // This might happen if the user is logged in but the doc doesn't exist yet
-    // Or if data was undefined in the check above
     return <div>Loading organization data or data not found...</div>;
   }
   if (!organizationData && !userId) {
-    // This case should ideally be handled by middleware redirect or earlier error message
     return <div>User not authenticated.</div>;
   }
-
-  // --- Render page content with fetched data ---
-  // Added a null check for safety before rendering DonationPageForm
   if (!organizationData) {
-    return <div>Failed to load organization data.</div>; // Fallback if somehow data is null here
+    return <div>Failed to load organization data.</div>; // Fallback
   }
 
+  // --- Render page content, using the new Client Component Loader ---
   return (
     <div className="bg-white w-full h-full text-black">
       <div className="text-xl sm:text-3xl font-semibold mx-2 lg:ml-[10%] pt-8">
@@ -186,10 +155,11 @@ const DonationPage = async () => {
         </div>
         <div className="flex flex-col">
           <div>
-            <DonationMapWrapper initialPins={aidRequests} />
+            {/* +++ Use the new DonationMapClientLoader here +++ */}
+            <DonationMapClientLoader initialPins={aidRequests} />
           </div>
           <div>
-            {/* Pass the fetched data as a prop now, including aid stock info */}
+            {/* Pass the fetched data as a prop */}
             <DonationPageForm fetchedOrgData={organizationData} />
           </div>
         </div>

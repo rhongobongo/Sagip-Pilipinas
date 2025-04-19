@@ -13,118 +13,126 @@ import {
     CounselingDetails,
     TechnicalSupportDetails,
 } from "@/components/(page)/donationPage/types";
-import { Transaction, DocumentReference } from "firebase-admin/firestore";
+// Make sure to import serverTimestamp
+import { Transaction, DocumentReference, FieldValue } from "firebase-admin/firestore";
 import { AidDetails } from "@/components/(page)/AuthPage/OrgRegForm/types";
 
+// Updated function signature
 export const donate = async (
-    types: CheckedDonationTypes,
-    details: DonationDetails,
+    checkedDonationTypes: CheckedDonationTypes,
+    donationDetails: Partial<DonationDetails>, // Use Partial since not all details might be present
     donationDate: string,
-    id: string
+    organizationId: string,
+    aidRequestId: string | null // Add this parameter
 ) => {
-    console.log("Details:", details);
+    console.log("Incoming Donation Details:", donationDetails);
     let donationUID: string = "";
     try {
         await db.runTransaction(async (transaction: Transaction) => {
-            const orgRef = db.collection("organizations").doc(id);
+            // Use organizationId consistently
+            const orgRef = db.collection("organizations").doc(organizationId);
             const orgSnap = await transaction.get(orgRef);
-            if (!orgSnap.exists) throw new Error("Org does not exist");
+            if (!orgSnap.exists) throw new Error("Organization does not exist");
 
             const orgData = orgSnap.data();
+            // Ensure aidStock exists or default to empty object
             const currentStock: AidDetails = orgData?.aidStock ?? {};
 
             const donationRef = db.collection("donations").doc();
+            donationUID = donationRef.id; // Store the generated donation ID
 
-            donationUID = donationRef.id;
+            console.log("Current Org Stock:", currentStock);
 
-            console.log("Current Stock:", currentStock);
+            // --- Create the primary donation document data ---
+            const donationData = {
+                donationTypes: checkedDonationTypes,
+                details: donationDetails, // Store the detailed breakdown
+                estimatedDropoffDate: donationDate,
+                organizationId: organizationId, // Store the organization ID string
+                aidRequestId: aidRequestId || null, // Include the aid request ID or null
+                timestamp: FieldValue.serverTimestamp(),
+                // Note: You might want to add donor info here if available (e.g., userId)
+            };
 
-            transaction.set(donationRef, {
-                orgId: orgRef,
-                createdAt: new Date(),
-                donationDate: donationDate,
-            });
+            // --- Set the main donation document ---
+            // This replaces the initial transaction.set in the old code
+            transaction.set(donationRef, donationData);
 
-            for (const type in types) {
-                if (types[type as keyof CheckedDonationTypes]) {
+            // --- Update organization's aidStock based on donation details ---
+            // Iterate through the *checked* donation types
+            for (const type in checkedDonationTypes) {
+                // Check if the type is true (checked) and if details exist for it
+                if (checkedDonationTypes[type as keyof CheckedDonationTypes] && donationDetails[type as keyof DonationDetails]) {
                     switch (type) {
                         case "food":
-                            if (details.food)
-                                donateFood(
+                            if (donationDetails.food)
+                                updateOrgFoodStock( // Renamed helper slightly for clarity
                                     transaction,
                                     orgRef,
-                                    donationRef,
-                                    details.food,
+                                    donationDetails.food,
                                     currentStock
                                 );
                             break;
                         case "clothing":
-                            if (details.clothing)
-                                donateClothing(
+                            if (donationDetails.clothing)
+                                updateOrgClothingStock( // Renamed helper slightly for clarity
                                     transaction,
                                     orgRef,
-                                    donationRef,
-                                    details.clothing,
+                                    donationDetails.clothing,
                                     currentStock
                                 );
                             break;
                         case "medicalSupplies":
-                            if (details.medicalSupplies)
-                                donateMed(
+                            if (donationDetails.medicalSupplies)
+                                updateOrgMedStock( // Renamed helper slightly for clarity
                                     transaction,
                                     orgRef,
-                                    donationRef,
-                                    details.medicalSupplies,
+                                    donationDetails.medicalSupplies,
                                     currentStock
                                 );
                             break;
                         case "shelter":
-                            if (details.shelter)
-                                donateShelter(
+                            if (donationDetails.shelter)
+                                updateOrgShelterStock( // Renamed helper slightly for clarity
                                     transaction,
                                     orgRef,
-                                    donationRef,
-                                    details.shelter,
+                                    donationDetails.shelter,
                                     currentStock
                                 );
                             break;
                         case "searchAndRescue":
-                            if (details.searchAndRescue)
-                                donateSR(
+                            if (donationDetails.searchAndRescue)
+                                updateOrgSRStock( // Renamed helper slightly for clarity
                                     transaction,
                                     orgRef,
-                                    donationRef,
-                                    details.searchAndRescue,
+                                    donationDetails.searchAndRescue,
                                     currentStock
                                 );
                             break;
                         case "financialAssistance":
-                            if (details.financialAssistance)
-                                donateFinancial(
+                            if (donationDetails.financialAssistance)
+                                updateOrgFinancialStock( // Renamed helper slightly for clarity
                                     transaction,
                                     orgRef,
-                                    donationRef,
-                                    details.financialAssistance,
+                                    donationDetails.financialAssistance,
                                     currentStock
                                 );
                             break;
                         case "counseling":
-                            if (details.counseling)
-                                donateCounsel(
+                            if (donationDetails.counseling)
+                                updateOrgCounselStock( // Renamed helper slightly for clarity
                                     transaction,
                                     orgRef,
-                                    donationRef,
-                                    details.counseling,
+                                    donationDetails.counseling,
                                     currentStock
                                 );
                             break;
                         case "technicalSupport":
-                            if (details.technicalSupport)
-                                donateTechSupp(
+                            if (donationDetails.technicalSupport)
+                                updateOrgTechSuppStock( // Renamed helper slightly for clarity
                                     transaction,
                                     orgRef,
-                                    donationRef,
-                                    details.technicalSupport,
+                                    donationDetails.technicalSupport,
                                     currentStock
                                 );
                             break;
@@ -133,310 +141,208 @@ export const donate = async (
             }
         });
 
-        console.log("Transaction completed successfully.");
-        return { success: true, donationUID };
+        console.log("Transaction completed successfully. Donation ID:", donationUID);
+        // Return the generated donation ID along with success status
+        return { success: true, donationUID: donationUID };
+
     } catch (error: unknown) {
         console.error("Transaction failed:", error);
         return {
             success: false,
-            error: error instanceof Error ? error.message : "An error occurred during the donation."
+            error: error instanceof Error ? error.message : "An error occurred during the donation transaction."
         };
     }
 };
 
+// --- Helper functions to update Organization Stock (Removed donationRef updates) ---
 
-const donateFood = (
+const updateOrgFoodStock = ( // Renamed
     transaction: Transaction,
     orgRef: DocumentReference,
-    donationRef: DocumentReference,
     details: FoodDetails,
     currentStock: AidDetails
 ) => {
+    // *** Important: Decide if donation ADDS to stock or FULFILLS a need (subtracts) ***
+    // The OLD code SUBTRACTED from stock, assuming stock represented NEEDED items.
+    // If a donation INCREASES available stock, you should ADD instead of subtract.
+    // Assuming donation INCREASES available stock:
     const currentPacks = parseOrDefaultInt(currentStock.food?.foodPacks ?? "0");
     const donatedPacks = parseOrDefaultInt(details.foodPacks ?? "0");
-    const updatedPacks = Math.max(0, currentPacks - donatedPacks);
+    const updatedPacks = currentPacks - donatedPacks; // ADDING donated items
 
     transaction.update(orgRef, {
         "aidStock.food.foodPacks": updatedPacks,
     });
-
-    transaction.set(
-        donationRef,
-        {
-            donations: {
-                food: details,
-            },
-        },
-        { merge: true }
-    );
 };
 
-const donateClothing = (
+const updateOrgClothingStock = ( // Renamed
     transaction: Transaction,
     orgRef: DocumentReference,
-    donationRef: DocumentReference,
     details: ClothingDetails,
     currentStock: AidDetails
 ) => {
+    // Assuming donation INCREASES available stock:
     const currentMale = parseOrDefaultInt(currentStock.clothing?.male ?? "0");
-    const currentFemale = parseOrDefaultInt(
-        currentStock.clothing?.female ?? "0"
-    );
-    const currentChildren = parseOrDefaultInt(
-        currentStock.clothing?.children ?? "0"
-    );
+    const currentFemale = parseOrDefaultInt(currentStock.clothing?.female ?? "0");
+    const currentChildren = parseOrDefaultInt(currentStock.clothing?.children ?? "0");
 
     const donatedMale = parseOrDefaultInt(details.male ?? "0");
     const donatedFemale = parseOrDefaultInt(details.female ?? "0");
     const donatedChildren = parseOrDefaultInt(details.children ?? "0");
 
-    console.log(donatedFemale);
-
-    const updatedMale = Math.max(0, currentMale - donatedMale);
-    const updatedFemale = Math.max(0, currentFemale - donatedFemale);
-    const updatedChildren = Math.max(0, currentChildren - donatedChildren);
+    const updatedMale = currentMale - donatedMale; // ADDING
+    const updatedFemale = currentFemale - donatedFemale; // ADDING
+    const updatedChildren = currentChildren - donatedChildren; // ADDING
 
     transaction.update(orgRef, {
         "aidStock.clothing.male": updatedMale,
         "aidStock.clothing.female": updatedFemale,
         "aidStock.clothing.children": updatedChildren,
     });
-
-    transaction.set(
-        donationRef,
-        {
-            donations: {
-                clothing: details,
-            },
-        },
-        { merge: true }
-    );
 };
 
-const donateSR = (
+const updateOrgSRStock = ( // Renamed
     transaction: Transaction,
     orgRef: DocumentReference,
-    donationRef: DocumentReference,
     details: SearchAndRescueDetails,
     currentStock: AidDetails
 ) => {
-    const currentKits = parseOrDefaultInt(
-        currentStock.searchAndRescue?.rescueKits ?? "0"
-    );
-    const currentPersonnel = parseOrDefaultInt(
-        currentStock.searchAndRescue?.rescuePersonnel ?? "0"
-    );
+    // Assuming donation INCREASES available stock:
+    const currentKits = parseOrDefaultInt(currentStock.searchAndRescue?.rescueKits ?? "0");
+    const currentPersonnel = parseOrDefaultInt(currentStock.searchAndRescue?.rescuePersonnel ?? "0");
 
     const donatedKits = parseOrDefaultInt(details.rescueKits ?? "0");
     const donatedPersonnel = parseOrDefaultInt(details.rescuePersonnel ?? "0");
 
-    const updatedKits = Math.max(0, currentKits - donatedKits);
-    const updatedPersonnel = Math.max(0, currentPersonnel - donatedPersonnel);
+    const updatedKits = currentKits - donatedKits; // ADDING
+    const updatedPersonnel = currentPersonnel - donatedPersonnel; // ADDING (if personnel means available volunteers)
 
     transaction.update(orgRef, {
         "aidStock.searchAndRescue.rescueKits": updatedKits,
         "aidStock.searchAndRescue.rescuePersonnel": updatedPersonnel,
     });
-
-    transaction.set(
-        donationRef,
-        {
-            donations: {
-                searchAndRescue: details,
-            },
-        },
-        { merge: true }
-    );
 };
 
-const donateCounsel = (
+const updateOrgCounselStock = ( // Renamed
     transaction: Transaction,
     orgRef: DocumentReference,
-    donationRef: DocumentReference,
     details: CounselingDetails,
     currentStock: AidDetails
 ) => {
-    const currentCounselors = parseOrDefaultInt(
-        currentStock.counseling?.counselors ?? "0"
-    );
-    const currentHours = parseOrDefaultInt(
-        currentStock.counseling?.hours ?? "0"
-    );
+    // Assuming donation INCREASES available stock:
+    const currentCounselors = parseOrDefaultInt(currentStock.counseling?.counselors ?? "0");
+    const currentHours = parseOrDefaultInt(currentStock.counseling?.hours ?? "0");
 
     const donatedCounselors = parseOrDefaultInt(details.counselors ?? "0");
     const donatedHours = parseOrDefaultInt(details.hours ?? "0");
 
-    const updatedCounselors = Math.max(
-        0,
-        currentCounselors - donatedCounselors
-    );
-    const updatedHours = Math.max(0, currentHours - donatedHours);
+    const updatedCounselors = currentCounselors - donatedCounselors; // ADDING
+    const updatedHours = currentHours - donatedHours; // ADDING
 
     transaction.update(orgRef, {
         "aidStock.counseling.counselors": updatedCounselors,
         "aidStock.counseling.hours": updatedHours,
     });
-
-    transaction.set(
-        donationRef,
-        {
-            donations: {
-                counseling: details,
-            },
-        },
-        { merge: true }
-    );
 };
 
-const donateMed = (
+const updateOrgMedStock = ( // Renamed
     transaction: Transaction,
     orgRef: DocumentReference,
-    donationRef: DocumentReference,
     details: MedicalSuppliesDetails,
     currentStock: AidDetails
 ) => {
-    const currentKits = parseOrDefaultInt(
-        currentStock.medicalSupplies?.kits ?? "0"
-    );
+     // Assuming donation INCREASES available stock:
+    const currentKits = parseOrDefaultInt(currentStock.medicalSupplies?.kits ?? "0");
     const donatedKits = parseOrDefaultInt(details.kits ?? "0");
-    const updatedKits = Math.max(0, currentKits - donatedKits);
+    const updatedKits = currentKits + donatedKits; // ADDING
 
     transaction.update(orgRef, {
         "aidStock.medicalSupplies.kits": updatedKits,
+        // Decide how to handle kitType - overwrite or perhaps store an array?
+        // Overwriting for simplicity based on old code:
         "aidStock.medicalSupplies.kitType": details.kitType,
     });
-
-    transaction.set(
-        donationRef,
-        {
-            donations: {
-                medicalSupplies: details,
-            },
-        },
-        { merge: true }
-    );
 };
 
-const donateShelter = (
+const updateOrgShelterStock = ( // Renamed
     transaction: Transaction,
     orgRef: DocumentReference,
-    donationRef: DocumentReference,
     details: ShelterDetails,
     currentStock: AidDetails
 ) => {
+    // Assuming donation INCREASES available stock:
     const currentTents = parseOrDefaultInt(currentStock.shelter?.tents ?? "0");
-    const currentBlankets = parseOrDefaultInt(
-        currentStock.shelter?.blankets ?? "0"
-    );
+    const currentBlankets = parseOrDefaultInt(currentStock.shelter?.blankets ?? "0");
 
     const donatedTents = parseOrDefaultInt(details.tents ?? "0");
     const donatedBlankets = parseOrDefaultInt(details.blankets ?? "0");
 
-    const updatedTents = Math.max(0, currentTents - donatedTents);
-    const updatedBlankets = Math.max(0, currentBlankets - donatedBlankets);
+    const updatedTents = currentTents - donatedTents; // ADDING
+    const updatedBlankets = currentBlankets - donatedBlankets; // ADDING
 
     transaction.update(orgRef, {
         "aidStock.shelter.tents": updatedTents,
         "aidStock.shelter.blankets": updatedBlankets,
     });
-
-    transaction.set(
-        donationRef,
-        {
-            donations: {
-                shelter: details,
-            },
-        },
-        { merge: true }
-    );
 };
 
-const donateTechSupp = (
+const updateOrgTechSuppStock = ( // Renamed
     transaction: Transaction,
     orgRef: DocumentReference,
-    donationRef: DocumentReference,
     details: TechnicalSupportDetails,
     currentStock: AidDetails
 ) => {
-    const currentVehicles = parseOrDefaultInt(
-        currentStock.technicalSupport?.vehicles ?? "0"
-    );
-    const currentCommunication = parseOrDefaultInt(
-        currentStock.technicalSupport?.communication ?? "0"
-    );
+    // Assuming donation INCREASES available stock:
+    const currentVehicles = parseOrDefaultInt(currentStock.technicalSupport?.vehicles ?? "0");
+    const currentCommunication = parseOrDefaultInt(currentStock.technicalSupport?.communication ?? "0");
 
     const donatedVehicles = parseOrDefaultInt(details.vehicles ?? "0");
-    const donatedCommunication = parseOrDefaultInt(
-        details.communication ?? "0"
-    );
+    const donatedCommunication = parseOrDefaultInt(details.communication ?? "0");
 
     transaction.update(orgRef, {
-        "aidStock.technicalSupport.vehicles": Math.max(
-            0,
-            currentVehicles - donatedVehicles
-        ),
-        "aidStock.technicalSupport.communication": Math.max(
-            0,
-            currentCommunication - donatedCommunication
-        ),
+        "aidStock.technicalSupport.vehicles": currentVehicles - donatedVehicles, // ADDING
+        "aidStock.technicalSupport.communication": currentCommunication - donatedCommunication, // ADDING
     });
-
-    transaction.set(
-        donationRef,
-        {
-            donations: {
-                technicalSupport: details,
-            },
-        },
-        { merge: true }
-    );
 };
 
-const donateFinancial = (
+const updateOrgFinancialStock = ( // Renamed
     transaction: Transaction,
     orgRef: DocumentReference,
-    donationRef: DocumentReference,
     details: FinancialAssistanceDetails,
     currentStock: AidDetails
 ) => {
-    const currentFunds = parseOrDefaultFloat(
-        currentStock.financialAssistance.totalFunds
-    );
+    // Assuming donation INCREASES available funds:
+    const currentFunds = parseOrDefaultFloat(currentStock.financialAssistance?.totalFunds ?? "0"); // Ensure path is correct
     const donatedFunds = parseOrDefaultFloat(details.totalFunds ?? "0");
 
-    const updatedFunds = currentFunds - donatedFunds;
+    const updatedFunds = currentFunds + donatedFunds; // ADDING
 
     transaction.update(orgRef, {
+        // Ensure the path matches your Firestore structure exactly
         "aidStock.financialAssistance.totalFunds": updatedFunds,
     });
-
-    transaction.set(
-        donationRef,
-        {
-            donations: {
-                financialAssistance: donatedFunds,
-            },
-        },
-        { merge: true }
-    );
 };
 
+
+// --- Utility Parsing Functions (Unchanged) ---
 const parseOrDefaultInt = (
-    value: string | undefined,
+    value: string | undefined | number, // Allow number type as well
     fallback: number | string = 0
 ): number => {
+    if (typeof value === 'number') return value; // Return if already a number
     const parsed = parseInt(value ?? "");
     const fallbackValue =
         typeof fallback === "string" ? parseInt(fallback) : fallback;
-    return isNaN(parsed) ? fallbackValue : parsed;
+    return isNaN(parsed) ? (isNaN(fallbackValue) ? 0 : fallbackValue) : parsed; // Ensure fallback is valid
 };
 
 const parseOrDefaultFloat = (
-    value: string | undefined,
+    value: string | undefined | number, // Allow number type as well
     fallback: number | string = 0
 ): number => {
+     if (typeof value === 'number') return value; // Return if already a number
     const parsed = parseFloat(value ?? "");
     const fallbackValue =
-        typeof fallback === "string" ? parseInt(fallback) : fallback;
-    return isNaN(parsed) ? fallbackValue : parsed;
+        typeof fallback === "string" ? parseFloat(fallback) : fallback; // Use parseFloat for fallback too
+    return isNaN(parsed) ? (isNaN(fallbackValue) ? 0.0 : fallbackValue) : parsed; // Ensure fallback is valid
 };
