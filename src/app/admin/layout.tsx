@@ -1,19 +1,19 @@
 import AdminHeader from "@/components/(page)/Admin/AdminHeader";
-import Sidebar from "@/components/(page)/Admin/Sidebar/Sidebar";
+import AdminNavbar from "@/components/(page)/Admin/Navbar/AdminNavbar";
 
-export default function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function AdminLayout({
+    children,
+}: Readonly<{ children: React.ReactNode }>) {
     return (
-        <div className="min-h-screen flex flex-col bg-gray-100">
+        <div className="min-h-screen w-full h-full font-inter bg-gray-100">
             <AdminHeader />
-
-            <div className="flex flex-1">
-                <Sidebar />
-                <main className="flex-1 transition-all sticky">
-                    <div className="max-w-screen-xl mx-auto bg-white p-6 shadow-md rounded-lg">
+                <main className="transition-all p-10 sticky max-w-screen-xl mx-auto">
+                    
+                <AdminNavbar></AdminNavbar>
+                    <div className="bg-white shadow-md rounded-lg">
                         {children}
                     </div>
                 </main>
-            </div>
         </div>
     );
 }
