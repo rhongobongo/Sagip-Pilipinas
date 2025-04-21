@@ -209,28 +209,29 @@ const Primary: React.FC = () => {
             })}
           </div>
         </div>
+        
         <div className="flex-col md:flex-row items-center flex justify-center w-full h-1/3 md:h-full md:w-[45%] md:mx-auto">
-          <div className="h-full text-start mr-16 xl:mt-48 mt-24">
+          <div className="h-full text-start mr-8 ml-10 xl:mt-48 mt-24">
             <h1 className="text-lg md:text-lg lg:text-2xl font-black uppercase text-start tracking-wide md:text-right mb-8 w-full text-white">
               GABAY SA GITNA NG UNOS,
               <br />
               MULING BUBUHAYIN ANG PAG-ASA
             </h1>
-            <p className="text-sm md:text-base lg:text-lg text-gray-200 mb-5 justify text-start md:text-justify w-full text-wrap">
+            <p className="text-sm md:text-base lg:text-lg text-gray-200 mb-5 justify text-start md:text-right w-full text-wrap">
               When disaster strikes, every second counts.
             </p>
-            <p className="text-sm md:text-base lg:text-lg text-gray-200 mb-5 justify md:text-justify w-full text-wrap">
+            <p className="text-sm md:text-base lg:text-lg text-gray-200 mb-5 text-justify text-right w-full text-wrap">
               SAGIP PILIPINAS connects volunteers and organizations to those in
               need, streamlining relief efforts for a faster, more effective
               response. Coordinating aid, tracking resources, and mobilizing
               support, all made easier, ensuring that help reaches
               disaster-affected communities when they need it most.
             </p>
-            <p className="text-sm md:text-base lg:text-lg text-gray-200 mb-5 lg:mb-12 justify md:text-justify w-full text-wrap">
+            <p className="text-sm md:text-base lg:text-lg text-gray-200 mb-5 lg:mb-12 justify md:text-right w-full text-wrap">
               Join us in making a difference. DONATE/SIGN UP NOW!
             </p>
             <button
-              className="bg-red-600 px-8 py-4 rounded-full text-white font-bold 
+              className="bg-red-600 px-8 py-4 rounded-full text-white font-bold
             hover:bg-red-700 transition transform-gpu mb-6 md:mb-0"
               onClick={() => router.push('/map')}
             >

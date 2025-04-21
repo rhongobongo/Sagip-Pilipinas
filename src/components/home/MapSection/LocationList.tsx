@@ -27,7 +27,7 @@ const LocationList: React.FC<LocationListProps> = ({
 
   return (
     <div className="flex flex-col gap-4" style={{ height: '75vh' }}>
-      <div className="relative grid grid-cols-3 gap-0 text-black w-full rounded-3xl items-center justify-center font-bold overflow-hidden">
+      <div className="relative grid grid-cols-3 gap-0 text-black w-full rounded-3xl items-center justify-center font-bold ">
         {/* Sliding Indicator */}
         <div
           className={`absolute top-0 left-0 h-full bg-red-600 text-white border-black border-[3px] rounded-3xl transition-transform duration-300 ease-in-out`}
