@@ -24,6 +24,7 @@ const NewsGrid = ({ newsItems }: NewsGridProps) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const scrollTargetRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
 
   const filteredNews = searchTerm
     ? newsItems.filter(
@@ -46,11 +47,16 @@ const NewsGrid = ({ newsItems }: NewsGridProps) => {
     setCurrentPage(Math.min(Math.max(1, pageNumber), totalPages));
 
   useEffect(() => {
-    if (scrollTargetRef.current) {
-      scrollTargetRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
+    if (isInitialMount.current)
+      isInitialMount.current = false;
+    else 
+    {
+      if (scrollTargetRef.current) {
+        scrollTargetRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
     }
   }, [safeCurrentPage]);
 
