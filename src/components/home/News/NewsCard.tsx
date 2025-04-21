@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-interface NewsItem {
+export interface NewsItem {
   id: string;
   title: string;
   summary: string;
