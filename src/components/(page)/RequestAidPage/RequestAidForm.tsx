@@ -1,16 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react'; // Added useRef
+import { useState, useEffect, useRef } from 'react';
 import { RequestPin } from '@/types/types';
-// Import your server actions
 import { requestAid } from '@/components/map/SubmitAid';
 import { uploadImage } from './uploadImage';
-// Import date-fns for formatting
 import { format } from 'date-fns';
-// Import EmailJS and Geolib
 import emailjs from '@emailjs/browser';
 import { getDistance } from 'geolib';
-// Import GeoPoint if needed for typing, but geolib uses simple objects
 // import { GeoPoint } from 'firebase/firestore'; // Client-side GeoPoint if needed
 
 interface RequestFormProps {
@@ -27,27 +23,22 @@ type OrgData = {
 };
 
 const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
-  // --- Existing State ---
+  // --- State ---
   const [name, setName] = useState('');
   const [contactNum, setContactNum] = useState('');
   const [calamityLevel, setCalamityLevel] = useState('');
   const [calamityType, setCalamityType] = useState('');
   const [otherCalamity, setOtherCalamity] = useState('');
-  const [aidRequestDesc, setAidRequestDesc] = useState(''); // Renamed state variable for clarity
+  const [aidRequestDesc, setAidRequestDesc] = useState(''); // Renamed state variable
   const [otherAidRequest, setOtherAidRequest] = useState('');
-
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
-
   const [shortDesc, setShortDesc] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isSubmittingConfirmation, setIsSubmittingConfirmation] = useState(false);
   const [statusMessage, setStatusMessage] = useState(''); // Added for better feedback
-
-  // --- New State for Organizations ---
   const [organizations, setOrganizations] = useState<OrgData[]>([]);
   const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
 
@@ -56,65 +47,49 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   const YOUR_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID; // Template for Org Notifications
   const YOUR_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
 
-    // --- Fetch Organizations on Mount (Inside RequestAidForm component) ---
-    useEffect(() => {
-      const fetchOrgs = async () => {
-        console.log('Fetching organizations...');
-        setIsLoadingOrgs(true);
-        setOrganizations([]); // Start with empty array
+  // --- Fetch Organizations on Mount ---
+  useEffect(() => {
+    const fetchOrgs = async () => {
+      console.log('Fetching organizations...');
+      setIsLoadingOrgs(true);
+      setOrganizations([]);
 
-        try {
-          const response = await fetch('/api/organizations');
-          if (!response.ok) {
-            throw new Error(`Failed to fetch organizations: ${response.statusText}`);
-          }
-          const data = await response.json();
-
-          // Log raw data received from API - KEEP THIS
-          console.log("Raw organization data from API:", data);
-
-          // --- START: Enhanced Filter Debugging ---
-          const validOrgs = data.filter(
-            (org: any, index: number) => {
-              console.log(`\n--- Checking Org ${index} ---`);
-              console.log("Org Object:", org); // Log the whole object
-
-              const lat = org?.coordinates?.latitude;
-              const lng = org?.coordinates?.longitude;
-              const email = org?.email;
-
-              console.log(`  Coordinates:`, org?.coordinates); // Log coordinates object
-              console.log(`  Latitude: ${lat} (Type: ${typeof lat})`);
-              console.log(`  Longitude: ${lng} (Type: ${typeof lng})`);
-              console.log(`  Email: ${email} (Type: ${typeof email})`);
-
-              const hasValidCoords = typeof lat === 'number' && typeof lng === 'number';
-              const hasValidEmail = typeof email === 'string' && email.includes('@');
-              const isValid = hasValidCoords && hasValidEmail;
-
-              console.log(`  Check Result: HasCoords=${hasValidCoords}, HasEmail=${hasValidEmail} -> IsValid=${isValid}`);
-
-              return isValid;
-            }
-          );
-          // --- END: Enhanced Filter Debugging ---
-
-          setOrganizations(validOrgs); // Set state with the filtered array
-          console.log(`\nClient Filtering Result: Kept ${validOrgs.length} valid organizations.`);
-
-        } catch (error) {
-          console.error('Error fetching or processing organizations:', error);
-          setStatusMessage(
-            `Error loading organization data: ${error instanceof Error ? error.message : 'Unknown error'}`
-          );
-        } finally {
-          setIsLoadingOrgs(false);
+      try {
+        const response = await fetch('/api/organizations');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch organizations: ${response.statusText}`);
         }
-      };
-      fetchOrgs();
-    }, []); // Empty dependency array ensures this runs once on mount
+        const data = await response.json();
+        console.log("Raw organization data from API:", data); // Debugging log
 
-  // --- Existing useEffect for Pin ---
+        // Filter for organizations with valid coordinates and email
+        const validOrgs = data.filter(
+          (org: any) => {
+            const lat = org?.coordinates?.latitude;
+            const lng = org?.coordinates?.longitude;
+            const email = org?.email;
+            const hasValidCoords = typeof lat === 'number' && typeof lng === 'number';
+            const hasValidEmail = typeof email === 'string' && email.includes('@');
+            return hasValidCoords && hasValidEmail;
+          }
+        );
+
+        setOrganizations(validOrgs);
+        console.log(`Client Filtering Result: Kept ${validOrgs.length} valid organizations.`);
+
+      } catch (error) {
+        console.error('Error fetching or processing organizations:', error);
+        setStatusMessage(
+          `Error loading organization data: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      } finally {
+        setIsLoadingOrgs(false);
+      }
+    };
+    fetchOrgs();
+  }, []); // Empty dependency array ensures this runs once on mount
+
+  // --- Update coordinates when pin changes ---
   useEffect(() => {
     if (pin && pin.coordinates) {
       setLatitude(pin.coordinates.latitude);
@@ -125,7 +100,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
     }
   }, [pin]);
 
-  // --- Existing Handlers ---
+  // --- Handlers ---
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -151,8 +126,8 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
          return;
     }
     if (isLoadingOrgs) {
-        alert('Organization data is still loading, please wait a moment.');
-        return;
+       alert('Organization data is still loading, please wait a moment.');
+       return;
     }
     setIsConfirmationOpen(true);
   };
@@ -161,7 +136,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
     setIsConfirmationOpen(false);
   };
 
- // Replace your existing confirmSubmission function with this one:
+  // --- Main Submission Logic ---
  const confirmSubmission = async () => {
   setIsSubmittingConfirmation(true);
   setStatusMessage('Submitting aid request...');
@@ -169,7 +144,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   let finalRequestId: string | null = null; // Store the ID for logging/use
 
   // --- 1. Prerequisites Check ---
-  // Check for missing essential data before doing anything
+  // Check for missing essential data before proceeding
   if (!pin || typeof latitude !== 'number' || typeof longitude !== 'number') {
     alert('Error: Location not selected on the map. Please place a pin.');
     setIsConfirmationOpen(false);
@@ -184,22 +159,21 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
     setStatusMessage('Submission failed: Image missing.');
     return;
   }
-   if (!YOUR_SERVICE_ID || !YOUR_TEMPLATE_ID || !YOUR_PUBLIC_KEY) {
+  if (!YOUR_SERVICE_ID || !YOUR_TEMPLATE_ID || !YOUR_PUBLIC_KEY) {
       console.error("EmailJS environment variables not set!");
       alert('Configuration error. Cannot send notifications.');
       setIsConfirmationOpen(false);
       setIsSubmittingConfirmation(false);
       setStatusMessage('Submission failed: Email configuration error.');
       return;
-   }
-   // Add checks for other required fields if needed
-   if (!name || !contactNum || !calamityType || !calamityLevel || !shortDesc) {
-      alert('Please ensure all required form fields are filled.');
-       setIsConfirmationOpen(false);
-       setIsSubmittingConfirmation(false);
-       setStatusMessage('Submission failed: Required fields missing.');
-      return;
-   }
+  }
+  if (!name || !contactNum || !calamityType || !calamityLevel || !shortDesc) {
+       alert('Please ensure all required form fields are filled.');
+        setIsConfirmationOpen(false);
+        setIsSubmittingConfirmation(false);
+        setStatusMessage('Submission failed: Required fields missing.');
+       return;
+  }
 
   try {
     // --- 2. Upload Image ---
@@ -209,12 +183,12 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
     console.log("Image uploaded:", uploadedImageUrl);
 
     // --- 3. Prepare Aid Request Data ---
-    const formattedDate = format(new Date(), 'MMMM dd, yyyy'); // Corrected date format
+    const formattedDate = format(new Date(), 'MMMM dd, yyyy');
     const formattedTime = format(new Date(), 'h:mm a');
 
     // Construct the data object for Firestore, assert non-null for checked values
     const finalAidRequestData: RequestPin = {
-      ...pin, // Spread the pin object (contains id and original coords if needed)
+      ...pin, // Spread the pin object
       name,
       contactNum,
       calamityLevel,
@@ -224,7 +198,6 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
       submissionDate: formattedDate,
       submissionTime: formattedTime,
       coordinates: { latitude: latitude!, longitude: longitude! }, // Use confirmed non-null coords
-      // Add other RequestPin fields if necessary
     };
 
     // --- 4. Submit Aid Request to Firestore & Get ID ---
@@ -246,7 +219,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
 
     const nearbyOrgs = organizations.filter((org) => {
        if (!org.coordinates || typeof org.coordinates.latitude !== 'number' || typeof org.coordinates.longitude !== 'number') {
-         console.warn(`Filtering out org ${org.userId} due to invalid/missing coordinates.`);
+         console.warn(`Filtering out org ${org.userId} due to invalid/missing coordinates.`); // Keep warning explanation
          return false;
        }
        const distance = getDistance(requestCoords, org.coordinates);
@@ -283,13 +256,13 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
           org_name: org.name || 'Organization',
           to_email: org.email,
         };
-         console.log(`DEBUG: Sending to ${org.email} with params:`, JSON.stringify(templateParams, null, 2));
+        console.log(`DEBUG: Sending to ${org.email} with params:`, JSON.stringify(templateParams, null, 2)); // Keep explicit DEBUG log
         try {
           await emailjs.send(
-              YOUR_SERVICE_ID!,
-              YOUR_TEMPLATE_ID!,
-              templateParams,
-              YOUR_PUBLIC_KEY!
+            YOUR_SERVICE_ID!,
+            YOUR_TEMPLATE_ID!,
+            templateParams,
+            YOUR_PUBLIC_KEY!
           );
           console.log(`EmailJS success sending to ${org.email}`);
           emailSuccessCount++;
@@ -297,7 +270,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
            console.error(`EmailJS failed sending to ${org.email}:`, error?.text || error);
           emailFailCount++;
         }
-      } // End of for loop
+      }
 
       // Update status based on email results
       setStatusMessage(
@@ -314,9 +287,8 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
 
     // Display final success message to user if no prior error occurred
      if (!submissionError) {
-          alert(statusMessage || 'Request processed successfully!');
-           // Consider resetting form fields here if desired
-           // setName(''); setContactNum(''); // etc...
+         alert(statusMessage || 'Request processed successfully!');
+          // Consider resetting form fields here if desired
      }
 
   } catch (error: unknown) {
@@ -325,43 +297,39 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
     console.error("Error during submission process:", submissionError);
     const errorMessage = submissionError.message || 'An unknown error occurred.';
     setStatusMessage(`Submission Failed: ${errorMessage}`);
-    alert(`Submission Failed: ${errorMessage}`); // Alert user
+    alert(`Submission Failed: ${errorMessage}`);
 
   } finally {
     // This block runs regardless of success or failure in the try block
     setIsSubmittingConfirmation(false);
-    setIsConfirmationOpen(false); // Close confirmation dialog
-     // Clear status message after a delay, even if there was an error
-     setTimeout(() => setStatusMessage(''), 15000);
+    setIsConfirmationOpen(false);
+    // Clear status message after a delay, even if there was an error
+    setTimeout(() => setStatusMessage(''), 15000);
   }
-}; // End of confirmSubmission function
+};
 
 
   // --- JSX ---
   return (
     <form onSubmit={handleSubmit} className="text-black font-sans w-full">
        <div className="text-sm sm:text-base text-center justify opacity-60 flex justify-evenly items-center -translate-y-6 w-4/5 mx-auto">
-         {/* ... Date/Time/Note ... */}
          <div className="w-1/4 text-right">
-             <p>Date: {format(new Date(), 'MMMM dd, yyyy')}</p>
-             <p>Time: {format(new Date(), 'h:mm a')}</p>
-           </div>
+            <p>Date: {format(new Date(), 'MMMM dd, yyyy')}</p>
+            <p>Time: {format(new Date(), 'h:mm a')}</p>
+          </div>
            <div className="text-wrap w-3/4 text-end">
-             Note: Place a pin in the map and fill out all necessary information
-             before submitting request.
-           </div>
+            Note: Place a pin in the map and fill out all necessary information
+            before submitting request.
+          </div>
        </div>
 
        {/* Display Loading/Status */}
-        {isLoadingOrgs && <p className="text-center text-gray-600">Loading organization data...</p>}
-        {statusMessage && !isConfirmationOpen && <p className="text-center font-semibold my-2">{statusMessage}</p>}
+       {isLoadingOrgs && <p className="text-center text-gray-600">Loading organization data...</p>}
+       {statusMessage && !isConfirmationOpen && <p className="text-center font-semibold my-2">{statusMessage}</p>}
 
-
-       {/* Rest of the form JSX remains largely the same */}
        <div className="flex flex-col sm:flex sm:flex-row justify-evenly items-center w-full">
          <div className="w-4/5 sm:ml-5 grid gap-2 sm:w-1/3">
-            {/* Name Input */}
-            <div className="items-center">
+            <div>
                <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
                  Name:
                </label>
@@ -370,24 +338,22 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
                  value={name}
                  onChange={(e) => setName(e.target.value)}
                  className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
-                 required // Add required
+                 required
                />
              </div>
-             {/* Contact Input */}
-             <div className="items-center">
+             <div>
                <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
                  Contact #:
                </label>
                <input
-                 type="text" // Consider type="tel"
+                 type="text"
                  value={contactNum}
                  onChange={(e) => setContactNum(e.target.value)}
                  className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
-                 required // Add required
+                 required
                />
              </div>
-            {/* Calamity Type Select */}
-            <div className=" items-center">
+            <div>
                <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
                  Calamity Type:
                </label>
@@ -395,7 +361,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
                  value={calamityType}
                  onChange={(e) => setCalamityType(e.target.value)}
                  className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
-                 required // Add required
+                 required
                >
                  <option value="">Select Type</option>
                  <option value="flood">Flood</option>
@@ -406,26 +372,23 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
                  <option value="other">Other</option>
                </select>
              </div>
-             {/* Other Calamity Input */}
              {calamityType === 'other' && (
                <div className=" items-center mt-2">
                  <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
-                   Input Calamity:
+                    Input Calamity:
                  </label>
-                 <input // Changed to input for consistency, use textarea if longer text expected
-                   type="text"
-                   value={otherCalamity}
-                   onChange={(e) => setOtherCalamity(e.target.value)}
-                   className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
-                   required // Required if 'other' is selected
+                 <input
+                    type="text"
+                    value={otherCalamity}
+                    onChange={(e) => setOtherCalamity(e.target.value)}
+                    className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
+                    required // Required if 'other' is selected
                  />
                </div>
              )}
-         </div>
-          {/* Right Column */}
+        </div>
          <div className="w-4/5 grid gap-2 sm:w-1/3">
-            {/* Coordinates Display */}
-             <div className="flex items-center mt-4">
+            <div className="flex items-center mt-4">
                <label className="w-24 text-right mr-2 whitespace-nowrap text-black">
                  Longitude:
                </label>
@@ -441,8 +404,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
                  {latitude !== null ? latitude.toFixed(6) : 'Select on map'}
                </p>
              </div>
-            {/* Calamity Level Select */}
-            <div className=" items-center">
+            <div>
                <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
                  Calamity Level:
                </label>
@@ -450,7 +412,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
                  value={calamityLevel}
                  onChange={(e) => setCalamityLevel(e.target.value)}
                  className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
-                 required // Add required
+                 required
                >
                  <option value="">Select Level</option>
                  <option value="1">Level 1 - Minor</option>
@@ -460,16 +422,16 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
                  <option value="5">Level 5 - Catastrophic</option>
                </select>
              </div>
-            {/* Aid Request Type Select - **NOTE: You had 'aidRequest' state but no input, added one based on previous structure** */}
-             <div className=" items-center">
+             {/* Aid Request Type Select - NOTE: Added based on previous structure, using 'aidRequestDesc' state */}
+            <div>
                <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
-                 Aid Needed: {/* Changed Label */}
+                 Aid Needed:
                </label>
                <select
-                 value={aidRequestDesc} // Use the renamed state variable
-                 onChange={(e) => setAidRequestDesc(e.target.value)} // Use the setter
+                 value={aidRequestDesc}
+                 onChange={(e) => setAidRequestDesc(e.target.value)}
                  className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
-                 required // Add required
+                 required
                >
                  <option value="">Select Aid Type</option>
                  <option value="Clothes">Clothes</option>
@@ -481,39 +443,36 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
                  <option value="other">Other</option>
                </select>
              </div>
-             {/* Other Aid Request Input */}
-             {aidRequestDesc === 'other' && ( // Check renamed state
+             {aidRequestDesc === 'other' && (
                <div className=" items-center mt-2">
                  <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
-                   Specify Aid: {/* Changed Label */}
+                    Specify Aid:
                  </label>
-                 <input // Changed to input
-                   type="text"
-                   value={otherAidRequest}
-                   onChange={(e) => setOtherAidRequest(e.target.value)}
-                   className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
-                   required // Required if 'other' is selected
+                 <input
+                    type="text"
+                    value={otherAidRequest}
+                    onChange={(e) => setOtherAidRequest(e.target.value)}
+                    className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
+                    required // Required if 'other' is selected
                  />
                </div>
              )}
-         </div>
+        </div>
        </div>
 
-        {/* Short Description */}
        <div className="flex justify-center items-center mt-3 w-full">
          <textarea
-           value={shortDesc}
-           onChange={(e) => setShortDesc(e.target.value)}
-           className="px-4 py-2 mt-4 border-red-400 border-2 rounded-2xl w-4/5 sm:w-[68%] bg-white h-36 placeholder:text-black focus:border-red-600 focus:border-2 focus:outline-none" // Adjusted width slightly
-           placeholder="Short Description (e.g., families affected, specific needs)"
-           required // Add required
+            value={shortDesc}
+            onChange={(e) => setShortDesc(e.target.value)}
+            className="px-4 py-2 mt-4 border-red-400 border-2 rounded-2xl w-4/5 sm:w-[68%] bg-white h-36 placeholder:text-black focus:border-red-600 focus:border-2 focus:outline-none"
+            placeholder="Short Description (e.g., families affected, specific needs)"
+            required
          />
        </div>
 
-       {/* Image Upload Section */}
        <div className="flex flex-col justify-center items-center mt-5 w-full">
-         <div className="w-4/5 sm:w-[68%] flex flex-col"> {/* Adjusted width slightly */}
-           <label className="w-full text-left mb-1 whitespace-nowrap text-black">
+         <div className="w-4/5 sm:w-[68%] flex flex-col">
+            <label className="w-full text-left mb-1 whitespace-nowrap text-black">
              Attach Image (Required):
            </label>
            <div className="items-center">
@@ -522,7 +481,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
                id="image-upload"
                accept="image/*"
                onChange={handleImageChange}
-               className="hidden" // Keep hidden
+               className="hidden" // Keep hidden for styling via label
                required={!image} // Make input required only if no image is selected
              />
              <label
@@ -546,7 +505,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
                <img
                  src={imagePreview}
                  alt="Preview"
-                 className="max-h-40 max-w-full object-contain mx-auto" // Center preview
+                 className="max-h-40 max-w-full object-contain mx-auto"
                />
                <p className="text-black text-sm mt-1 text-center">{image?.name}</p>
              </div>
@@ -554,18 +513,17 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
          </div>
        </div>
 
-        {/* Submit Button */}
-       <div className="mt-10 flex justify-center pb-8"> {/* Centered button */}
+       <div className="mt-10 flex justify-center pb-8">
          <button
-           type="submit"
-           className="bg-red-700 text-white px-8 py-2 rounded-md hover:bg-red-800 disabled:bg-gray-400"
-           disabled={isLoadingOrgs || isSubmittingConfirmation || !pin || !image} // Disable if loading orgs or submitting or no pin/image
+            type="submit"
+            className="bg-red-700 text-white px-8 py-2 rounded-md hover:bg-red-800 disabled:bg-gray-400"
+            // Disable if loading orgs or submitting or no pin/image selected
+            disabled={isLoadingOrgs || isSubmittingConfirmation || !pin || !image}
          >
-           Send Request
+            Send Request
          </button>
        </div>
 
-       {/* Consent Text */}
        <div className="flex justify-center items-center justify mx-auto w-4/5 md:w-full">
          <p className="mb-2 text-xs sm:text-sm text-center opacity-70">
            - By filling up this form, you consent to our website using your given
@@ -576,40 +534,40 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
        {/* Confirmation Dialog */}
        {isConfirmationOpen && (
          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center text-white z-50">
-           <div className="bg-[#211E1E] p-6 sm:p-8 rounded-md shadow-lg w-[90%] max-w-md"> {/* Responsive width */}
+           <div className="bg-[#211E1E] p-6 sm:p-8 rounded-md shadow-lg w-[90%] max-w-md">
              <div className="flex mb-4 items-center">
                <img
-                 src="/Warning.svg" // Ensure path is correct
-                 alt="Warning Symbol"
-                 width="32"
-                 height="32"
-                 className="mr-3"
+                  src="/Warning.svg" // Ensure path is correct
+                  alt="Warning Symbol"
+                  width="32"
+                  height="32"
+                  className="mr-3"
                />
                <p className="text-lg font-bold">Confirm Submission</p>
              </div>
              <p className="mb-4">Submit your aid request?</p>
               {/* Show status inside dialog during submission */}
-              {isSubmittingConfirmation && statusMessage && <p className="text-yellow-400 my-2">{statusMessage}</p>}
+             {isSubmittingConfirmation && statusMessage && <p className="text-yellow-400 my-2">{statusMessage}</p>}
              <div className="flex justify-end mt-6">
                <button
-                 type="button"
-                 onClick={cancelSubmission}
-                 className=" hover:bg-gray-600 px-4 py-2 rounded-md mr-2 font-normal"
-                 disabled={isSubmittingConfirmation}
+                  type="button"
+                  onClick={cancelSubmission}
+                  className=" hover:bg-gray-600 px-4 py-2 rounded-md mr-2 font-normal"
+                  disabled={isSubmittingConfirmation}
                >
-                 No
+                  No
                </button>
                <button
-                 type="button"
-                 onClick={confirmSubmission}
-                 className={`px-4 py-2 rounded-md font-semibold ${
-                   isSubmittingConfirmation
-                     ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                     : 'bg-green-500 hover:bg-green-600 text-black'
-                 }`}
-                 disabled={isSubmittingConfirmation}
+                  type="button"
+                  onClick={confirmSubmission}
+                  className={`px-4 py-2 rounded-md font-semibold ${
+                    isSubmittingConfirmation
+                      ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                      : 'bg-green-500 hover:bg-green-600 text-black'
+                  }`}
+                  disabled={isSubmittingConfirmation}
                >
-                 {isSubmittingConfirmation ? 'Submitting...' : 'Yes'}
+                  {isSubmittingConfirmation ? 'Submitting...' : 'Yes'}
                </button>
              </div>
            </div>
