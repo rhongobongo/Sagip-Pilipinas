@@ -161,192 +161,180 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
     setIsConfirmationOpen(false);
   };
 
-  // --- Modified Confirmation Handler ---
-  const confirmSubmission = async () => {
-    setIsSubmittingConfirmation(true);
-    setStatusMessage('Submitting aid request...'); // Initial status
+ // Replace your existing confirmSubmission function with this one:
+ const confirmSubmission = async () => {
+  setIsSubmittingConfirmation(true);
+  setStatusMessage('Submitting aid request...');
+  let submissionError: Error | null = null; // Store potential error object
+  let finalRequestId: string | null = null; // Store the ID for logging/use
 
-    // Re-check prerequisites
-    if (!pin || !latitude || !longitude || !image) {
-        alert('Error: Location pin or image missing. Please try again.');
-        setIsConfirmationOpen(false);
-        setIsSubmittingConfirmation(false);
-        setStatusMessage('Submission failed: Missing location or image.');
-        return;
+  // --- 1. Prerequisites Check ---
+  // Check for missing essential data before doing anything
+  if (!pin || typeof latitude !== 'number' || typeof longitude !== 'number') {
+    alert('Error: Location not selected on the map. Please place a pin.');
+    setIsConfirmationOpen(false);
+    setIsSubmittingConfirmation(false);
+    setStatusMessage('Submission failed: Location missing.');
+    return;
+  }
+  if (!image) {
+    alert('Error: Image missing. Please attach an image.');
+    setIsConfirmationOpen(false);
+    setIsSubmittingConfirmation(false);
+    setStatusMessage('Submission failed: Image missing.');
+    return;
+  }
+   if (!YOUR_SERVICE_ID || !YOUR_TEMPLATE_ID || !YOUR_PUBLIC_KEY) {
+      console.error("EmailJS environment variables not set!");
+      alert('Configuration error. Cannot send notifications.');
+      setIsConfirmationOpen(false);
+      setIsSubmittingConfirmation(false);
+      setStatusMessage('Submission failed: Email configuration error.');
+      return;
+   }
+   // Add checks for other required fields if needed
+   if (!name || !contactNum || !calamityType || !calamityLevel || !shortDesc) {
+      alert('Please ensure all required form fields are filled.');
+       setIsConfirmationOpen(false);
+       setIsSubmittingConfirmation(false);
+       setStatusMessage('Submission failed: Required fields missing.');
+      return;
+   }
+
+  try {
+    // --- 2. Upload Image ---
+    console.log("Uploading image...");
+    // Use non-null assertion for image because we checked it above
+    const uploadedImageUrl: string = await uploadImage(image!);
+    console.log("Image uploaded:", uploadedImageUrl);
+
+    // --- 3. Prepare Aid Request Data ---
+    const formattedDate = format(new Date(), 'MMMM dd, yyyy'); // Corrected date format
+    const formattedTime = format(new Date(), 'h:mm a');
+
+    // Construct the data object for Firestore, assert non-null for checked values
+    const finalAidRequestData: RequestPin = {
+      ...pin, // Spread the pin object (contains id and original coords if needed)
+      name,
+      contactNum,
+      calamityLevel,
+      calamityType: calamityType === 'other' ? otherCalamity : calamityType,
+      shortDesc,
+      imageURL: uploadedImageUrl,
+      submissionDate: formattedDate,
+      submissionTime: formattedTime,
+      coordinates: { latitude: latitude!, longitude: longitude! }, // Use confirmed non-null coords
+      // Add other RequestPin fields if necessary
+    };
+
+    // --- 4. Submit Aid Request to Firestore & Get ID ---
+    console.log("Submitting aid request to Firestore...");
+    // Call the server action and destructure the returned object
+    const submissionResult = await requestAid(finalAidRequestData);
+
+    // Check if the expected properties were returned
+    if (!submissionResult || !submissionResult.requestId) {
+        throw new Error("Failed to get request ID after submission from server action.");
     }
-     if (!YOUR_SERVICE_ID || !YOUR_TEMPLATE_ID || !YOUR_PUBLIC_KEY) {
-        console.error("EmailJS environment variables not set!");
-        alert('Configuration error. Cannot send notifications.');
-        setIsConfirmationOpen(false);
-        setIsSubmittingConfirmation(false);
-        setStatusMessage('Submission failed: Email configuration error.');
-        return;
-     }
+    finalRequestId = submissionResult.requestId; // Store the ID
+    console.log('Aid Request submitted successfully. ID:', finalRequestId);
+    setStatusMessage('Aid request submitted. Processing notifications...');
 
+    // --- 5. Prepare for Email Notifications ---
+    const requestCoords = { latitude: latitude!, longitude: longitude! };
+    const MAX_DISTANCE_METERS = 30 * 1000; // 30km
 
-    let uploadedImageUrl = '';
-    let finalAidRequestData: RequestPin | null = null; // Store final data
+    const nearbyOrgs = organizations.filter((org) => {
+       if (!org.coordinates || typeof org.coordinates.latitude !== 'number' || typeof org.coordinates.longitude !== 'number') {
+         console.warn(`Filtering out org ${org.userId} due to invalid/missing coordinates.`);
+         return false;
+       }
+       const distance = getDistance(requestCoords, org.coordinates);
+       return distance <= MAX_DISTANCE_METERS;
+    });
 
-    try {
-      // --- (A) Upload Image and Submit Aid Request ---
-      console.log("Uploading image...");
-      uploadedImageUrl = await uploadImage(image);
-      console.log("Image uploaded:", uploadedImageUrl);
+    console.log(`Found ${nearbyOrgs.length} nearby organizations to notify.`);
 
-      const formattedDate = format(new Date(), 'MMMM dd, yyyy');
-      const formattedTime = format(new Date(), 'h:mm a');
+    // --- 6. Send Emails (if nearby orgs found) ---
+    if (nearbyOrgs.length > 0) {
+      let emailSuccessCount = 0;
+      let emailFailCount = 0;
 
-      // Prepare the final data for Firestore
-      finalAidRequestData = {
-        ...pin, // Includes existing ID if any, and original coordinates
-        name,
-        contactNum,
-        // location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, // Storing coordinates object is better
-        calamityLevel,
-        calamityType: calamityType === 'other' ? otherCalamity : calamityType,
-        // Use aidRequestDesc state variable consistently
-        shortDesc,
-        imageURL: uploadedImageUrl,
-        submissionDate: formattedDate,
-        submissionTime: formattedTime,
-        coordinates: { latitude, longitude }, // Ensure this is the final coordinate object
+      const appBaseUrl = process.env.NEXT_PUBLIC_APP_BASE_URL || 'http://localhost:3000';
+      const requestLink = `${appBaseUrl}/news/${finalRequestId}`; // Use the obtained ID
+
+      // Prepare base parameters (using data from finalAidRequestData)
+      const templateParamsBase = {
+        request_type: finalAidRequestData.calamityType || 'N/A',
+        request_level: finalAidRequestData.calamityLevel || 'N/A',
+        request_desc: finalAidRequestData.shortDesc || 'N/A',
+        requester_name: finalAidRequestData.name || 'N/A',
+        requester_contact: finalAidRequestData.contactNum || 'N/A',
+        submission_date: finalAidRequestData.submissionDate || '',
+        submission_time: finalAidRequestData.submissionTime || '',
+        request_image_url: finalAidRequestData.imageURL || '',
+        request_link: requestLink, // Include the generated link
       };
 
-      console.log("Submitting aid request to Firestore...");
-      await requestAid(finalAidRequestData); // Submit to Firestore using the server action
-      setStatusMessage('Aid request submitted. Notifying nearby organizations...');
-      console.log('Aid Request submitted successfully.');
-
-      // --- (B) Process Client-Side Notifications ---
-      const requestCoords = { latitude, longitude };
-      const MAX_DISTANCE_METERS = 30 * 1000; // 30km
-
-     // --- Manual Distance Calculation ---
-            console.log("Request coordinates:", requestCoords);
-            console.log("Available organizations before filtering:", organizations.length);
-            console.log("Organization details:", organizations.map(org => ({
-              name: org.name,
-              coords: org.coordinates,
-              userId: org.userId,
-              email: org.email
-            })));
-
-            const nearbyOrgs = organizations.filter((org: OrgData) => {
-              // Make sure organization coordinates are valid
-              if (!org.coordinates || 
-                  typeof org.coordinates.latitude !== 'number' || 
-                  typeof org.coordinates.longitude !== 'number') {
-                console.warn(`Skipping org ${org.userId || 'unknown'} due to invalid coordinates:`, org.coordinates);
-                return false;
-              }
-              
-              // Manual distance calculation using Haversine formula
-              function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-                const R = 6371000; // Earth radius in meters
-                const φ1 = lat1 * Math.PI/180; // φ, λ in radians
-                const φ2 = lat2 * Math.PI/180;
-                const Δφ = (lat2-lat1) * Math.PI/180;
-                const Δλ = (lon2-lon1) * Math.PI/180;
-            
-                const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                          Math.cos(φ1) * Math.cos(φ2) *
-                          Math.sin(Δλ/2) * Math.sin(Δλ/2);
-                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            
-                return R * c; // in meters
-              }
-              
-              const distance = calculateDistance(
-                requestCoords.latitude, 
-                requestCoords.longitude,
-                org.coordinates.latitude,
-                org.coordinates.longitude
-              );
-              
-              console.log(`Distance to ${org.name || org.userId}: ${distance.toFixed(2)} meters`);
-              
-              // Using 30km as max distance (30,000 meters)
-              return distance <= 30000;
-            });
-
-console.log(`Found ${nearbyOrgs.length} nearby organizations after manual calculation.`);
-
-      console.log(`Found ${nearbyOrgs.length} nearby organizations to notify.`);
-
-      if (nearbyOrgs.length > 0) {
-        let emailSuccessCount = 0;
-        let emailFailCount = 0;
-
-        // Prepare template parameters (use data from finalAidRequestData)
-        const templateParamsBase = {
-          request_type: finalAidRequestData.calamityType || 'N/A',
-          request_level: finalAidRequestData.calamityLevel || 'N/A',
-          request_desc: finalAidRequestData.shortDesc || 'N/A',
-          requester_name: finalAidRequestData.name || 'N/A',
-          requester_contact: finalAidRequestData.contactNum || 'N/A',
-          submission_date: finalAidRequestData.submissionDate || '',
-          submission_time: finalAidRequestData.submissionTime || '',
-          request_image_url: finalAidRequestData.imageURL || '',
-          // Add more fields your template uses
+      // Loop and send emails
+      for (const org of nearbyOrgs) {
+        const templateParams = {
+          ...templateParamsBase,
+          org_name: org.name || 'Organization',
+          to_email: org.email,
         };
-
-        // Loop and send emails one by one (be cautious about rate limits)
-        for (const org of nearbyOrgs) {
-          const templateParams = {
-            ...templateParamsBase,
-            org_name: org.name || 'Organization',
-            to_email: org.email, // Assuming template uses {{to_email}} or similar
-            // or set the 'to_email' directly in template settings if static
-          };
-
-          try {
-            console.log(`Attempting to send email to ${org.email}...`);
-            const result = await emailjs.send(
-              YOUR_SERVICE_ID,
-              YOUR_TEMPLATE_ID,
+         console.log(`DEBUG: Sending to ${org.email} with params:`, JSON.stringify(templateParams, null, 2));
+        try {
+          await emailjs.send(
+              YOUR_SERVICE_ID!,
+              YOUR_TEMPLATE_ID!,
               templateParams,
-              YOUR_PUBLIC_KEY
-            );
-            console.log(`EmailJS success sending to ${org.email}:`, result.text);
-            emailSuccessCount++;
-          } catch (error: any) {
-            console.error(`EmailJS failed sending to ${org.email}:`, error?.text || error);
-            emailFailCount++;
-          }
+              YOUR_PUBLIC_KEY!
+          );
+          console.log(`EmailJS success sending to ${org.email}`);
+          emailSuccessCount++;
+        } catch (error: any) {
+           console.error(`EmailJS failed sending to ${org.email}:`, error?.text || error);
+          emailFailCount++;
         }
-        setStatusMessage(
+      } // End of for loop
+
+      // Update status based on email results
+      setStatusMessage(
           `Aid request submitted! Notified ${emailSuccessCount} organizations nearby.` +
           (emailFailCount > 0 ? ` (${emailFailCount} failures)` : '')
-        );
+      );
 
-      } else {
-        setStatusMessage(
-          'Aid request submitted successfully! No nearby organizations found within 30km.'
-        );
-      }
-
-      // Optionally reset form state here if needed
-      // setName(''); setContactNum(''); ... etc. setImage(null); setImagePreview(null);
-
-      // Close confirmation and potentially reload or redirect after a delay
-      setIsConfirmationOpen(false);
-      alert(statusMessage || 'Request processed.'); // Show final status
-       // Consider removing reload if you handle state updates properly
-      // window.location.reload();
-
-
-    } catch (error: unknown) {
-      console.error('Error during submission process:', error);
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-      setStatusMessage(`Submission Failed: ${errorMessage}`);
-      alert(`Submission Failed: ${errorMessage}`); // Alert user
-      setIsConfirmationOpen(false); // Close confirmation on error
-    } finally {
-      setIsSubmittingConfirmation(false);
-      // Optionally clear status message after a longer delay
-       setTimeout(() => setStatusMessage(''), 15000);
+    } else {
+      // No nearby orgs found
+      setStatusMessage(
+        'Aid request submitted successfully! No nearby organizations found within 30km.'
+      );
     }
-  };
+
+    // Display final success message to user if no prior error occurred
+     if (!submissionError) {
+          alert(statusMessage || 'Request processed successfully!');
+           // Consider resetting form fields here if desired
+           // setName(''); setContactNum(''); // etc...
+     }
+
+  } catch (error: unknown) {
+    // Catch errors from uploadImage or requestAid or ID check
+    submissionError = error instanceof Error ? error : new Error(String(error)); // Ensure it's an Error object
+    console.error("Error during submission process:", submissionError);
+    const errorMessage = submissionError.message || 'An unknown error occurred.';
+    setStatusMessage(`Submission Failed: ${errorMessage}`);
+    alert(`Submission Failed: ${errorMessage}`); // Alert user
+
+  } finally {
+    // This block runs regardless of success or failure in the try block
+    setIsSubmittingConfirmation(false);
+    setIsConfirmationOpen(false); // Close confirmation dialog
+     // Clear status message after a delay, even if there was an error
+     setTimeout(() => setStatusMessage(''), 15000);
+  }
+}; // End of confirmSubmission function
 
 
   // --- JSX ---
