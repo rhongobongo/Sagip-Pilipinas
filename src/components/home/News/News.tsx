@@ -24,7 +24,7 @@ const NewsGrid = ({ newsItems }: NewsGridProps) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const scrollTargetRef = useRef<HTMLDivElement>(null);
-  const isInitialMount = useRef(true);
+  const prevPageRef = useRef<number>();
 
   const filteredNews = searchTerm
     ? newsItems.filter(
@@ -47,9 +47,7 @@ const NewsGrid = ({ newsItems }: NewsGridProps) => {
     setCurrentPage(Math.min(Math.max(1, pageNumber), totalPages));
 
   useEffect(() => {
-    if (isInitialMount.current)
-      isInitialMount.current = false;
-    else 
+    if (prevPageRef.current !== undefined && prevPageRef.current !== safeCurrentPage)
     {
       if (scrollTargetRef.current) {
         scrollTargetRef.current.scrollIntoView({
@@ -58,6 +56,7 @@ const NewsGrid = ({ newsItems }: NewsGridProps) => {
         });
       }
     }
+    prevPageRef.current = safeCurrentPage;
   }, [safeCurrentPage]);
 
   return (
@@ -74,7 +73,7 @@ const NewsGrid = ({ newsItems }: NewsGridProps) => {
               placeholder="Search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="border w-full border-gray-300 rounded-full px-6 text-black py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blackx"
+              className="border w-full border-gray-300 rounded-full px-6 text-black py-2 pl-10 focus:outline-none"
             />
             <svg
               className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-black"

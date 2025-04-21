@@ -39,7 +39,7 @@ const NewsCard = ({ item }: { item: NewsItem }) => {
 
         <div className="p-1">
           <div className="p-3 rounded-md">
-            <h2 className="text-black font-medium text-lg line-clamp-2 mb-2">
+            <h2 className="text-black font-medium text-lg truncate mb-2">
               {item.title || 'News Title'}
             </h2>
             <p className="text-black text-sm line-clamp-4">
