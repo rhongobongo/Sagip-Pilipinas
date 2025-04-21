@@ -60,8 +60,8 @@ const NewsSection = async () => {
   const initialNews = await fetchNews();
 
   return (
-    <div className="bg-[#B0022A]">
-      <NewsGrid newsItems={initialNews} />;
+    <div>
+      <NewsGrid newsItems={initialNews} />
     </div>
   );
 };
