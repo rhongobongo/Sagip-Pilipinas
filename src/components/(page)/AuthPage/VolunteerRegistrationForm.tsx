@@ -1274,7 +1274,7 @@ const VolRegistrationForm: React.FC = () => {
           {/* Added padding-top */}
           <button
             type="submit"
-            className={`bg-red-600 text-white font-semibold text-sm md:text-base px-6 md:px-8 py-2 rounded-md hover:bg-red-700 transition duration-200 ${
+            className={`bg-red-600 text-white font-semibold mx-auto md:mx-0 text-sm md:text-base px-6 md:px-8 py-2 rounded-md hover:bg-red-700 transition duration-200 ${
               isLoading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             disabled={isLoading}
