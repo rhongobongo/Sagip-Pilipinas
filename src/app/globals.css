@@ -41,7 +41,9 @@ body {
 }
 
 .textbox {
-  background-color: #ef8080;
+  border-width: 2px;
+  border-color: #ef8080;
+  background-color: white;
   border-radius: 1rem;
   padding: 0.5rem;
 }

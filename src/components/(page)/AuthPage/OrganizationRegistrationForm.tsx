@@ -896,13 +896,10 @@ const OrgRegistrationForm: React.FC = () => {
                         }
                       }}
                       className="textbox pl-12 w-full placeholder:text-gray-200"
-                      placeholder="9XXXXXXXXX"
+                      placeholder="+63 | 9XXXXXXXXX"
                       required
                       maxLength={10}
                     />
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                      +63 |
-                    </span>
                   </div>
                   <div>
                     <input
