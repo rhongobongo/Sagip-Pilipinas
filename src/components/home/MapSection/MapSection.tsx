@@ -13,7 +13,7 @@ export interface OrgPin extends DefaultPin {
 const MapSection: React.FC = async () => {
   const pins = await fetchPins();
   return (
-    <div className="h-screen w-full bg-[#F3F3F3] flex items-center justify-center lg:text-lg md:text-base text-sm">
+    <div className=" w-full bg-[#F3F3F3] flex items-center justify-center lg:text-lg md:text-base text-sm">
       <div className="mx-auto w-full">
         <div
           className="w-full font-semibold text-center text-black tracking-wide rounded-full
