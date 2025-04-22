@@ -29,7 +29,7 @@ const LoginForm: React.FC = () => {
       setTimeout(() => {
         // Consider a more robust redirect or state update instead of reload
         // For SPA feel, use router.push('/') or state management update
-        document.location.reload(); // Or router.push('/');
+        router.push('/');
       }, 1000);
       // router.push('/'); // Redirect might happen before reload completes
     } catch (backendError) {
