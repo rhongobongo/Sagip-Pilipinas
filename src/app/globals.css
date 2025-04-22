@@ -57,10 +57,11 @@ body {
 
 .shortDesc {
   padding: 8px 16px;
-  border: 1px solid #ccc;
   border-radius: 1rem;
   width: 100%;
-  background-color: #ef8080;
+  border-width: 2px;
+  border-color: #ef8080;
+  background-color: white;
   height: 9rem;
   resize: none;
 }
