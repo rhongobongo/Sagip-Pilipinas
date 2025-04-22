@@ -990,7 +990,9 @@ const VolRegistrationForm: React.FC = () => {
                 <option value="">Select a valid ID</option>
                 <option value="passport">Philippine Passport</option>
                 <option value="national-id">National ID (PhilSys ID)</option>
-                <option value="drivers-license">Driver's License (LTO)</option>
+                <option value="drivers-license">
+                  Driver&apos;s License (LTO)
+                </option>
                 <option value="sss-id">Social Security System (SSS) ID</option>
                 <option value="umid">Unified Multi-Purpose ID (UMID)</option>
                 <option value="gsis-id">
@@ -1000,7 +1002,7 @@ const VolRegistrationForm: React.FC = () => {
                   Professional Regulation Commission (PRC) ID
                 </option>
                 <option value="voters-id">
-                  COMELEC Voter's ID or Voter's Certification
+                  COMELEC Voter&apos;s ID or Voter&apos;s Certification
                 </option>
                 <option value="ibp-id">
                   Integrated Bar of the Philippines (IBP) ID
@@ -1013,7 +1015,7 @@ const VolRegistrationForm: React.FC = () => {
                 <option value="acr-id">
                   Alien Certificate of Registration (ACR) I-Card
                 </option>
-                <option value="seamans-book">Seaman's Book (SIRB)</option>
+                <option value="seamans-book">Seaman&apos;s Book (SIRB)</option>
               </select>
             </div>
             {/* ID Photo Upload */}
