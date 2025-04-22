@@ -15,6 +15,7 @@ import {
   TechnicalSupportDetails,
 } from './types';
 import { donate, uploadDonation } from '@/lib/APICalls/Donation';
+import { RequestPin } from '@/types/types';
 
 // Updated interface to match the server component
 interface OrganizationData {
@@ -67,11 +68,12 @@ interface OrganizationData {
 }
 
 interface DonationPageFormProps {
-  fetchedOrgData: OrganizationData | null; // Accept the fetched data as a prop
+  fetchedOrgData: OrganizationData | null;
+  selectedPin: RequestPin | null;
 }
 
 const DonationPageForm: React.FC<DonationPageFormProps> = ({
-  fetchedOrgData,
+  fetchedOrgData, selectedPin
 }) => {
   const now = new Date();
 
@@ -343,12 +345,13 @@ const DonationPageForm: React.FC<DonationPageFormProps> = ({
       }
     }
 
-    if (!fetchedOrgData) return;
+    if (!fetchedOrgData || !selectedPin) return;
     const response = await donate(
       checkedDonationTypesToSend,
       filteredDonationDetails,
       donationDate,
-      fetchedOrgData.id
+      fetchedOrgData.id,
+      selectedPin
     );
     if (response.success) {
       if (!donationImage || !response.donationUID) return;

@@ -13,6 +13,7 @@ type AddressComponent = {
 type LocationDetails = {
     city: string | null;
     region: string | null;
+    province: string | null;
 };
 
 const coordinatesToDetails = async (
@@ -26,7 +27,6 @@ const coordinatesToDetails = async (
     const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
 
     try {
-
         const response = await fetch(geocodeUrl);
 
         if (!response.ok) {
@@ -36,7 +36,7 @@ const coordinatesToDetails = async (
         const data = await response.json();
         const result = data.results[0];
 
-        const components: AddressComponent[] = result?.address_components || [];
+        const components: AddressComponent[] = result?.address_components ?? [];
 
         const locationDetails: LocationDetails = {
             city:
@@ -45,6 +45,10 @@ const coordinatesToDetails = async (
             region:
                 components.find((c) =>
                     c.types.includes("administrative_area_level_1")
+                )?.long_name ?? null,
+            province:
+                components.find((c) =>
+                    c.types.includes("administrative_area_level_2")
                 )?.long_name ?? null,
         };
 

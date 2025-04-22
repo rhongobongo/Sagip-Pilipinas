@@ -1,7 +1,7 @@
 "use server";
 
 import { db, storage, auth } from "@/lib/Firebase-Admin";
-import { GeoPoint } from "firebase-admin/firestore";
+import { GeoPoint, FieldValue } from "firebase-admin/firestore";
 import { updateProfileImage } from "../User/updateProfileImage";
 import coordinatesToDetails from "../Map/coordinatesToDetails";
 
@@ -334,6 +334,13 @@ const saveOrganizationData = async (
         .collection("organizations")
         .doc(userId)
         .set(organizationData as Organization);
+
+    await db
+        .collection("meta")
+        .doc("stats")
+        .update({
+            "org-count": FieldValue.increment(1),
+        });
 };
 
 const cleanupAuthUser = async (userId: string): Promise<void> => {
@@ -351,13 +358,27 @@ const cleanupAuthUser = async (userId: string): Promise<void> => {
 
 const handleRegistrationError = async (
     error: unknown,
-    userId: string | null
+    userId: string | null,
+    count: number
 ): Promise<{ success: boolean; message: string }> => {
     let errorMessage;
     console.error("Error during organization registration:", error);
 
     if (userId) {
         await cleanupAuthUser(userId);
+    }
+
+    const orgCount = (await db.collection("meta").doc("stats").get()).get(
+        "org-count"
+    );
+
+    if (count < orgCount) {
+        await db
+            .collection("meta")
+            .doc("stats")
+            .update({
+                "org-count": FieldValue.increment(-1),
+            });
     }
 
     if (typeof error === "object" && error !== null && "code" in error) {
@@ -394,6 +415,10 @@ export const registerOrganization = async (
 ): Promise<{ success: boolean; message: string }> => {
     let userId: string | null = null;
 
+    const orgCount = (await db.collection("meta").doc("stats").get()).get(
+        "org-count"
+    );
+
     try {
         const validationResult = validateFormData(formData);
         if (!validationResult.success) {
@@ -429,6 +454,6 @@ export const registerOrganization = async (
         );
         return { success: true, message: "Registration successful!" };
     } catch (error: unknown) {
-        return handleRegistrationError(error, userId);
+        return handleRegistrationError(error, userId, orgCount);
     }
 };

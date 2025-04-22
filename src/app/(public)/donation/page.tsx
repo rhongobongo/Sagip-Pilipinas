@@ -6,8 +6,7 @@ import { authConfig } from '@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge';
 import { db } from '@/lib/Firebase-Admin';
 import { RequestPin } from '@/types/types';
 import { GeoPoint, Timestamp } from 'firebase-admin/firestore';
-import DonationPageForm from '@/components/(page)/donationPage/donationPageForm';
-import DonationMapWrapper from '@/components/map/DonationMapWrapper';
+import DonationPageClient from '@/components/(page)/donationPage/DonationPageClient';
 
 const fetchAidRequests = async (): Promise<RequestPin[]> => {
   const snapshot = await db.collection('aidRequest').get();
@@ -28,7 +27,7 @@ const fetchAidRequests = async (): Promise<RequestPin[]> => {
         longitude,
       },
       submissionDate:
-        data.submissionDate ||
+        data.submissionDate ??
         (data.timestamp
           ? (data.timestamp as Timestamp).toDate().toISOString().split('T')[0]
           : ''),
@@ -37,7 +36,7 @@ const fetchAidRequests = async (): Promise<RequestPin[]> => {
   });
 };
 
-interface OrganizationData {
+export interface OrganizationData {
   id: string;
   email?: string;
   name?: string;
@@ -184,15 +183,7 @@ const DonationPage = async () => {
             possible.
           </h2>
         </div>
-        <div className="flex flex-col">
-          <div>
-            <DonationMapWrapper initialPins={aidRequests} />
-          </div>
-          <div>
-            {/* Pass the fetched data as a prop now, including aid stock info */}
-            <DonationPageForm fetchedOrgData={organizationData} />
-          </div>
-        </div>
+        <DonationPageClient organizationData={organizationData} aidRequests={aidRequests}></DonationPageClient>
       </div>
     </div>
   );

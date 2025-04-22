@@ -3,7 +3,7 @@
 import { db, storage, auth } from "@/lib/Firebase-Admin"; // Ensure storage is exported from index
 import * as admin from "firebase-admin";
 // *** ADD GeoPoint to import ***
-import { GeoPoint } from "firebase-admin/firestore";
+import { GeoPoint, FieldValue } from "firebase-admin/firestore";
 import { updateProfileImage } from "../User/updateProfileImage";
 import coordinatesToDetails from "../Map/coordinatesToDetails";
 
@@ -279,7 +279,9 @@ export async function registerOrganization(
             JSON.stringify(aidStock, null, 2)
         );
 
-        const locationDetails = await coordinatesToDetails(new GeoPoint(latitude, longitude));
+        const locationDetails = await coordinatesToDetails(
+            new GeoPoint(latitude, longitude)
+        );
 
         // 6. Prepare Organization Data for Firestore
         const orgType = getString(formData, "type");
@@ -442,6 +444,10 @@ const socialMediaData: Volunteer["socialMedia"] = {};
 // --- registerVolunteer Function (Keep as is from fetched content) ---
 export async function registerVolunteer(formData: FormData) {
     let userId: string | null = null;
+
+    const orgCount = (await db.collection("meta").doc("stats").get()).get(
+        "org-count"
+    );
     try {
         // 1. --- Create Auth User ---
         const displayName =
@@ -615,14 +621,12 @@ export async function registerVolunteer(formData: FormData) {
             .set(volunteerData as Volunteer);
 
         // 9. --- Save Basic User Role Info ---
+
         await db
-            .collection("users")
-            .doc(userId)
-            .set({
-                role: "volunteer",
-                organizationId: volunteerData.organizationId,
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                displayName: displayName || volunteerData.username, // Use constructed name or username
+            .collection("meta")
+            .doc("stats")
+            .update({
+                "org-count": FieldValue.increment(1),
             });
 
         console.log(
@@ -633,6 +637,19 @@ export async function registerVolunteer(formData: FormData) {
         // Error handling for volunteer registration (similar logic as organization)
         let errorMessage = "Volunteer registration failed. Please try again.";
         console.error("Error during volunteer registration:", error);
+
+        const _orgCount = (await db.collection("meta").doc("stats").get()).get(
+            "org-count"
+        );
+
+        if (orgCount < _orgCount) {
+            await db
+                .collection("meta")
+                .doc("stats")
+                .update({
+                    "org-count": FieldValue.increment(-1),
+                });
+        }
         if (userId) {
             /* Auth cleanup */
             try {
