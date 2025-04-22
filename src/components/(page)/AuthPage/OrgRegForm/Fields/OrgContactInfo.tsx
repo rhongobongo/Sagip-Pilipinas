@@ -48,8 +48,8 @@ const OrgContactInfo = () => {
                   }));
                 }
               }}
-              className="textbox pl-12 w-full placeholder:text-black"
-              placeholder="+63 | 9XXXXXXXXX"
+              className="textbox pl-12 w-full placeholder:text-gray-400"
+              placeholder="+63 9XXXXXXXXX"
               required
               maxLength={10}
             />
@@ -64,7 +64,7 @@ const OrgContactInfo = () => {
               name="contactPerson"
               value={formData.contactPerson}
               onChange={handleInputChange}
-              className="textbox placeholder:text-gray-200 w-full"
+              className="textbox placeholder:text-gray-400 w-full"
               placeholder="Primary Contact Person Name"
               required
             />
@@ -79,7 +79,7 @@ const OrgContactInfo = () => {
               name="orgPosition"
               value={formData.orgPosition}
               onChange={handleInputChange}
-              className="textbox placeholder:text-gray-200 w-full"
+              className="textbox placeholder:text-gray-400 w-full"
               placeholder="Position in organization"
               required
             />
