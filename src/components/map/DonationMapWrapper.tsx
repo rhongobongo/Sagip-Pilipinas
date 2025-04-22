@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { MapRef } from './GoogleMapComponent'; // Assuming MapRef is exported from here
 import { RequestPin } from '@/types/types';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, Timestamp, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/Firebase/Firebase'; // Make sure this is your client-side Firebase import
 import { CiCircleAlert } from 'react-icons/ci';
 
@@ -19,6 +19,12 @@ interface DonationMapWrapperProps {
   onPinSelect?: (pin: RequestPin) => void;
   width?: string;
   height?: string;
+}
+
+// Create a type for Firestore timestamps
+interface FirestoreTimestamp {
+  seconds: number;
+  nanoseconds: number;
 }
 
 const DonationMapWrapper: React.FC<DonationMapWrapperProps> = ({
@@ -39,9 +45,12 @@ const DonationMapWrapper: React.FC<DonationMapWrapperProps> = ({
     // Fetch aid requests on component mount
     const fetchAidRequests = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'aidRequest'));
+        if (!db) {
+          console.error('Firebase database connection is not initialized');
+          return; // Exit the function if db is null
+        }
         const aidRequests: RequestPin[] = [];
-
+        const querySnapshot = await getDocs(collection(db, 'aidRequest'));
         querySnapshot.forEach((doc) => {
           const data = doc.data();
           // Basic validation for coordinates
@@ -135,12 +144,15 @@ const DonationMapWrapper: React.FC<DonationMapWrapperProps> = ({
         // Check if date is valid
         if (isNaN(date.getTime())) {
             // Try parsing common Firestore timestamp formats if it's an object
-             if (typeof dateString === 'object' && dateString && 'seconds' in dateString && 'nanoseconds' in dateString) {
-                 const firestoreDate = new Date((dateString as any).seconds * 1000 + (dateString as any).nanoseconds / 1000000);
-                 if (!isNaN(firestoreDate.getTime())) {
-                     return firestoreDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-                 }
-             }
+            if (typeof dateString === 'object') {
+                const firestoreTimestamp = dateString as unknown as FirestoreTimestamp;
+                if (firestoreTimestamp && 'seconds' in firestoreTimestamp && 'nanoseconds' in firestoreTimestamp) {
+                    const firestoreDate = new Date(firestoreTimestamp.seconds * 1000 + firestoreTimestamp.nanoseconds / 1000000);
+                    if (!isNaN(firestoreDate.getTime())) {
+                        return firestoreDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                    }
+                }
+            }
             return 'Invalid Date';
         }
         return date.toLocaleDateString('en-US', {
@@ -245,7 +257,7 @@ const DonationMapWrapper: React.FC<DonationMapWrapperProps> = ({
               onClick={() => handlePinSelect(pin)} // Select pin on click
               role="button" // Accessibility improvement
               tabIndex={0} // Make it focusable
-              onKeyDown={(e) => e.key === 'Enter' || e.key === ' ' ? handlePinSelect(pin) : null} // Keyboard accessibility
+              onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => e.key === 'Enter' || e.key === ' ' ? handlePinSelect(pin) : null} // Fixed: Added explicit type for the event
             >
               <div className="flex justify-between items-start gap-2">
                 {/* Pin details on left */}

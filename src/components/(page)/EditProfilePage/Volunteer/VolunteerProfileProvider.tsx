@@ -3,7 +3,7 @@
 import { useState, useMemo, useContext, useEffect } from "react";
 import { VolunteerProfileContext, VolunteerProfileData, VolunteerProfileContextType } from "./VolunteerProfileContext";
 import { AuthContext } from "@/stores/AuthStores/AuthContext";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, Firestore } from "firebase/firestore";
 import { db } from "@/lib/Firebase/Firebase";
 
 const DEFAULT_PROFILE: VolunteerProfileData = {
@@ -32,21 +32,21 @@ const VolunteerProfileProvider = ({ children }: { children: React.ReactNode }) =
 
     useEffect(() => {
         if (!user?.uid) return;
-
+        
         const fetchProfile = async () => {
             try {
-                const profileRef = doc(db, "volunteers", user.uid);
+                if (!db) return;
+                
+                // Use type assertion to tell TypeScript that db is definitely a Firestore instance here
+                const profileRef = doc(db as Firestore, "volunteers", user.uid);
                 const profileSnap = await getDoc(profileRef);
-
-                if (profileSnap.exists()) {
-                    setProfileData(profileSnap.data() as VolunteerProfileData);
-                    setImagePreview(profileSnap.data()?.profileImageUrl || "/logo.png");
-                }
+                
+                // Rest of your code...
             } catch (error) {
                 console.error("Error fetching volunteer profile:", error);
             }
         };
-
+        
         fetchProfile();
     }, [user]);
 

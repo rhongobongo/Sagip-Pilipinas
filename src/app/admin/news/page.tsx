@@ -44,25 +44,32 @@ const NewsArticlePage: React.FC = () => {
             setIsLoading(true);
             setError(null);
             try {
-                // Ensure your API route /api/news fetches the correct data,
-                // including the 'slug' which should be the document ID
-                // for the detail page (e.g., the ID from 'aidRequest' collection).
+                // ... (fetch logic)
                 const response = await fetch('/api/news');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data: NewsItem[] = await response.json();
                 setNewsItems(data);
-            } catch (err: any) {
+            } catch (err: unknown) { // <--- CHANGE 'any' to 'unknown' HERE (Line 56)
                 console.error("Failed to fetch news:", err);
-                setError(`Failed to load news items: ${err.message || 'Please check console.'}`);
+                let errorMessage = 'An unknown error occurred. Please check console.';
+                // Type guard to check if it's an Error instance
+                if (err instanceof Error) {
+                    errorMessage = `Failed to load news items: ${err.message}`;
+                } else if (typeof err === 'string') {
+                    // Handle cases where a string might be thrown
+                    errorMessage = `Failed to load news items: ${err}`;
+                }
+                 // You could add more checks for other error types if needed
+                setError(errorMessage);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchNews();
-    }, []); // Empty dependency array means this runs once on mount
+    }, []);
 
 
     // Helper to format date/time from ISO string

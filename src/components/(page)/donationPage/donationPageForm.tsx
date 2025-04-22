@@ -290,7 +290,7 @@ const DonationPageForm: React.FC<DonationPageFormProps> = ({
         ) as CheckedDonationTypes;
 
         const filteredDonationDetails: Partial<DonationDetails> = {};
-        let donationSummaryItems: string[] = []; // For email summary
+        const donationSummaryItems: string[] = [];
 
        for (const key in checkedDonationTypesToSend) {
       const donationTypeKey = key as keyof CheckedDonationTypes; // Type assertion here is okay
@@ -387,7 +387,7 @@ const DonationPageForm: React.FC<DonationPageFormProps> = ({
                 if (!submissionError) setStatusMessage(`Donation recorded. Notifying ${volunteers.length} volunteers...`);
 
                 let emailSuccessCount = 0;
-                let emailFailCount = 0;
+                const emailFailCount = 0;
                 const orgName = fetchedOrgData.name || 'Your Organization'; // Use fetched org name
 
                 for (const volunteer of volunteers) {
@@ -419,9 +419,9 @@ const DonationPageForm: React.FC<DonationPageFormProps> = ({
                         );
                         console.log(`EmailJS success sending to volunteer ${volunteer.email}`);
                         emailSuccessCount++;
-                    } catch (error: any) {
-                        console.error(`EmailJS failed sending to volunteer ${volunteer.email}:`, error?.text || error);
-                        emailFailCount++;
+                    } catch (error: unknown) {
+                        console.error(`EmailJS failed sending to volunteer ${volunteer.email}:`, 
+                        error instanceof Error ? error.message : String(error));
                         // Maybe collect failed emails to report?
                     }
                 } // End volunteer loop

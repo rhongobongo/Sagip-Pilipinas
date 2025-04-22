@@ -1,6 +1,35 @@
 import { db } from "@/lib/Firebase-Admin";
 import { Timestamp } from "firebase-admin/firestore";
 
+// Define interfaces for better type safety
+interface AnalyticsData {
+    "org-count": number;
+    "donation-count": number;
+    "disaster-count": number;
+    "disaster-counts": Record<string, number>;
+    "average-aid-requests": AverageRequests;
+    "organization-stock": OrganizationStockData;
+    "location_data"?: Record<string, number>;
+    [key: string]: unknown;
+}
+
+interface AverageRequests {
+    yearly: number;
+    monthly: number;
+    weekly: number;
+}
+
+interface OrganizationStock {
+    orgName: string;
+    clothing: number;
+    medicine: number;
+    food: number;
+}
+
+interface OrganizationStockData {
+    [orgId: string]: OrganizationStock;
+}
+
 const countOrganizations = async () => {
     const snap = await db.collection("organizations").count().get();
     return snap.data().count;
@@ -53,7 +82,7 @@ const calculateAverageAidRequests = async () => {
         .map((doc) => (doc.data().timestamp as Timestamp)?.toMillis())
         .filter((ts) => typeof ts === "number");
 
-    const averageRequests: Record<string, number> = {
+    const averageRequests: AverageRequests = {
         yearly: 0,
         monthly: 0,
         weekly: 0,
@@ -82,12 +111,12 @@ const calculateAverageAidRequests = async () => {
     return averageRequests;
 };
 
-const getPreviousAnalytics = async () => {
+const getPreviousAnalytics = async (): Promise<AnalyticsData> => {
     const previousStatsSnap = await db.collection("meta").doc("stats").get();
-    return previousStatsSnap.data() || {};
+    return previousStatsSnap.data() as AnalyticsData || {} as AnalyticsData;
 };
 
-const updateAnalyticsDocument = async (data: Record<string, any>) => {
+const updateAnalyticsDocument = async (data: Record<string, unknown>) => {
     await db.collection("meta").doc("stats").set(data, { merge: true });
 };
 
@@ -115,7 +144,7 @@ const updateLocationStatistics = async () => {
 
 const getOrganizationStockData = async () => {
     const organizationsSnapshot = await db.collection("organizations").get();
-    const organizationStockData: Record<string, Record<string, number>> = {};
+    const organizationStockData: OrganizationStockData = {};
 
     organizationsSnapshot.forEach((orgDoc) => {
         const orgData = orgDoc.data();
@@ -155,13 +184,13 @@ const getOrganizationStockData = async () => {
     return organizationStockData;
 };
 
-const logCurrentAnalytics = (analytics: Record<string, any>) => {
+const logCurrentAnalytics = (analytics: AnalyticsData) => {
     console.log("Analytics updated successfully:", analytics);
 };
 
 const logComparisonWithPrevious = (
-    current: Record<string, any>,
-    previous: Record<string, any>
+    current: AnalyticsData,
+    previous: AnalyticsData
 ) => {
     const currentAverage = current["average-aid-requests"] ?? {
         yearly: 0,
@@ -197,7 +226,7 @@ export const manualAnalyticsUpdater = async () => {
         const organizationStockData = await getOrganizationStockData();
         await updateLocationStatistics();
 
-        const currentAnalyticsData = {
+        const currentAnalyticsData: AnalyticsData = {
             "org-count": orgCount,
             "donation-count": donationCount,
             "disaster-count": disasterTotalCount,

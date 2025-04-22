@@ -63,8 +63,20 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
         console.log("Raw organization data from API:", data); // Debugging log
 
         // Filter for organizations with valid coordinates and email
+        type RawOrgData = {
+          userId: string;
+          coordinates?: {
+            latitude?: number;
+            longitude?: number;
+          };
+          email?: string;
+          name?: string;
+          // Add other fields as needed
+        };
+        
+        // Then use this type in the filter function
         const validOrgs = data.filter(
-          (org: any) => {
+          (org: RawOrgData) => {
             const lat = org?.coordinates?.latitude;
             const lng = org?.coordinates?.longitude;
             const email = org?.email;
@@ -256,7 +268,11 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
           org_name: org.name || 'Organization',
           to_email: org.email,
         };
-        console.log(`DEBUG: Sending to ${org.email} with params:`, JSON.stringify(templateParams, null, 2)); // Keep explicit DEBUG log
+        type EmailJSError = {
+          text?: string;
+          message?: string;
+        };
+        
         try {
           await emailjs.send(
             YOUR_SERVICE_ID!,
@@ -266,8 +282,10 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
           );
           console.log(`EmailJS success sending to ${org.email}`);
           emailSuccessCount++;
-        } catch (error: any) {
-           console.error(`EmailJS failed sending to ${org.email}:`, error?.text || error);
+        } catch (error: unknown) {
+          // Type guard for the error object
+          const emailError = error as EmailJSError;
+          console.error(`EmailJS failed sending to ${org.email}:`, emailError?.text || emailError?.message || error);
           emailFailCount++;
         }
       }

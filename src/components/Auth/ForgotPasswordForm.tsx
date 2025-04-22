@@ -23,17 +23,18 @@ export default function ForgotPasswordForm() {
       await sendPasswordResetEmail(auth, email);
       setMessage('Password reset email sent! Check your inbox (and spam folder).');
       setEmail('');
-    } catch (err: any) {
+    } catch (err: unknown) {
+      // Then type check and cast as needed
+      const firebaseError = err as { code?: string, message?: string };
+      
       console.error("Password Reset Error:", err);
-      if (err.code === 'auth/user-not-found') {
+      if (firebaseError.code === 'auth/user-not-found') {
         setError('No user found with this email address.');
-      } else if (err.code === 'auth/invalid-email') {
+      } else if (firebaseError.code === 'auth/invalid-email') {
         setError('Please enter a valid email address.');
       } else {
         setError('Failed to send password reset email. Please try again later.');
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 

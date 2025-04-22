@@ -38,12 +38,12 @@ if (!getApps().length) {
             console.error("Firebase initialization error:", error);
             // Optionally throw the error or handle it based on your app's needs
             // For now, we'll let subsequent initializations fail gracefully
-            // @ts-ignore - Assign null or handle error state if initialization fails critically
+            // @ts-expect-error - Allowing null assignment on app which is otherwise strictly typed as FirebaseApp
             app = null;
         }
     } else {
         console.error("Firebase config (apiKey or projectId) is missing. App cannot be initialized.");
-         // @ts-ignore
+        // @ts-expect-error - Allowing null assignment for error state handling when config is incomplete
         app = null;
     }
 } else {
@@ -68,9 +68,9 @@ if (app) {
 } else {
     console.error("Firebase App failed to initialize. Other services (Auth, Firestore, Storage) cannot be initialized.");
     // Assign default/null values or handle the error state appropriately
-    // @ts-ignore - Ensure services are marked as uninitialized
+    // @ts-expect-error - Auth expects to be initialized with a valid app, but allowing null for fallback error state
     auth = null;
-    // @ts-ignore
+    // @ts-expect-error - Storage expects to be initialized with a valid app, but allowing null for fallback error state
     storage = null;
     db = null;
 }
@@ -79,4 +79,3 @@ export { app, db, auth, storage };
 
 export { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, collection, addDoc };
 export const googleProvider = new GoogleAuthProvider();
-

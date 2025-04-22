@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { db } from '@/lib/Firebase/Firebase';
-import { collection, getDocs, query, orderBy, doc, deleteDoc, Timestamp as ClientTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, deleteDoc, Timestamp as FirebaseTimestamp, FirestoreError } from 'firebase/firestore';
 
 type RequestDetails = {
     id: string;
@@ -17,10 +17,13 @@ type RequestDetails = {
     status?: 'pending' | 'approved' | 'completed';
 };
 
-function formatDateTimeClient(timestamp: any, dateStr?: string, timeStr?: string): { date: string; time: string } {
+// Define a type for the timestamp parameter
+type TimestampParameter = FirebaseTimestamp | string | null | undefined;
+
+function formatDateTimeClient(timestamp: TimestampParameter, dateStr?: string, timeStr?: string): { date: string; time: string } {
     let finalDate = dateStr || '';
     let finalTime = timeStr || '';
-    if (timestamp && typeof timestamp.toDate === 'function') {
+    if (timestamp && typeof timestamp === 'object' && 'toDate' in timestamp && typeof timestamp.toDate === 'function') {
         const dateObj = timestamp.toDate();
         finalDate = dateObj.toLocaleDateString('en-CA');
         finalTime = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -147,9 +150,10 @@ const AidRequestsPage: React.FC = () => {
 
                 setRequests(fetchedRequests);
 
-            } catch (err: any) {
+            } catch (err: FirestoreError | unknown) {
                 console.error("Error fetching aid requests:", err);
-                setError(`Failed to load requests: ${err.message || 'Please check console.'}`);
+                const errorMessage = err instanceof Error ? err.message : 'Please check console.';
+                setError(`Failed to load requests: ${errorMessage}`);
             } finally {
                 setIsLoading(false);
             }
@@ -170,7 +174,24 @@ const AidRequestsPage: React.FC = () => {
 
 
     const handleNavClick = (sectionId: string) => { const element = document.getElementById(sectionId); setTimeout(() => { element?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); };
-    const handleDelete = async (idToDelete: string) => { if (!db) { alert("Firestore not initialized."); return; } if (window.confirm(`Delete request ${idToDelete}?`)) { try { const requestDocRef = doc(db, "aidRequest", idToDelete); await deleteDoc(requestDocRef); setRequests(prevRequests => prevRequests.filter(r => r.id !== idToDelete)); alert(`Request ${idToDelete} deleted.`); } catch (err: any) { console.error("Error deleting: ", err); alert(`Failed to delete: ${err.message}`); } } };
+    const handleDelete = async (idToDelete: string) => { 
+        if (!db) { 
+            alert("Firestore not initialized."); 
+            return; 
+        } 
+        if (window.confirm(`Delete request ${idToDelete}?`)) { 
+            try { 
+                const requestDocRef = doc(db, "aidRequest", idToDelete); 
+                await deleteDoc(requestDocRef); 
+                setRequests(prevRequests => prevRequests.filter(r => r.id !== idToDelete)); 
+                alert(`Request ${idToDelete} deleted.`); 
+            } catch (err: FirestoreError | unknown) { 
+                console.error("Error deleting: ", err); 
+                const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+                alert(`Failed to delete: ${errorMessage}`); 
+            } 
+        } 
+    };
 
     return (
         <div className="w-full h-full p-4 font-inter bg-gray-50">
