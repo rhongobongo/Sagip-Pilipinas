@@ -259,7 +259,7 @@ const OrgSponsorInfo = () => {
             <button
               type="button"
               onClick={handleAddSponsorClick}
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium mt-4"
+              className="flex items-center gap-2 text-black hover:text-white hover:border-none hover:bg-red-300 p-2 rounded-lg font-medium mt-4"
             >
               <CiCirclePlus className="text-2xl" /> Add Sponsor
             </button>
