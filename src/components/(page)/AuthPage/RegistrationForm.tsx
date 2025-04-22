@@ -64,15 +64,15 @@ const RegistrationForm: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center bg-white text-black">
-      <div className="max-w-[1600px] h-full py-8 ">
+    <div className="flex items-center justify-center bg-white text-black transition-all duration-300">
+      <div className="max-w-[1600px] h-full py-8 transition-all duration-300">
         <h1 className="flex justify-center text-2xl font-bold">Join us now!</h1>
-        <h2 className="flex justify-center pb-4">
+        <h2 className="flex justify-center pb-4 justify w-4/5 mx-auto">
           Sign up as an organization and help by providing services and goods,
           or as a volunteer and do voluntary work when help is needed
         </h2>
-        <div className="flex flex-grow-0 flex-shrink-0 w-full">
-          <div className="w-auto flex align-center">
+        <div className="flex w-full mx-auto items-center justify-center">
+          <div className="w-auto hidden md:flex align-center">
             <img
               src="/Register1.svg"
               className={`w-full transition-all duration-300 ${
@@ -83,37 +83,41 @@ const RegistrationForm: React.FC = () => {
               }`}
             />
           </div>
-          <div className="bg-[#8F0022] text-white p-7 rounded-3xl w-1/2">
+          <div className="bg-[#8F0022] text-white p-7 sm:rounded-3xl w-full sm:w-3/4 md:w-1/2">
             <div className="flex flex-col">
               <h1>REGISTER AS:</h1>
             </div>
-            <div className="flex gap-4 mt-4 mb-4 w-full ">
-              <div className="w-full">
+            <div className="flex gap-4 mt-4 mb-4 w-full">
+              <div className="w-full flex items-center justify-center">
                 <button
                   type="submit"
-                  className="w-full max-w-[18.5rem] h-full max-h-[18.75rem] p-4 bg-white text-black rounded-md hover:text-white hover:bg-[#D80D3C] hover:transition-all hover:duration-300 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[5px_5px_5px_0_rgba(0,0,0,4)] bg-focus:outline-none mt-4"
+                  className="w-full max-w-[15rem] md:max-w-[18.5rem] h-full max-h-[18.75rem] p-4 bg-white text-black rounded-md hover:text-white hover:bg-[#D80D3C] hover:transition-all hover:duration-300 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[5px_5px_5px_0_rgba(0,0,0,4)] bg-focus:outline-none"
                   onClick={() => handleInitialSubmit('organization')}
                   onMouseEnter={() => setHoveredButton('organization')}
                   onMouseLeave={() => setHoveredButton(null)}
                 >
                   <img src="/Organization.svg" alt="" className="w-full" />
-                  <h1 className="font-[550] font-inter">ORGANIZATION</h1>
+                  <h1 className="text-xs sm:text-[16px] font-[550]">
+                    ORGANIZATION
+                  </h1>
                 </button>
               </div>
-              <div className="w-full">
+              <div className="w-full flex items-center justify-center">
                 <button
                   type="submit"
-                  className="w-full max-w-[18.5rem] h-full max-h-[18.75rem] p-4 bg-white text-black rounded-md hover:text-white hover:bg-[#D80D3C] hover:transition-all hover:duration-300 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[5px_5px_5px_0_rgba(0,0,0,4)] bg-focus:outline-none mt-4"
+                  className="w-full max-w-[15rem] md:max-w-[18.5rem] h-full max-h-[18.75rem] p-4 bg-white text-black rounded-md hover:text-white hover:bg-[#D80D3C] hover:transition-all hover:duration-300 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[5px_5px_5px_0_rgba(0,0,0,4)] bg-focus:outline-none"
                   onClick={() => handleInitialSubmit('volunteer')}
                   onMouseEnter={() => setHoveredButton('volunteer')}
                   onMouseLeave={() => setHoveredButton(null)}
                 >
                   <img src="/Volunteer.svg" alt="" className="w-full" />
-                  <h1 className="font-[550] font-inter">VOLUNTEER</h1>
+                  <h1 className="text-xs sm:text-[16px] font-[550]">
+                    VOLUNTEER
+                  </h1>
                 </button>
               </div>
             </div>
-            <h2 className=" flex justify-center">
+            <h2 className="text-xs sm:text-[16px] flex justify-center w-full">
               Already have an account?
               <Link href="/login" className="underline pl-1">
                 Login in here
@@ -121,7 +125,7 @@ const RegistrationForm: React.FC = () => {
             </h2>
           </div>
 
-          <div className="w-auto flex align-center">
+          <div className="w-auto align-center hidden md:flex">
             <img
               src="/Register2.svg"
               className={`w-full transition-all duration-300 ${
