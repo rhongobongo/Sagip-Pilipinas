@@ -36,7 +36,7 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
   return (
     <div className="w-full transition-all duration-300">
       <div
-        // ref={scrollTargetRef}
+        ref={scrollTargetRef}
         className="mx-auto p-10 md:p-20 bg-[#B0022A] w-full min-h-[calc(100vh-80px)]"
       >
         <div className="flex flex-wrap justify-between items-center w-full pb-4 mb-4 gap-4">
