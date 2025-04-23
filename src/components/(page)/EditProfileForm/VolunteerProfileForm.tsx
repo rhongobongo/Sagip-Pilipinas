@@ -36,10 +36,51 @@ export default function VolunteerProfileForm({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(profile.skills || []);
+  const [otherSkill, setOtherSkill] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<string>(profile.roleOrCategory || '');
+
+  // Available skills options
+  const skillOptions = [
+    'First Aid C P R',
+    'Psychosocial Support',
+    'Medical Services',
+    'Search Rescue',
+    'Clerical Work',
+    'Counseling'
+  ];
+
+  // Available role/category options
+  const roleOptions = [
+    'Disaster Response and Relief',
+    'Food and Supply Distribution',
+    'Community Outreach',
+    'Evacuation Center Assistance',
+    'Medical Assistance and First Aid',
+    'Documentation and Reporting',
+    'Psychosocial Support Services',
+    'Fundraising and Donation Management'
+  ];
 
   // Handle social media link changes
   const handleSocialLinkChange = (platform: string, value: string) => {
     setSocialLinks((prev) => ({ ...prev, [platform]: value }));
+  };
+
+  // Handle skill checkbox changes
+  const handleSkillChange = (skill: string) => {
+    setSelectedSkills(prev => {
+      if (prev.includes(skill)) {
+        return prev.filter(s => s !== skill);
+      } else {
+        return [...prev, skill];
+      }
+    });
+  };
+
+  // Handle role selection
+  const handleRoleChange = (role: string) => {
+    setSelectedRole(role);
   };
 
   // Handle Image Change with Compression
@@ -105,6 +146,19 @@ export default function VolunteerProfileForm({
     Object.entries(socialLinks).forEach(([platform, link]) => {
       formData.append(`socialMedia.${platform}`, link || '');
     });
+
+    // Add selected skills
+    const skillsToSubmit = [...selectedSkills];
+    if (otherSkill.trim()) {
+      skillsToSubmit.push(otherSkill.trim());
+    }
+    
+    // Remove and re-add skills to FormData
+    formData.delete('skills');
+    formData.append('skills', skillsToSubmit.join(','));
+    
+    // Add selected role
+    formData.set('roleOrCategory', selectedRole);
 
     // Append profile image if selected
     if (imageFile) {
@@ -273,35 +327,154 @@ export default function VolunteerProfileForm({
           </div>
         </div>
         
-        {/* Role Preference */}
-        <div className="mb-4">
-          <label
-            htmlFor="roleOrCategory"
-            className="block mb-1 font-medium"
-          >
-            Role Preference:
-          </label>
-          <input
-            type="text"
-            id="roleOrCategory"
-            name="roleOrCategory"
-            className="w-full p-2 border rounded"
-            defaultValue={profile.roleOrCategory || ''}
-          />
+        {/* Skills Selection - Checkboxes matching the image */}
+        <div className="mb-6">
+          <div className="border border-red-300 rounded-lg p-4">
+            <h4 className="text-lg font-semibold mb-2 text-red-800">Skills and Expertise:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                {skillOptions.slice(0, 2).map(skill => (
+                  <div key={skill} className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      id={`skill-${skill}`}
+                      checked={selectedSkills.includes(skill)}
+                      onChange={() => handleSkillChange(skill)}
+                      className="h-4 w-4 text-red-600 border-red-300 rounded focus:ring-red-500"
+                    />
+                    <label htmlFor={`skill-${skill}`} className="ml-2 text-sm">
+                      {skill}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              
+              <div>
+                {skillOptions.slice(2, 4).map(skill => (
+                  <div key={skill} className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      id={`skill-${skill}`}
+                      checked={selectedSkills.includes(skill)}
+                      onChange={() => handleSkillChange(skill)}
+                      className="h-4 w-4 text-red-600 border-red-300 rounded focus:ring-red-500"
+                    />
+                    <label htmlFor={`skill-${skill}`} className="ml-2 text-sm">
+                      {skill}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              
+              <div>
+                {skillOptions.slice(4).map(skill => (
+                  <div key={skill} className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      id={`skill-${skill}`}
+                      checked={selectedSkills.includes(skill)}
+                      onChange={() => handleSkillChange(skill)}
+                      className="h-4 w-4 text-red-600 border-red-300 rounded focus:ring-red-500"
+                    />
+                    <label htmlFor={`skill-${skill}`} className="ml-2 text-sm">
+                      {skill}
+                    </label>
+                  </div>
+                ))}
+                
+                {/* Others input field */}
+                <div className="flex items-center mb-2">
+                  <input
+                    type="checkbox"
+                    id="skill-other"
+                    checked={otherSkill.trim() !== ''}
+                    onChange={(e) => {
+                      if (!e.target.checked) {
+                        setOtherSkill('');
+                      }
+                    }}
+                    className="h-4 w-4 text-red-600 border-red-300 rounded focus:ring-red-500"
+                  />
+                  <label htmlFor="skill-other" className="ml-2 text-sm">
+                    Others:
+                  </label>
+                  <input
+                    type="text"
+                    value={otherSkill}
+                    onChange={(e) => setOtherSkill(e.target.value)}
+                    className="ml-2 p-1 text-sm border rounded border-red-300 focus:ring-red-500 focus:border-red-500"
+                    placeholder="Specify other skills"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         
-        {/* Skills */}
-        <div className="mb-4">
-          <label htmlFor="skills" className="block mb-1 font-medium">
-            Skills (comma-separated):
-          </label>
-          <input
-            type="text"
-            id="skills"
-            name="skills"
-            className="w-full p-2 border rounded"
-            defaultValue={profile.skills?.join(', ') || ''}
-          />
+        {/* Role/Category Preference - Radio buttons matching the image */}
+        <div className="mb-6">
+          <div className="border border-red-300 rounded-lg p-4">
+            <h4 className="text-lg font-semibold mb-2 text-red-800">Role/Category Preference: <span className="text-red-500">*</span></h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                {roleOptions.slice(0, 3).map(role => (
+                  <div key={role} className="flex items-center mb-2">
+                    <input
+                      type="radio"
+                      id={`role-${role}`}
+                      name="rolePreference"
+                      value={role}
+                      checked={selectedRole === role}
+                      onChange={() => handleRoleChange(role)}
+                      className="h-4 w-4 text-red-600 border-red-300 focus:ring-red-500"
+                      required
+                    />
+                    <label htmlFor={`role-${role}`} className="ml-2 text-sm">
+                      {role}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              
+              <div>
+                {roleOptions.slice(3, 6).map(role => (
+                  <div key={role} className="flex items-center mb-2">
+                    <input
+                      type="radio"
+                      id={`role-${role}`}
+                      name="rolePreference"
+                      value={role}
+                      checked={selectedRole === role}
+                      onChange={() => handleRoleChange(role)}
+                      className="h-4 w-4 text-red-600 border-red-300 focus:ring-red-500"
+                    />
+                    <label htmlFor={`role-${role}`} className="ml-2 text-sm">
+                      {role}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              
+              <div>
+                {roleOptions.slice(6).map(role => (
+                  <div key={role} className="flex items-center mb-2">
+                    <input
+                      type="radio"
+                      id={`role-${role}`}
+                      name="rolePreference"
+                      value={role}
+                      checked={selectedRole === role}
+                      onChange={() => handleRoleChange(role)}
+                      className="h-4 w-4 text-red-600 border-red-300 focus:ring-red-500"
+                    />
+                    <label htmlFor={`role-${role}`} className="ml-2 text-sm">
+                      {role}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
         
         {/* Affiliated Organization */}
