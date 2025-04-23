@@ -40,7 +40,6 @@ export default function EditProfilePage() {
 
   return (
     <div className="bg-white text-black" style={{ padding: '20px' }}>
-      <h1>Edit Your Profile</h1>
       <p>User ID: {userId}</p>
       <hr className="border-red-400" style={{ margin: '20px 0' }} />
       <EditProfileForm userId={userId} />
