@@ -500,7 +500,7 @@ export default function OrganizationProfileForm({
       {/* *** Location Section using the Wrapper *** */}
       <div className="bg-gray-50 p-4 rounded-lg shadow">
         <h3 className="text-xl font-semibold mb-3">Organization Location</h3>
-        <p className="text-sm text-gray-600 mb-2">Click on the map to set or update your organization's precise location.</p>
+        <p className="text-sm text-gray-600 mb-2">Click on the map to set or update your organization&apos;s precise location.</p>
         <LocationSetterMapWrapper
           initialLatitude={latitude}
           initialLongitude={longitude}

@@ -88,7 +88,7 @@ const LocationSetterMapWrapper: React.FC<LocationSetterMapWrapperProps> = ({
         {currentPin ? (
           <p>Location set at: {currentPin.coordinates.latitude.toFixed(6)}, {currentPin.coordinates.longitude.toFixed(6)}</p>
         ) : (
-          <p>Click on the map to set your organization's location</p>
+          <p>Click on the map to set your organization&apos;s location</p>
         )}
       </div>
     </div>
