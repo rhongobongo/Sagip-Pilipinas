@@ -29,9 +29,9 @@ const LoginForm: React.FC = () => {
       setTimeout(() => {
         // Consider a more robust redirect or state update instead of reload
         // For SPA feel, use router.push('/') or state management update
-        router.push('/');
-      }, 1000);
-      // router.push('/'); // Redirect might happen before reload completes
+        document.location.reload();
+      }, 300);
+      router.push('/'); // Redirect might happen before reload completes
     } catch (backendError) {
       console.error('Backend login error:', backendError);
       let backendErrorMessage = 'Login failed during server verification.';
@@ -161,8 +161,8 @@ const LoginForm: React.FC = () => {
         </div>
         {/* Forgot Password Link */}
         <div className="mb-4 text-right">
-          <Link 
-            href="/forgot-password" 
+          <Link
+            href="/forgot-password"
             className="text-sm text-white hover:text-red-200 underline focus:outline-none"
           >
             Forgot Password?
