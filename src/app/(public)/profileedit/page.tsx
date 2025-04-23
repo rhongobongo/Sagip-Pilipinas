@@ -1,9 +1,9 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import EditProfileForm from '@/components/(page)/EditProfileForm/EditProfileForm'; // Assuming correct path
+import EditProfileForm from '@/components/(page)/EditProfileForm/EditProfileForm'; 
 import { auth } from '@/lib/Firebase/Firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { fetchOrganizations } from '@/lib/APICalls/Organizations/fetchOrganization'; // Import the function to fetch organizations
+import { fetchOrganizations } from '@/lib/APICalls/Organizations/fetchOrganization';
 
 interface OrganizationOption {
   id: string;
@@ -74,9 +74,6 @@ export default function EditProfilePage() {
   }
 
   if (orgsError) {
-     // Optional: Handle error fetching organizations more gracefully
-     // Maybe allow editing profile but show error for org dropdown?
-     // For now, just showing an error message.
      return <div className="p-4 text-red-500">Error loading page data: {orgsError}</div>
   }
 

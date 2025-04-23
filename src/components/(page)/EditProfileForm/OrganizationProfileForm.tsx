@@ -1,8 +1,9 @@
 'use client';
-import React, { useState, FormEvent, ChangeEvent } from 'react';
+import React, { useState, FormEvent, ChangeEvent, useCallback  } from 'react';
 import { updateProfileData } from '@/actions/profileActions';
 import imageCompression from 'browser-image-compression';
 import { AidTypeId, aidTypes } from '@/components/(page)/AuthPage/OrgRegForm/types';
+import LocationSetterMapWrapper from './LocationSetterMapWrapper';
 
 interface OrganizationProfile {
   userId: string;
@@ -12,6 +13,9 @@ interface OrganizationProfile {
   contactPerson?: string;
   orgPosition?: string;
   profileImageUrl?: string | undefined;
+    // Ensure coordinates are part of the profile prop type
+    coordinates?: { latitude: number; longitude: number };
+    location?: string; // Optional address string
   aidStock?: {
     [aidId: string]: {
       available: boolean;
@@ -125,6 +129,18 @@ export default function OrganizationProfileForm({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const [latitude, setLatitude] = useState<number | null>(profile.coordinates?.latitude ?? null);
+  const [longitude, setLongitude] = useState<number | null>(profile.coordinates?.longitude ?? null);
+
+  // --- Handlers ---
+
+  // *** Callback function to receive location updates from the wrapper ***
+  const handleLocationChange = useCallback((lat: number, lng: number) => {
+    setLatitude(lat);
+    setLongitude(lng);
+    console.log(`Form received location update: Lat: ${lat}, Lng: ${lng}`);
+  }, []);
 
   // Handle social media link changes
   const handleSocialLinkChange = (platform: string, value: string) => {
@@ -298,6 +314,11 @@ export default function OrganizationProfileForm({
       return;
     }
 
+    if (!latitude || !longitude) {
+        setError('Please set your organization location on the map before saving.');
+        return;
+      }
+
     setIsSubmitting(true);
     setError(null);
     setSuccessMessage(null);
@@ -321,6 +342,12 @@ export default function OrganizationProfileForm({
 
     // Add aid stock data
     formData.append('aidStock', JSON.stringify(aidStock));
+
+    formData.append('coordinates', JSON.stringify({
+      latitude: latitude,
+      longitude: longitude,
+      type: 'geopoint' // Adding a type identifier for the backend to recognize
+    }));
 
     // Append COMPRESSED Profile Image if selected
     if (imageFile) {
@@ -468,6 +495,25 @@ export default function OrganizationProfileForm({
             defaultValue={profile.orgPosition || ''}
           />
         </div>
+      </div>
+
+      {/* *** Location Section using the Wrapper *** */}
+      <div className="bg-gray-50 p-4 rounded-lg shadow">
+        <h3 className="text-xl font-semibold mb-3">Organization Location</h3>
+        <p className="text-sm text-gray-600 mb-2">Click on the map to set or update your organization&apos;s precise location.</p>
+        <LocationSetterMapWrapper
+          initialLatitude={latitude}
+          initialLongitude={longitude}
+          onLocationChange={handleLocationChange}
+        />
+        {/* Display current coordinates */}
+        {latitude && longitude ? (
+          <p className="text-sm text-gray-800 mt-2">
+            Selected Coordinates: Lat: {latitude.toFixed(6)}, Lng: {longitude.toFixed(6)}
+          </p>
+        ) : (
+          <p className="text-sm text-yellow-600 mt-2">No location set. Please click on the map.</p>
+        )}
       </div>
 
       {/* Contact Information */}
