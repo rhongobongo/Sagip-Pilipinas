@@ -1,11 +1,9 @@
-// src/app/profile/edit/page.tsx
 'use client'; // This page uses hooks for auth state
 import React from 'react';
 import EditProfileForm from '@/components/(page)/EditProfileForm/EditProfileForm';
 import { auth } from '@/lib/Firebase/Firebase'; // Update this path to match your firebase.ts location
 import { onAuthStateChanged } from 'firebase/auth';
 
-// Real Firebase Auth hook
 const useAuth = () => {
   const [userId, setUserId] = React.useState<string | null>(null);
   const [loadingAuth, setLoadingAuth] = React.useState(true);
@@ -19,8 +17,7 @@ const useAuth = () => {
       }
       setLoadingAuth(false);
     });
-
-    // Clean up subscription
+    
     return () => unsubscribe();
   }, []);
 
