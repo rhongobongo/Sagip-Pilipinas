@@ -5,10 +5,10 @@ import NewsCard, { NewsItem } from './NewsCard';
 
 interface NewsDisplaySectionProps {
     newsItems: NewsItem[];
-    scrollTargetRef: React.RefObject<HTMLDivElement>; // Receive the ref from parent which is ang News.tsx
-    listMinHeightClass?: string;
+    scrollTargetRef: React.RefObject<HTMLDivElement | null>; // Change this line to accept null
+    listMinHeightClass: string;
     idPrefix: string;
-}
+  }
 
 const NewsDisplaySection = ({
     newsItems,
