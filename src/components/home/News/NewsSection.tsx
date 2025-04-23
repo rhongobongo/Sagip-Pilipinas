@@ -22,7 +22,7 @@ interface NewsDetail {
 export async function fetchNews(): Promise<NewsDetail[]> {
   try {
     const newsRef = db.collection('aidRequest');
-    const snapshot = await newsRef.orderBy('timestamp', 'desc').limit(20).get();
+    const snapshot = await newsRef.orderBy('timestamp', 'desc').get();
 
     const newsItems: NewsDetail[] = snapshot.docs.map((doc) => {
       const data = doc.data();
