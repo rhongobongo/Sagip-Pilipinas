@@ -79,7 +79,7 @@ export default async function RootLayout({
 
         <AuthProvider user={user}>
           <NavbarWrapper />
-          <div className="flex-1">{children}</div>
+          <div className="flex-1 bg-white">{children}</div>
           <Footer />
         </AuthProvider>
       </body>
