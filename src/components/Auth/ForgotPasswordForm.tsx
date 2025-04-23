@@ -86,8 +86,8 @@ export default function ForgotPasswordForm() {
           </h2>
           {/* Instructions */}
           <p className="text-center text-gray-200 mb-6">
-            Enter the email address associated with your account, and we'll send
-            you a link to reset your password.
+            Enter the email address associated with your account, and we&apos;ll
+            send you a link to reset your password.
           </p>
           {/* Form Element */}
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -165,8 +165,8 @@ export default function ForgotPasswordForm() {
           <p className="text-lg text-gray-100">
             {' '}
             {/* Slightly lighter text */}
-            No worries! Just enter your email on the left, and we'll help you
-            get back into your Sagip Pilipinas account quickly.
+            No worries! Just enter your email on the left, and we&apos;ll help
+            you get back into your Sagip Pilipinas account quickly.
           </p>
           {/* Optional: Add an icon or image here */}
           {/* <svg ... > */}
