@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
@@ -24,7 +23,6 @@ interface VolunteerProfile {
   organizationId?: string;
   socialMedia?: Record<string, string>;
   profileImageUrl?: string | undefined; // Use undefined
-  
 }
 
 interface OrganizationProfile {
@@ -74,48 +72,48 @@ const aidTypeFields = {
   food: [
     { name: 'foodPacks', label: 'Food Packs', type: 'number' },
     { name: 'category', label: 'Category', type: 'text' },
-    { name: 'description', label: 'Description', type: 'text' }
+    { name: 'description', label: 'Description', type: 'text' },
   ],
   clothing: [
     { name: 'male', label: 'Male Clothing', type: 'number' },
     { name: 'female', label: 'Female Clothing', type: 'number' },
     { name: 'children', label: 'Children Clothing', type: 'number' },
-    { name: 'notes', label: 'Notes', type: 'text' }
+    { name: 'notes', label: 'Notes', type: 'text' },
   ],
   medicalSupplies: [
     { name: 'kits', label: 'Medical Kits', type: 'number' },
     { name: 'medicines', label: 'Medicines', type: 'number' },
     { name: 'equipment', label: 'Medical Equipment', type: 'number' },
-    { name: 'details', label: 'Details', type: 'text' }
+    { name: 'details', label: 'Details', type: 'text' },
   ],
   shelter: [
     { name: 'tents', label: 'Tents', type: 'number' },
     { name: 'blankets', label: 'Blankets', type: 'number' },
     { name: 'capacity', label: 'Capacity', type: 'number' },
-    { name: 'notes', label: 'Notes', type: 'text' }
+    { name: 'notes', label: 'Notes', type: 'text' },
   ],
   searchAndRescue: [
     { name: 'rescueKits', label: 'Rescue Kits', type: 'number' },
     { name: 'rescuePersonnel', label: 'Rescue Personnel', type: 'number' },
     { name: 'equipment', label: 'Equipment', type: 'number' },
-    { name: 'details', label: 'Details', type: 'text' }
+    { name: 'details', label: 'Details', type: 'text' },
   ],
   financialAssistance: [
     { name: 'totalFunds', label: 'Total Funds', type: 'number' },
     { name: 'currency', label: 'Currency', type: 'text' },
-    { name: 'notes', label: 'Notes', type: 'text' }
+    { name: 'notes', label: 'Notes', type: 'text' },
   ],
   counseling: [
     { name: 'counselors', label: 'Counselors', type: 'number' },
     { name: 'hours', label: 'Available Hours', type: 'number' },
-    { name: 'specialties', label: 'Specialties', type: 'text' }
+    { name: 'specialties', label: 'Specialties', type: 'text' },
   ],
   technicalSupport: [
     { name: 'vehicles', label: 'Vehicles', type: 'number' },
     { name: 'communication', label: 'Communication Devices', type: 'number' },
     { name: 'equipment', label: 'Technical Equipment', type: 'number' },
-    { name: 'details', label: 'Details', type: 'text' }
-  ]
+    { name: 'details', label: 'Details', type: 'text' },
+  ],
 };
 
 export default function EditProfileForm({
@@ -332,65 +330,70 @@ export default function EditProfileForm({
   const handleSocialLinkChange = (platform: string, value: string) => {
     setSocialLinks((prev) => ({ ...prev, [platform]: value }));
   };
-// Updated handler for aid stock changes
-const handleAidStockChange = (
-  aidId: string,
-  field: string,
-  value: string | boolean
-) => {
-  setAidStock((prev) => {
-    // Ensure the aid type object exists
-    const currentAidStock = prev[aidId] || { available: true };
-    
-    // For numeric fields, ensure value is a valid number or 0
-    const processedValue = 
-      aidTypeFields[aidId as keyof typeof aidTypeFields]?.find(f => f.name === field)?.type === 'number'
-        ? (value === '' ? '0' : value)  // Convert empty string to '0'
-        : value;
-        
-    // Return updated state
-    return {
-      ...prev,
-      [aidId]: {
-        ...currentAidStock,
-        [field]: processedValue
-      }
-    };
-  });
-};
+  // Updated handler for aid stock changes
+  const handleAidStockChange = (
+    aidId: string,
+    field: string,
+    value: string | boolean
+  ) => {
+    setAidStock((prev) => {
+      // Ensure the aid type object exists
+      const currentAidStock = prev[aidId] || { available: true };
 
-// Updated toggle function to initialize fields with default values
-const toggleAidAvailability = (aidId: string) => {
-  setAidStock((prev) => {
-    const isCurrentlyAvailable = !!prev[aidId]?.available;
-    
-    // If turning on and doesn't exist yet, initialize with default values
-    if (!isCurrentlyAvailable) {
-      const newAidStock = { ...prev };
-      const fieldsForType = aidTypeFields[aidId as keyof typeof aidTypeFields] || [];
-      
-      // Create object with default values
-      const newAidTypeStock: Record<string, unknown> = { available: true };
-      
-      // Set defaults (0 for numbers, empty for text)
-      fieldsForType.forEach(field => {
-        newAidTypeStock[field.name] = field.type === 'number' ? '0' : '';
-      });
-      
-      newAidStock[aidId] = newAidTypeStock;
-      return newAidStock;
-    }
-    
-    // If toggling off, just update the available flag
-    return {
-      ...prev,
-      [aidId]: {
-        ...(prev[aidId] || {}),
-        available: !isCurrentlyAvailable
+      // For numeric fields, ensure value is a valid number or 0
+      const processedValue =
+        aidTypeFields[aidId as keyof typeof aidTypeFields]?.find(
+          (f) => f.name === field
+        )?.type === 'number'
+          ? value === ''
+            ? '0'
+            : value // Convert empty string to '0'
+          : value;
+
+      // Return updated state
+      return {
+        ...prev,
+        [aidId]: {
+          ...currentAidStock,
+          [field]: processedValue,
+        },
+      };
+    });
+  };
+
+  // Updated toggle function to initialize fields with default values
+  const toggleAidAvailability = (aidId: string) => {
+    setAidStock((prev) => {
+      const isCurrentlyAvailable = !!prev[aidId]?.available;
+
+      // If turning on and doesn't exist yet, initialize with default values
+      if (!isCurrentlyAvailable) {
+        const newAidStock = { ...prev };
+        const fieldsForType =
+          aidTypeFields[aidId as keyof typeof aidTypeFields] || [];
+
+        // Create object with default values
+        const newAidTypeStock: Record<string, unknown> = { available: true };
+
+        // Set defaults (0 for numbers, empty for text)
+        fieldsForType.forEach((field) => {
+          newAidTypeStock[field.name] = field.type === 'number' ? '0' : '';
+        });
+
+        newAidStock[aidId] = newAidTypeStock;
+        return newAidStock;
       }
-    };
-  });
-};
+
+      // If toggling off, just update the available flag
+      return {
+        ...prev,
+        [aidId]: {
+          ...(prev[aidId] || {}),
+          available: !isCurrentlyAvailable,
+        },
+      };
+    });
+  };
 
   // Handle sponsor form actions
   const handleAddSponsor = () => {
@@ -468,9 +471,11 @@ const toggleAidAvailability = (aidId: string) => {
       {profile && (
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Profile Picture Section */}
-          <div className="bg-gray-50 p-4 rounded-lg shadow">
-            <h3 className="text-xl font-semibold mb-3">Profile Picture</h3>
-            <div className="flex items-center space-x-4">
+          <div className="bg-white pinkBorder p-4 rounded-lg shadow">
+            <h3 className="text-xl font-semibold mb-3 text-center">
+              Profile Picture
+            </h3>
+            <div className="flex flex-col items-center gap-4">
               <img
                 src={
                   imagePreview ||
@@ -483,7 +488,7 @@ const toggleAidAvailability = (aidId: string) => {
               <div>
                 <label
                   htmlFor="profileImage"
-                  className={`cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isCompressing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`cursor-pointer bg-white py-2 px-3 border border-red-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isCompressing ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {isCompressing ? 'Compressing...' : 'Change Picture'}
                 </label>
@@ -517,7 +522,7 @@ const toggleAidAvailability = (aidId: string) => {
             </div>
             {/* Compression/Selection feedback */}
             {isCompressing && (
-              <p className="text-sm text-blue-600 mt-2">
+              <p className="text-sm text-red-600 mt-2">
                 Compressing image, please wait...
               </p>
             )}
@@ -530,7 +535,7 @@ const toggleAidAvailability = (aidId: string) => {
           </div>
 
           {/* Common Fields - Contact Information */}
-          <div className="bg-gray-50 p-4 rounded-lg shadow">
+          <div className="bg-white p-4 rounded-lg shadow pinkBorder">
             <h3 className="text-xl font-semibold mb-3">Contact Information</h3>
             {/* Contact Number */}
             <div className="mb-4">
@@ -541,7 +546,7 @@ const toggleAidAvailability = (aidId: string) => {
                 type="tel"
                 id="contactNumber"
                 name="contactNumber"
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded textbox"
                 defaultValue={profile.contactNumber || ''}
               />
             </div>
@@ -563,7 +568,7 @@ const toggleAidAvailability = (aidId: string) => {
                     onChange={(e) =>
                       handleSocialLinkChange(platform, e.target.value)
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded textbox"
                     placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} profile URL`}
                   />
                 </div>
@@ -573,7 +578,7 @@ const toggleAidAvailability = (aidId: string) => {
 
           {/* Volunteer Specific Fields */}
           {userType === 'volunteer' && (
-            <div className="bg-gray-50 p-4 rounded-lg shadow">
+            <div className="bg-white pinkBorder p-4 rounded-lg shadow">
               <h3 className="text-xl font-semibold mb-3">Volunteer Details</h3>
               {/* Personal Information (Read Only) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -586,7 +591,7 @@ const toggleAidAvailability = (aidId: string) => {
                     type="text"
                     id="firstName"
                     name="firstName"
-                    className="w-full p-2 border rounded bg-gray-100"
+                    className="w-full p-2 border rounded textbox bg-gray-100"
                     defaultValue={(profile as VolunteerProfile).firstName || ''}
                     readOnly
                   />
@@ -603,7 +608,7 @@ const toggleAidAvailability = (aidId: string) => {
                     type="text"
                     id="surname"
                     name="surname"
-                    className="w-full p-2 border rounded bg-gray-100"
+                    className="w-full p-2 border rounded textbox bg-gray-100"
                     defaultValue={(profile as VolunteerProfile).surname || ''}
                     readOnly
                   />
@@ -624,7 +629,7 @@ const toggleAidAvailability = (aidId: string) => {
                   type="text"
                   id="roleOrCategory"
                   name="roleOrCategory"
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded textbox"
                   defaultValue={
                     (profile as VolunteerProfile).roleOrCategory || ''
                   }
@@ -639,7 +644,7 @@ const toggleAidAvailability = (aidId: string) => {
                   type="text"
                   id="skills"
                   name="skills"
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded textbox"
                   defaultValue={
                     (profile as VolunteerProfile).skills?.join(', ') || ''
                   }
@@ -656,7 +661,7 @@ const toggleAidAvailability = (aidId: string) => {
                 <select
                   id="organizationId"
                   name="organizationId"
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded textbox"
                   defaultValue={
                     (profile as VolunteerProfile).organizationId || ''
                   }
@@ -676,7 +681,7 @@ const toggleAidAvailability = (aidId: string) => {
           {userType === 'organization' && (
             <>
               {/* Organization Details */}
-              <div className="bg-gray-50 p-4 rounded-lg shadow">
+              <div className="bg-white pinkBorder p-4 rounded-lg shadow">
                 <h3 className="text-xl font-semibold mb-3">
                   Organization Details
                 </h3>
@@ -689,7 +694,7 @@ const toggleAidAvailability = (aidId: string) => {
                     type="text"
                     id="name"
                     name="name"
-                    className="w-full p-2 border rounded bg-gray-100"
+                    className="w-full p-2 border rounded textbox bg-gray-100"
                     defaultValue={(profile as OrganizationProfile).name || ''}
                     readOnly
                   />
@@ -708,7 +713,7 @@ const toggleAidAvailability = (aidId: string) => {
                   <textarea
                     id="description"
                     name="description"
-                    className="w-full p-2 border rounded h-32"
+                    className="w-full p-2 border rounded textbox h-32"
                     defaultValue={
                       (profile as OrganizationProfile).description || ''
                     }
@@ -726,7 +731,7 @@ const toggleAidAvailability = (aidId: string) => {
                     type="text"
                     id="contactPerson"
                     name="contactPerson"
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded textbox"
                     defaultValue={
                       (profile as OrganizationProfile).contactPerson || ''
                     }
@@ -744,7 +749,7 @@ const toggleAidAvailability = (aidId: string) => {
                     type="text"
                     id="orgPosition"
                     name="orgPosition"
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded textbox"
                     defaultValue={
                       (profile as OrganizationProfile).orgPosition || ''
                     }
@@ -753,29 +758,38 @@ const toggleAidAvailability = (aidId: string) => {
               </div>
 
               {/* Aid Stock Management */}
-                            <div className="bg-gray-50 p-4 rounded-lg shadow">
-                <h3 className="text-xl font-semibold mb-3">Aid Stock Management</h3>
+              <div className="bg-white pinkBorder p-4 rounded-lg shadow">
+                <h3 className="text-xl font-semibold mb-3">
+                  Aid Stock Management
+                </h3>
                 <div className="space-y-4">
                   {aidTypes.map((aidType) => {
-                    const isAvailable = (aidStock[aidType.id]?.available as boolean) || false;
+                    const isAvailable =
+                      (aidStock[aidType.id]?.available as boolean) || false;
                     return (
-                      <div key={aidType.id} className="border p-3 rounded">
+                      <div key={aidType.id} className="pinkBorder p-3 rounded">
                         <div className="flex items-center mb-2">
                           <input
                             type="checkbox"
                             id={`aid-${aidType.id}`}
                             checked={isAvailable}
                             onChange={() => toggleAidAvailability(aidType.id)}
-                            className="mr-2"
+                            className="mr-2 custom-checkbox-input peer sr-only"
                           />
-                          <label htmlFor={`aid-${aidType.id}`} className="font-medium text-black">
+                          <span className="custom-checkbox-indicator flex-shrink-0"></span>
+                          <label
+                            htmlFor={`aid-${aidType.id}`}
+                            className="font-medium text-black"
+                          >
                             {aidType.label}
                           </label>
                         </div>
                         {isAvailable && (
                           <div className="pl-6 space-y-2">
                             {/* Show all fields for this aid type */}
-                            {aidTypeFields[aidType.id as keyof typeof aidTypeFields]?.map((field) => (
+                            {aidTypeFields[
+                              aidType.id as keyof typeof aidTypeFields
+                            ]?.map((field) => (
                               <div key={`${aidType.id}-${field.name}`}>
                                 <label className="text-sm block text-black">
                                   {field.label}:
@@ -784,7 +798,9 @@ const toggleAidAvailability = (aidId: string) => {
                                   <input
                                     type="number"
                                     value={
-                                      (aidStock[aidType.id]?.[field.name] as string | number) || 
+                                      (aidStock[aidType.id]?.[field.name] as
+                                        | string
+                                        | number) ||
                                       (field.type === 'number' ? '0' : '')
                                     }
                                     onChange={(e) =>
@@ -794,13 +810,17 @@ const toggleAidAvailability = (aidId: string) => {
                                         e.target.value
                                       )
                                     }
-                                    className="w-full p-1 border rounded text-black"
+                                    className="w-full p-2 border-red-400 border-2 rounded-lg text-black"
                                     min="0"
                                   />
                                 ) : (
                                   <input
                                     type="text"
-                                    value={(aidStock[aidType.id]?.[field.name] as string) || ''}
+                                    value={
+                                      (aidStock[aidType.id]?.[
+                                        field.name
+                                      ] as string) || ''
+                                    }
                                     onChange={(e) =>
                                       handleAidStockChange(
                                         aidType.id,
@@ -808,7 +828,7 @@ const toggleAidAvailability = (aidId: string) => {
                                         e.target.value
                                       )
                                     }
-                                    className="w-full p-1 border rounded text-black"
+                                    className="w-full p-2 border-red-400 border-2 rounded-lg text-black"
                                   />
                                 )}
                               </div>
@@ -822,7 +842,7 @@ const toggleAidAvailability = (aidId: string) => {
               </div>
 
               {/* Sponsor Management */}
-              <div className="bg-gray-50 p-4 rounded-lg shadow">
+              <div className="bg-white pinkBorder p-4 rounded-lg shadow">
                 <h3 className="text-xl font-semibold mb-3">Sponsors</h3>
                 {/* Current Sponsors List */}
                 <div className="mb-4">
@@ -832,7 +852,7 @@ const toggleAidAvailability = (aidId: string) => {
                       {sponsors.map((sponsor, index) => (
                         <li
                           key={sponsor.id || index}
-                          className="flex items-center justify-between border p-2 rounded"
+                          className="flex items-center justify-between border-red-400 border-2 p-2 rounded-lg"
                         >
                           <div>
                             <p className="font-medium">{sponsor.name}</p>
@@ -854,14 +874,14 @@ const toggleAidAvailability = (aidId: string) => {
                             <button
                               type="button"
                               onClick={() => handleEditSponsor(index)}
-                              className="px-2 py-1 bg-blue-500 text-white rounded text-sm"
+                              className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition duration-300"
                             >
                               Edit
                             </button>
                             <button
                               type="button"
                               onClick={() => handleRemoveSponsor(index)}
-                              className="px-2 py-1 bg-red-500 text-white rounded text-sm"
+                              className="px-2 py-1 bg-gray-500 text-white rounded text-sm"
                             >
                               Remove
                             </button>
@@ -874,7 +894,7 @@ const toggleAidAvailability = (aidId: string) => {
                   )}
                 </div>
                 {/* Add/Edit Sponsor Form */}
-                <div className="border-t pt-4">
+                <div className="border-t border-red-400 pt-4">
                   <h4 className="font-medium mb-2">
                     {editingSponsorIndex !== null
                       ? 'Edit Sponsor'
@@ -895,7 +915,7 @@ const toggleAidAvailability = (aidId: string) => {
                             name: e.target.value,
                           })
                         }
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 border rounded textbox"
                       />
                     </div>
                     <div>
@@ -911,7 +931,7 @@ const toggleAidAvailability = (aidId: string) => {
                             other: e.target.value,
                           })
                         }
-                        className="w-full p-2 border rounded h-20"
+                        className="w-full p-2 border rounded textbox h-20"
                       />
                     </div>
                     {/* Sponsor image upload would need separate handling here if required */}
@@ -919,7 +939,7 @@ const toggleAidAvailability = (aidId: string) => {
                       <button
                         type="button"
                         onClick={handleAddSponsor}
-                        className="px-3 py-1 bg-green-500 text-white rounded"
+                        className="px-3 py-1 bg-red-500 hover:bg-red-600 transition duration-300 text-white rounded"
                       >
                         {editingSponsorIndex !== null ? 'Update' : 'Add'}{' '}
                         Sponsor
@@ -951,7 +971,7 @@ const toggleAidAvailability = (aidId: string) => {
               className={`px-6 py-2 rounded-lg text-white font-semibold transition-colors duration-200 ${
                 isSubmitting || isCompressing
                   ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700'
+                  : 'bg-red-600 hover:bg-red-700'
               }`}
             >
               {isSubmitting
