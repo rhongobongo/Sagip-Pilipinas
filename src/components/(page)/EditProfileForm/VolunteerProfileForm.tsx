@@ -167,7 +167,6 @@ export default function VolunteerProfileForm({
 
     try {
       const result = await updateProfileData(userId, 'volunteer', formData);
-      
       if (result.success) {
         setSuccessMessage(result.message);
         setImageFile(null);
