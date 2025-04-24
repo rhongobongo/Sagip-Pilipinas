@@ -29,7 +29,8 @@ const LoginForm: React.FC = () => {
       toast.success('Login Successful! Redirecting...', { duration: 2000 });
       router.push('/');
       setTimeout(() => {
-        document.location.reload();
+        router.push('/');
+        location.reload();
       }, 1000);
       setTimeout(() => {
         router.push('/');

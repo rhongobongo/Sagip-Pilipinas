@@ -21,7 +21,9 @@ const MapSection: React.FC = async () => {
         >
           <Image
             src="/home-image/pin.png"
-            className="w-10 h-10 ml-9 mr-3"
+            className="object-contain ml-9 mr-3"
+            width={35}
+            height={35}
             alt="pin"
           />
           <div className="lg:text-3xl md:text-base text-sm">
