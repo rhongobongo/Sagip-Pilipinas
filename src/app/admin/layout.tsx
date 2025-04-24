@@ -9,7 +9,7 @@ export default function AdminLayout({
             <AdminHeader />
                 <main className="transition-all p-10 sticky max-w-screen-xl mx-auto">
                     
-                <AdminNavbar></AdminNavbar>
+
                     <div className="bg-white shadow-md rounded-lg">
                         {children}
                     </div>
