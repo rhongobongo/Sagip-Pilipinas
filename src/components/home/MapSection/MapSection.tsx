@@ -2,7 +2,7 @@ import { db } from '@/lib/Firebase-Admin';
 import { DefaultPin } from '@/types/types';
 import MapSectionInteractive from './MapSectionInteractive';
 import { GeoPoint } from 'firebase-admin/firestore';
-
+import Image from 'next/image';
 export interface OrgPin extends DefaultPin {
   name: string;
   region: string;
@@ -19,7 +19,7 @@ const MapSection: React.FC = async () => {
           className="w-full font-semibold text-center text-black tracking-wide rounded-full
                     bg-[#F3F3F3] border-4 border-black p-3 max-w-lg md:max-w-4xl mx-auto flex items-center justify-center mb-3 mt-3"
         >
-          <img
+          <Image
             src="/home-image/pin.png"
             className="w-10 h-10 ml-9 mr-3"
             alt="pin"
