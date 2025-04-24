@@ -1,10 +1,20 @@
 'use client';
-import React, { useState, FormEvent, ChangeEvent, useCallback  } from 'react';
+import React, {
+  useState,
+  useEffect,
+  FormEvent,
+  ChangeEvent,
+  useCallback,
+} from 'react';
 import { updateProfileData } from '@/actions/profileActions';
 import imageCompression from 'browser-image-compression';
-import { AidTypeId, aidTypes } from '@/components/(page)/AuthPage/OrgRegForm/types';
+import {
+  AidTypeId,
+  aidTypes,
+} from '@/components/(page)/AuthPage/OrgRegForm/types';
 import LocationSetterMapWrapper from './LocationSetterMapWrapper';
 
+// --- Interfaces (Keep as is) ---
 interface OrganizationProfile {
   userId: string;
   name?: string;
@@ -13,9 +23,8 @@ interface OrganizationProfile {
   contactPerson?: string;
   orgPosition?: string;
   profileImageUrl?: string | undefined;
-    // Ensure coordinates are part of the profile prop type
-    coordinates?: { latitude: number; longitude: number };
-    location?: string; // Optional address string
+  coordinates?: { latitude: number; longitude: number };
+  location?: string;
   aidStock?: {
     [aidId: string]: {
       available: boolean;
@@ -45,62 +54,63 @@ interface OrganizationProfileFormProps {
   profile: OrganizationProfile;
 }
 
+// --- aidTypeFields (Keep as is) ---
 const aidTypeFields = {
   food: [
     { name: 'foodPacks', label: 'Food Packs', type: 'number' },
     { name: 'category', label: 'Category', type: 'text' },
-    { name: 'description', label: 'Description', type: 'text' }
+    { name: 'description', label: 'Description', type: 'text' },
   ],
   clothing: [
     { name: 'male', label: 'Male Clothing', type: 'number' },
     { name: 'female', label: 'Female Clothing', type: 'number' },
     { name: 'children', label: 'Children Clothing', type: 'number' },
-    { name: 'notes', label: 'Notes', type: 'text' }
+    { name: 'notes', label: 'Notes', type: 'text' },
   ],
   medicalSupplies: [
     { name: 'kits', label: 'Medical Kits', type: 'number' },
     { name: 'medicines', label: 'Medicines', type: 'number' },
     { name: 'equipment', label: 'Medical Equipment', type: 'number' },
-    { name: 'details', label: 'Details', type: 'text' }
+    { name: 'details', label: 'Details', type: 'text' },
   ],
   shelter: [
     { name: 'tents', label: 'Tents', type: 'number' },
     { name: 'blankets', label: 'Blankets', type: 'number' },
     { name: 'capacity', label: 'Capacity', type: 'number' },
-    { name: 'notes', label: 'Notes', type: 'text' }
+    { name: 'notes', label: 'Notes', type: 'text' },
   ],
   searchAndRescue: [
     { name: 'rescueKits', label: 'Rescue Kits', type: 'number' },
     { name: 'rescuePersonnel', label: 'Rescue Personnel', type: 'number' },
     { name: 'equipment', label: 'Equipment', type: 'number' },
-    { name: 'details', label: 'Details', type: 'text' }
+    { name: 'details', label: 'Details', type: 'text' },
   ],
   financialAssistance: [
     { name: 'totalFunds', label: 'Total Funds', type: 'number' },
     { name: 'currency', label: 'Currency', type: 'text' },
-    { name: 'notes', label: 'Notes', type: 'text' }
+    { name: 'notes', label: 'Notes', type: 'text' },
   ],
   counseling: [
     { name: 'counselors', label: 'Counselors', type: 'number' },
     { name: 'hours', label: 'Available Hours', type: 'number' },
-    { name: 'specialties', label: 'Specialties', type: 'text' }
+    { name: 'specialties', label: 'Specialties', type: 'text' },
   ],
   technicalSupport: [
     { name: 'vehicles', label: 'Vehicles', type: 'number' },
     { name: 'communication', label: 'Communication Devices', type: 'number' },
     { name: 'equipment', label: 'Technical Equipment', type: 'number' },
-    { name: 'details', label: 'Details', type: 'text' }
-  ]
+    { name: 'details', label: 'Details', type: 'text' },
+  ],
 };
 
 export default function OrganizationProfileForm({
   userId,
   profile,
 }: OrganizationProfileFormProps) {
+  // --- State variables (Keep existing, including imagePreview) ---
   const [socialLinks, setSocialLinks] = useState<{
     [platform: string]: string;
   }>(profile.socialMedia || {});
-  
   const [sponsors, setSponsors] = useState<SponsorData[]>(
     (profile.sponsors || []).map((sponsor) => ({
       id: sponsor.id || Date.now().toString(),
@@ -111,114 +121,161 @@ export default function OrganizationProfileForm({
       photoPreview: sponsor.imageUrl || null,
     }))
   );
-  
+  const [displayImageUrl, setDisplayImageUrl] = useState<string | undefined>(
+    profile.profileImageUrl
+  );
   const [currentSponsor, setCurrentSponsor] = useState<{
     name: string;
     other: string;
   }>({ name: '', other: '' });
-  
-  const [editingSponsorIndex, setEditingSponsorIndex] = useState<number | null>(null);
-  
+  const [editingSponsorIndex, setEditingSponsorIndex] = useState<number | null>(
+    null
+  );
   const [aidStock, setAidStock] = useState<{
     [key: string]: Record<string, unknown>;
   }>(profile.aidStock || {});
-  
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null); // State for the COMPRESSED file
+  const [imagePreview, setImagePreview] = useState<string | null>(null); // State for the object URL preview
   const [isCompressing, setIsCompressing] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [latitude, setLatitude] = useState<number | null>(
+    profile.coordinates?.latitude ?? null
+  );
+  const [longitude, setLongitude] = useState<number | null>(
+    profile.coordinates?.longitude ?? null
+  );
 
-  const [latitude, setLatitude] = useState<number | null>(profile.coordinates?.latitude ?? null);
-  const [longitude, setLongitude] = useState<number | null>(profile.coordinates?.longitude ?? null);
-
-  // --- Handlers ---
-
-  // *** Callback function to receive location updates from the wrapper ***
+  // --- Handlers (Keep existing non-image handlers) ---
   const handleLocationChange = useCallback((lat: number, lng: number) => {
     setLatitude(lat);
     setLongitude(lng);
     console.log(`Form received location update: Lat: ${lat}, Lng: ${lng}`);
   }, []);
-
-  // Handle social media link changes
   const handleSocialLinkChange = (platform: string, value: string) => {
     setSocialLinks((prev) => ({ ...prev, [platform]: value }));
   };
-
-  // Handle aid stock changes with improved handling for number fields
   const handleAidStockChange = (
     aidId: string,
     field: string,
     value: string | boolean
   ) => {
     setAidStock((prev) => {
-      // Ensure the aid type object exists
       const currentAidStock = prev[aidId] || { available: true };
-      
-      // For numeric fields, ensure value is a valid number or 0
-      const processedValue = 
-        aidTypeFields[aidId as keyof typeof aidTypeFields]?.find(f => f.name === field)?.type === 'number'
-          ? (value === '' ? '0' : value)  // Convert empty string to '0'
+      const processedValue =
+        aidTypeFields[aidId as keyof typeof aidTypeFields]?.find(
+          (f) => f.name === field
+        )?.type === 'number'
+          ? value === ''
+            ? '0'
+            : value
           : value;
-          
-      // Return updated state
       return {
         ...prev,
         [aidId]: {
           ...currentAidStock,
-          [field]: processedValue
-        }
+          [field]: processedValue,
+        },
       };
     });
   };
-
-  // Toggle aid availability with improved field initialization
   const toggleAidAvailability = (aidId: string) => {
     setAidStock((prev) => {
       const isCurrentlyAvailable = !!prev[aidId]?.available;
-      
-      // If turning on and doesn't exist yet, initialize with default values
       if (!isCurrentlyAvailable) {
         const newAidStock = { ...prev };
-        const fieldsForType = aidTypeFields[aidId as keyof typeof aidTypeFields] || [];
-        
-        // Create object with default values
+        const fieldsForType =
+          aidTypeFields[aidId as keyof typeof aidTypeFields] || [];
         const newAidTypeStock: Record<string, unknown> = { available: true };
-        
-        // Set defaults (0 for numbers, empty for text)
-        fieldsForType.forEach(field => {
+        fieldsForType.forEach((field) => {
           newAidTypeStock[field.name] = field.type === 'number' ? '0' : '';
         });
-        
         newAidStock[aidId] = newAidTypeStock;
         return newAidStock;
       }
-      
-      // If toggling off, just update the available flag
       return {
         ...prev,
         [aidId]: {
           ...(prev[aidId] || {}),
-          available: !isCurrentlyAvailable
-        }
+          available: !isCurrentlyAvailable,
+        },
       };
     });
   };
+  // --- Sponsor Handlers (Keep as is) ---
+  const handleAddSponsor = () => {
+    if (currentSponsor.name.trim()) {
+      if (editingSponsorIndex !== null) {
+        const updatedSponsors = [...sponsors];
+        updatedSponsors[editingSponsorIndex] = {
+          ...updatedSponsors[editingSponsorIndex],
+          name: currentSponsor.name,
+          other: currentSponsor.other,
+        };
+        setSponsors(updatedSponsors);
+        setEditingSponsorIndex(null);
+      } else {
+        setSponsors([
+          ...sponsors,
+          {
+            id: Date.now().toString(),
+            name: currentSponsor.name,
+            other: currentSponsor.other,
+            photoFile: null,
+            photoPreview: null,
+            imageUrl: undefined,
+          },
+        ]);
+      }
+      setCurrentSponsor({ name: '', other: '' });
+    }
+  };
+  const handleEditSponsor = (index: number) => {
+    const sponsor = sponsors[index];
+    setCurrentSponsor({ name: sponsor.name, other: sponsor.other });
+    setEditingSponsorIndex(index);
+  };
+  const handleRemoveSponsor = (index: number) => {
+    const updatedSponsors = [...sponsors];
+    updatedSponsors.splice(index, 1);
+    setSponsors(updatedSponsors);
+    if (editingSponsorIndex === index) {
+      setEditingSponsorIndex(null);
+      setCurrentSponsor({ name: '', other: '' });
+    }
+  };
+  const handleSponsorImageUpload = async (index: number, file: File) => {
+    // Sponsor image upload logic goes here
+  };
 
-  // Handle Image Change with Compression
+  // --- *** MODIFIED: Handle Image Change *** ---
   const handleImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
-      setImageFile(null);
+      // Clear existing preview and compressed file if selection is cancelled
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
       setImagePreview(null);
+      setImageFile(null);
       return;
     }
 
-    setIsCompressing(true);
     setError(null);
+    setImageFile(null); // Clear previous compressed file state immediately
 
+    // --- Create Instant Preview ---
+    // Revoke previous object URL before creating a new one
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    const objectUrl = URL.createObjectURL(file);
+    setImagePreview(objectUrl); // Set the preview URL state
+    // --- End Instant Preview ---
+
+    // --- Start Compression (async) ---
+    setIsCompressing(true);
     const options = {
       maxSizeMB: 1,
       maxWidthOrHeight: 1024,
@@ -234,138 +291,100 @@ export default function OrganizationProfileForm({
       console.log(
         `Compressed file size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`
       );
-      
+
+      // Set the COMPRESSED file to state for upload
       setImageFile(compressedFile);
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(compressedFile);
     } catch (compressionError) {
       console.error('Image compression error:', compressionError);
       setError('Failed to compress image. Please try a different image.');
+      // Keep the preview showing the original file, but clear the file for upload
       setImageFile(null);
-      setImagePreview(null);
     } finally {
       setIsCompressing(false);
-      event.target.value = '';
+      // Don't reset event.target.value here if you want the input to retain selection state visually
+      // event.target.value = '';
     }
+    // --- End Compression ---
   };
 
-  // Handle sponsor form actions
-  const handleAddSponsor = () => {
-    if (currentSponsor.name.trim()) {
-      if (editingSponsorIndex !== null) {
-        // Update existing sponsor in state
-        const updatedSponsors = [...sponsors];
-        updatedSponsors[editingSponsorIndex] = {
-          ...updatedSponsors[editingSponsorIndex], // Keep existing id, imageUrl, photoFile/photoPreview
-          name: currentSponsor.name,
-          other: currentSponsor.other,
-        };
-        setSponsors(updatedSponsors);
-        setEditingSponsorIndex(null);
-      } else {
-        // Add new sponsor to state
-        setSponsors([
-          ...sponsors,
-          {
-            id: Date.now().toString(), // Generate temporary ID for client-side list key
-            name: currentSponsor.name,
-            other: currentSponsor.other,
-            photoFile: null, // Default state
-            photoPreview: null, // Default state
-            imageUrl: undefined, // Default state
-          },
-        ]);
+  // --- *** ADDED: useEffect for Cleanup *** ---
+  useEffect(() => {
+    // This is the cleanup function that runs when the component unmounts
+    // or *before* the effect runs again if imagePreview changes.
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+        console.log('Revoked Object URL:', imagePreview); // For debugging
       }
-      setCurrentSponsor({ name: '', other: '' }); // Reset form
-    }
-  };
+    };
+  }, [imagePreview]); // Dependency array ensures cleanup runs when preview URL changes
 
-  const handleEditSponsor = (index: number) => {
-    const sponsor = sponsors[index];
-    setCurrentSponsor({ name: sponsor.name, other: sponsor.other });
-    setEditingSponsorIndex(index);
-  };
-
-  const handleRemoveSponsor = (index: number) => {
-    const updatedSponsors = [...sponsors];
-    updatedSponsors.splice(index, 1);
-    setSponsors(updatedSponsors);
-    if (editingSponsorIndex === index) {
-      // Reset form if editing the removed sponsor
-      setEditingSponsorIndex(null);
-      setCurrentSponsor({ name: '', other: '' });
-    }
-  };
-
-  // Handle sponsor image upload (if needed - you'd implement this separately)
-  const handleSponsorImageUpload = async (index: number, file: File) => {
-    // Implementation similar to profile image handling would go here
-    // This would update the sponsors[index].photoFile, photoPreview, etc.
-  };
-
-  // Handle Form Submission
+  // --- MODIFIED: Handle Form Submission ---
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitting || isCompressing) {
       return;
     }
-
     if (!latitude || !longitude) {
-        setError('Please set your organization location on the map before saving.');
-        return;
-      }
-
+      setError(
+        'Please set your organization location on the map before saving.'
+      );
+      return;
+    }
     setIsSubmitting(true);
     setError(null);
     setSuccessMessage(null);
 
     const formData = new FormData(event.currentTarget);
-    
-    // Add social media data (send empty string for deletion if needed by backend)
+
     Object.entries(socialLinks).forEach(([platform, link]) => {
       formData.append(`socialMedia.${platform}`, link || '');
     });
-
-    // Add sponsors data (ensure only serializable data is sent)
-    // Remove File/Preview objects before stringifying
     const sponsorsToSave = sponsors.map(
       ({ photoFile, photoPreview, ...rest }) => ({
         ...rest,
-        imageUrl: rest.imageUrl ?? null, // Send null if undefined for consistency
+        imageUrl: rest.imageUrl ?? null,
       })
     );
     formData.append('sponsors', JSON.stringify(sponsorsToSave));
-
-    // Add aid stock data
     formData.append('aidStock', JSON.stringify(aidStock));
+    formData.append(
+      'coordinates',
+      JSON.stringify({
+        latitude: latitude,
+        longitude: longitude,
+        type: 'geopoint',
+      })
+    );
 
-    formData.append('coordinates', JSON.stringify({
-      latitude: latitude,
-      longitude: longitude,
-      type: 'geopoint' // Adding a type identifier for the backend to recognize
-    }));
-
-    // Append COMPRESSED Profile Image if selected
+    // Append the COMPRESSED image file (if it exists in state)
     if (imageFile) {
-      formData.append('profileImage', imageFile, imageFile.name); // Use the compressed file
+      formData.append('profileImage', imageFile, imageFile.name);
     }
 
     try {
       const result = await updateProfileData(userId, 'organization', formData);
-      
+
       if (result.success) {
-        setSuccessMessage(result.message);
-        setImageFile(null); // Clear the temporary file state
-        setImagePreview(null); // Clear preview after successful save
-        
-        // Update local state if needed based on response
+        // --- Update display URL and clear preview/file states ---
         if (result.imageUrl !== undefined) {
-          profile.profileImageUrl = result.imageUrl ?? undefined;
+          // If upload was successful and returned a new URL, use it
+          setDisplayImageUrl(result.imageUrl ?? undefined);
+        } else if (imageFile) {
+          // If upload succeeded but didn't return URL (shouldn't happen ideally),
+          // keep the existing display URL.
+          console.warn(
+            'Upload succeeded but no image URL returned from backend.'
+          );
         }
+        // Always clear the temporary states after successful submission attempt
+        if (imagePreview) {
+          URL.revokeObjectURL(imagePreview); // Revoke explicitly here too
+        }
+        setImagePreview(null);
+        setImageFile(null);
+        // --- End state update ---
+        setSuccessMessage(result.message);
       } else {
         setError(result.message || 'Failed to update profile.');
       }
@@ -383,42 +402,49 @@ export default function OrganizationProfileForm({
       <div className="bg-gray-50 p-4 rounded-lg shadow">
         <h3 className="text-xl font-semibold mb-3">Profile Picture</h3>
         <div className="flex items-center space-x-4">
+          {/* --- *** MODIFIED: img src logic *** --- */}
           <img
             src={
-              imagePreview ||
-              profile.profileImageUrl ||
-              '/default-avatar.png'
+              imagePreview || // 1. Show object URL preview if available
+              displayImageUrl || // 2. Else, show the current stored image URL
+              '/default-avatar.png' // 3. Else, show default
             }
-            alt="Profile"
+            alt="Profile Preview" // Changed alt text for clarity
             className="w-24 h-24 rounded-full object-cover border border-gray-300"
           />
+          {/* --- *** End img src logic modification *** --- */}
           <div>
+            {/* Input and Buttons (Keep as is, including cancel button logic) */}
             <label
               htmlFor="profileImage"
               className={`cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isCompressing ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {isCompressing ? 'Compressing...' : 'Change Picture'}
+              {isCompressing ? 'Processing...' : 'Change Picture'}{' '}
+              {/* Changed label slightly */}
             </label>
             <input
               id="profileImage"
-              name="profileImageInput" // Input name (not used by FormData key directly here)
+              name="profileImageInput" // Keep distinct name if needed
               type="file"
-              className="sr-only" // Visually hide the default input
-              accept="image/*" // Accept only image files
+              className="sr-only"
+              accept="image/*"
               onChange={handleImageChange}
-              disabled={isCompressing} // Disable while compressing
+              disabled={isCompressing}
             />
-            {/* Show cancel button only if a preview exists and not currently compressing */}
+            {/* Cancel Button - Clears Preview and Compressed File */}
             {imagePreview && !isCompressing && (
               <button
                 type="button"
                 onClick={() => {
-                  setImageFile(null);
+                  if (imagePreview) {
+                    URL.revokeObjectURL(imagePreview);
+                  }
                   setImagePreview(null);
+                  setImageFile(null); // Also clear the compressed file state
                   const input = document.getElementById(
                     'profileImage'
                   ) as HTMLInputElement;
-                  if (input) input.value = ''; // Attempt to reset input value
+                  if (input) input.value = '';
                 }}
                 className="ml-3 text-sm text-red-600 hover:text-red-800"
               >
@@ -427,20 +453,23 @@ export default function OrganizationProfileForm({
             )}
           </div>
         </div>
-        {/* Compression/Selection feedback */}
+        {/* Feedback Messages (Keep as is) */}
         {isCompressing && (
-          <p className="text-sm text-blue-600 mt-2">
-            Compressing image, please wait...
+          <p className="text-sm text-blue-600 mt-2">Compressing image...</p>
+        )}
+        {/* Show selected file name based on preview existing */}
+        {imagePreview && !isCompressing && (
+          <p className="text-xs text-gray-500 mt-2">
+            New image selected. Click "Save Changes" to apply.
           </p>
         )}
-        {imageFile && !isCompressing && (
-          <p className="text-xs text-gray-500 mt-2">
-            New image selected: {imageFile.name}. Click &quot;Save
-            Changes&quot; to apply.
-          </p>
+        {/* Show error specifically related to compression if it exists */}
+        {error && error.includes('compress') && (
+          <p className="text-red-500 text-sm mt-2">{error}</p>
         )}
       </div>
 
+      {/* Other Form Sections (Keep as is) */}
       {/* Organization Details */}
       <div className="bg-gray-50 p-4 rounded-lg shadow">
         <h3 className="text-xl font-semibold mb-3">Organization Details</h3>
@@ -455,6 +484,7 @@ export default function OrganizationProfileForm({
             name="name"
             className="w-full p-2 border rounded bg-gray-100"
             defaultValue={profile.name || ''}
+            readOnly
           />
         </div>
         {/* Description */}
@@ -497,22 +527,27 @@ export default function OrganizationProfileForm({
         </div>
       </div>
 
-      {/* *** Location Section using the Wrapper *** */}
+      {/* Location Section */}
       <div className="bg-gray-50 p-4 rounded-lg shadow">
         <h3 className="text-xl font-semibold mb-3">Organization Location</h3>
-        <p className="text-sm text-gray-600 mb-2">Click on the map to set or update your organization&apos;s precise location.</p>
+        <p className="text-sm text-gray-600 mb-2">
+          Click on the map to set or update your organization&apos;s precise
+          location.
+        </p>
         <LocationSetterMapWrapper
           initialLatitude={latitude}
           initialLongitude={longitude}
           onLocationChange={handleLocationChange}
         />
-        {/* Display current coordinates */}
         {latitude && longitude ? (
           <p className="text-sm text-gray-800 mt-2">
-            Selected Coordinates: Lat: {latitude.toFixed(6)}, Lng: {longitude.toFixed(6)}
+            Selected Coordinates: Lat: {latitude.toFixed(6)}, Lng:{' '}
+            {longitude.toFixed(6)}
           </p>
         ) : (
-          <p className="text-sm text-yellow-600 mt-2">No location set. Please click on the map.</p>
+          <p className="text-sm text-yellow-600 mt-2">
+            No location set. Please click on the map.
+          </p>
         )}
       </div>
 
@@ -563,7 +598,8 @@ export default function OrganizationProfileForm({
         <h3 className="text-xl font-semibold mb-3">Aid Stock Management</h3>
         <div className="space-y-4">
           {aidTypes.map((aidType) => {
-            const isAvailable = (aidStock[aidType.id]?.available as boolean) || false;
+            const isAvailable =
+              (aidStock[aidType.id]?.available as boolean) || false;
             return (
               <div key={aidType.id} className="border p-3 rounded">
                 <div className="flex items-center mb-2">
@@ -574,14 +610,18 @@ export default function OrganizationProfileForm({
                     onChange={() => toggleAidAvailability(aidType.id)}
                     className="mr-2"
                   />
-                  <label htmlFor={`aid-${aidType.id}`} className="font-medium text-black">
+                  <label
+                    htmlFor={`aid-${aidType.id}`}
+                    className="font-medium text-black"
+                  >
                     {aidType.label}
                   </label>
                 </div>
                 {isAvailable && (
                   <div className="pl-6 space-y-2">
-                    {/* Show all fields for this aid type */}
-                    {aidTypeFields[aidType.id as keyof typeof aidTypeFields]?.map((field) => (
+                    {aidTypeFields[
+                      aidType.id as keyof typeof aidTypeFields
+                    ]?.map((field) => (
                       <div key={`${aidType.id}-${field.name}`}>
                         <label className="text-sm block text-black">
                           {field.label}:
@@ -590,7 +630,9 @@ export default function OrganizationProfileForm({
                           <input
                             type="number"
                             value={
-                              (aidStock[aidType.id]?.[field.name] as string | number) || 
+                              (aidStock[aidType.id]?.[field.name] as
+                                | string
+                                | number) ||
                               (field.type === 'number' ? '0' : '')
                             }
                             onChange={(e) =>
@@ -606,7 +648,10 @@ export default function OrganizationProfileForm({
                         ) : (
                           <input
                             type="text"
-                            value={(aidStock[aidType.id]?.[field.name] as string) || ''}
+                            value={
+                              (aidStock[aidType.id]?.[field.name] as string) ||
+                              ''
+                            }
                             onChange={(e) =>
                               handleAidStockChange(
                                 aidType.id,
@@ -643,11 +688,8 @@ export default function OrganizationProfileForm({
                   <div>
                     <p className="font-medium">{sponsor.name}</p>
                     {sponsor.other && (
-                      <p className="text-sm text-gray-600">
-                        {sponsor.other}
-                      </p>
+                      <p className="text-sm text-gray-600">{sponsor.other}</p>
                     )}
-                    {/* Show sponsor image if URL exists or photoPreview available */}
                     {(sponsor.photoPreview || sponsor.imageUrl) && (
                       <img
                         src={sponsor.photoPreview || sponsor.imageUrl || ''}
@@ -682,9 +724,7 @@ export default function OrganizationProfileForm({
         {/* Add/Edit Sponsor Form */}
         <div className="border-t pt-4">
           <h4 className="font-medium mb-2">
-            {editingSponsorIndex !== null
-              ? 'Edit Sponsor'
-              : 'Add New Sponsor'}
+            {editingSponsorIndex !== null ? 'Edit Sponsor' : 'Add New Sponsor'}
           </h4>
           <div className="space-y-3">
             <div>
@@ -696,10 +736,7 @@ export default function OrganizationProfileForm({
                 id="sponsor-name"
                 value={currentSponsor.name}
                 onChange={(e) =>
-                  setCurrentSponsor({
-                    ...currentSponsor,
-                    name: e.target.value,
-                  })
+                  setCurrentSponsor({ ...currentSponsor, name: e.target.value })
                 }
                 className="w-full p-2 border rounded"
               />
@@ -720,7 +757,6 @@ export default function OrganizationProfileForm({
                 className="w-full p-2 border rounded h-20"
               />
             </div>
-            {/* Note: Sponsor image upload would need separate handling if required */}
             <div className="flex space-x-2">
               <button
                 type="button"
@@ -766,7 +802,10 @@ export default function OrganizationProfileForm({
 
         {/* Status Messages */}
         <div className="text-right">
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && !error.includes('compress') && (
+            <p className="text-red-500 text-sm">{error}</p>
+          )}{' '}
+          {/* Only show submit errors here */}
           {successMessage && (
             <p className="text-green-600 text-sm">{successMessage}</p>
           )}
