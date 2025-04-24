@@ -17,18 +17,30 @@ interface Coordinates {
   longitude: number;
 }
 
+interface GeoPoint {
+  latitude: number;
+  longitude: number;
+}
+
+interface LatLngCoords {
+  lat: number;
+  lng: number;
+}
+
 // Get coordinates helper function
-function getCoords(
-  data: any | admin.firestore.GeoPoint | null
-): Coordinates | null {
+type CoordinateData = GeoPoint | LatLngCoords | admin.firestore.GeoPoint | null;
+
+function getCoords(data: CoordinateData): Coordinates | null {
   if (!data) return null;
   if (data instanceof admin.firestore.GeoPoint) {
     return { latitude: data.latitude, longitude: data.longitude };
   }
-  if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+  if ('latitude' in data && 'longitude' in data && 
+      typeof data.latitude === 'number' && typeof data.longitude === 'number') {
     return { latitude: data.latitude, longitude: data.longitude };
   }
-  if (typeof data.lat === 'number' && typeof data.lng === 'number') {
+  if ('lat' in data && 'lng' in data &&
+      typeof data.lat === 'number' && typeof data.lng === 'number') {
     return { latitude: data.lat, longitude: data.lng };
   }
   return null;

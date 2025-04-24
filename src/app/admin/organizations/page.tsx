@@ -60,7 +60,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, 
             <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
                 <h3 className="text-lg font-semibold mb-4 text-gray-900">Confirm Deletion</h3>
                 <p className="mb-6 text-gray-700">
-                    Are you sure you want to delete the organization "<span className="font-bold">{itemName}</span>"? This action cannot be undone.
+                    Are you sure you want to delete the organization &quot;<span className="font-bold">{itemName}</span>&quot;? This action cannot be undone.
                 </p>
                 <div className="flex justify-end space-x-3">
                     <button

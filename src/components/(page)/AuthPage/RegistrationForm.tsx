@@ -3,6 +3,7 @@
 // 1. Import useRef
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // Import Next.js Image component
 
 import { auth, createUserWithEmailAndPassword } from '@/lib/Firebase/Firebase';
 import { loginWithCredentials } from '@/lib/APICalls/Auth/login';
@@ -42,9 +43,10 @@ const RegistrationForm: React.FC = () => {
         );
       }
       console.log('Account setup successful in Firestore.');
-    } catch (e: any) {
-      // Catch specific error types if possible
-      console.error('Error in setUpAccountInFireStore:', e.message || e);
+    } catch (error: unknown) {
+      // Use a more specific type than any
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('Error in setUpAccountInFireStore:', errorMessage);
       // Optionally re-throw or handle the error (e.g., show message to user)
     }
   };
@@ -91,9 +93,11 @@ const RegistrationForm: React.FC = () => {
         <div className="flex flex-col md:flex-row w-full mx-auto items-center justify-center gap-4 md:gap-8">
           {/* Left Image (visible on medium screens and up) */}
           <div className="w-1/4 hidden md:flex items-center justify-center">
-            <img
+            <Image
               src="/Register1.svg"
               alt="Illustration for Organization Registration"
+              width={300}
+              height={300}
               className={`w-full transition-all duration-300 ${
                 hoveredButton === 'organization' ||
                 clickedButton === 'organization'
@@ -122,9 +126,11 @@ const RegistrationForm: React.FC = () => {
                   onMouseEnter={() => setHoveredButton('organization')}
                   onMouseLeave={() => setHoveredButton(null)}
                 >
-                  <img
+                  <Image
                     src="/Organization.svg"
                     alt="Register as Organization"
+                    width={150}
+                    height={100}
                     className="w-full mb-2"
                   />
                   {/* Responsive text */}
@@ -142,9 +148,11 @@ const RegistrationForm: React.FC = () => {
                   onMouseEnter={() => setHoveredButton('volunteer')}
                   onMouseLeave={() => setHoveredButton(null)}
                 >
-                  <img
+                  <Image
                     src="/Volunteer.svg"
                     alt="Register as Volunteer"
+                    width={150}
+                    height={100}
                     className="w-full mb-2"
                   />
                   <span className="text-xs sm:text-sm md:text-base font-semibold block text-center">
@@ -167,9 +175,11 @@ const RegistrationForm: React.FC = () => {
 
           {/* Right Image (visible on medium screens and up) */}
           <div className="w-1/4 hidden md:flex items-center justify-center">
-            <img
+            <Image
               src="/Register2.svg"
               alt="Illustration for Volunteer Registration"
+              width={300}
+              height={300}
               className={`w-full transition-all duration-300 ${
                 hoveredButton === 'volunteer' || clickedButton === 'volunteer'
                   ? 'opacity-100 blur-none'
