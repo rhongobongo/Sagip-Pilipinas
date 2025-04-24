@@ -3,7 +3,7 @@
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { updateProfileData } from '@/actions/profileActions'; // Assuming this backend call remains unchanged
 import imageCompression from 'browser-image-compression';
-
+import Image from 'next/image';
 // --- Interfaces (Keep as is from your draft) ---
 export interface VolunteerProfile {
   userId: string;
@@ -216,7 +216,7 @@ export default function VolunteerProfileForm({
           Profile Picture
         </h3>
         <div className="flex items-center flex-col">
-          <img
+          <Image
             src={imagePreview || displayImageUrl || '/default-avatar.png'}
             alt="Profile Preview"
             // Added border like Org form

@@ -25,12 +25,15 @@ const LoginForm: React.FC = () => {
   const handleLoginSuccess = async (idToken: string) => {
     try {
       await loginWithCredentials(idToken);
+      router.push('/');
       toast.success('Login Successful! Redirecting...', { duration: 2000 });
       router.push('/');
       setTimeout(() => {
         document.location.reload();
-      }, 700);
-      
+      }, 1000);
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
     } catch (backendError) {
       console.error('Backend login error:', backendError);
       let backendErrorMessage = 'Login failed during server verification.';

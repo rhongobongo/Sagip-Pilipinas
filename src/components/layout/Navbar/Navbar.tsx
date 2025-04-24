@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { getAuthTokens } from '@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge';
 import MobileMenuToggle from './MobileMenuToggle';
 import LogoutButton from './LogoutButton'; // Ensure this import is correct
-
+import Image from 'next/image';
 interface LinkInterface {
   displayName: string;
   href: string;
@@ -25,7 +25,7 @@ const Navbar = async () => {
     <nav className="py-4 bg-[#B0022A] shadow-[inset_0_-1px_0_0_rgba(169,169,169,.5)] w-full">
       <div className="max-w-8xl mx-auto flex justify-between items-center border-4 border-[#B0022A] px-4 sm:px-6 lg:px-8">
         <div className="flex items-center space-x-3">
-          <img
+          <Image
             src="/SGP_LOGO.svg"
             alt="Logo"
             className="h-12 w-12 object-contain md:h-16 md:w-16"
