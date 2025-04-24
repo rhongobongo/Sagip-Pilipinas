@@ -299,7 +299,7 @@ const EditModal: React.FC<EditModalProps> = ({
 
   // Modal JSX (same as before)
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto text-black">
       <div className="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full my-8">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-semibold text-gray-900">
@@ -448,27 +448,6 @@ const EditModal: React.FC<EditModalProps> = ({
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
-          </div>
-
-          {/* Status */}
-          <div>
-            <label
-              htmlFor="status"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Status
-            </label>
-            <select
-              id="status"
-              name="status"
-              value={formData.status || 'pending'}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-            >
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="completed">Completed</option>
-            </select>
           </div>
 
           {/* Action Buttons */}
