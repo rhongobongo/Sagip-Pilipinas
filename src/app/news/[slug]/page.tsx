@@ -10,7 +10,7 @@ import ImageCard from '@/components/ui/ImageCard'; // Adjust path as needed
 import ScrollToMainOnLoad from '@/components/utils/ScrollToMainOnLoad';
 
 import Link from 'next/link';
-import { IoArrowBack } from 'react-icons/io5';
+import { IoCloseCircleOutline } from 'react-icons/io5';
 
 interface Coordinates {
   latitude: number;
@@ -24,9 +24,9 @@ function calculateDistance(point1: Coordinates, point2: Coordinates): number {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(deg2rad(point1.latitude)) *
-      Math.cos(deg2rad(point2.latitude)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos(deg2rad(point2.latitude)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = R * c; // Distance in km
   return distance;
@@ -133,8 +133,8 @@ export default async function NewsPage({
         ? newsItemData.timestamp.toDate().toISOString()
         : newsItemData?.submissionDate && newsItemData?.submissionTime
           ? new Date(
-              `${newsItemData.submissionDate} ${newsItemData.submissionTime}`
-            ).toISOString()
+            `${newsItemData.submissionDate} ${newsItemData.submissionTime}`
+          ).toISOString()
           : new Date().toISOString(),
     calamityType: newsItemData?.calamityType || 'Not specified',
     calamityLevel: newsItemData?.calamityLevel || 'Not specified',
@@ -147,12 +147,12 @@ export default async function NewsPage({
 
   const formattedDate = newsItem.timestamp
     ? new Date(newsItem.timestamp).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
     : 'Date unavailable';
 
   // --- Proximity Logic ---
@@ -189,19 +189,18 @@ export default async function NewsPage({
         <article>
           <header className="mb-4 text-white">
 
-            {/* <<< START: Added Back Button Sample >>> */}
-            <div className="mb-3"> {/* Optional div for spacing */}
+            {/*for back button na circle*/}
+            <div className="flex items-center justify-between mb-2"> 
+              <h1 className="text-3xl font-bold"> {newsItem.title} </h1>
               <Link
-                href="/" // --- IMPORTANT: Change this to the actual path of your news list page ---
-                className="inline-flex items-center text-sm text-blue-200 hover:text-blue-100 hover:underline transition-colors duration-200"
+                href="/" //padulong ni home
+                className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200" // Adjusted hover for icon
+                aria-label="Back to News Feed"
               >
-                <IoArrowBack className="mr-1 h-4 w-4" /> {/* Back arrow icon */}
-                Back to News Feed
+                <IoCloseCircleOutline className="h-16 w-16" />
               </Link>
             </div>
-            {/* <<< END: Added Back Button Sample >>> */}
-
-            <h1 className="text-3xl font-bold mb-2">{newsItem.title}</h1>
+            
             <p className="text-sm">Posted on: {formattedDate}</p>
           </header>
 
