@@ -82,10 +82,10 @@ const NewsDisplaySection = ({
           placeholder="Search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border w-full border-gray-300 rounded-full px-4 text-black py-2 pl-10 focus:outline-none"
+          className="border w-[430px] border-gray-300 rounded-full px-4 text-black py-2 pl-10 focus:outline-none ml-4"
         />
         <svg
-          className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-black"
+          className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-black ml-4"
           fill="currentColor"
           viewBox="0 0 20 20"
         >

@@ -31,8 +31,8 @@ const NewsCard = ({ item }: { item: NewsItem }) => {
             </div>
           )}
           {item.calamityLevel && ( //Notification-like circle
-            <div className="absolute top-1 right-1 bg-red-500 text-white text-lg px-3 py-1 rounded-full font-bold">
-              {item.calamityLevel}
+            <div className="absolute top-1 right-1 bg-red-500 text-white text-sm px-2 py-0.5 rounded-full font-semibold shadow-md">
+              Level: {item.calamityLevel}
             </div>
           )}
         </div>

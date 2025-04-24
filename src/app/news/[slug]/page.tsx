@@ -9,6 +9,9 @@ import { cookies } from 'next/headers';
 import ImageCard from '@/components/ui/ImageCard'; // Adjust path as needed
 import ScrollToMainOnLoad from '@/components/utils/ScrollToMainOnLoad';
 
+import Link from 'next/link';
+import { IoArrowBack } from 'react-icons/io5';
+
 interface Coordinates {
   latitude: number;
   longitude: number;
@@ -185,6 +188,19 @@ export default async function NewsPage({
       <div className="bg-[#B0022A] p-6 w-full lg:w-3/4 lg:rounded-xl mx-auto lg:h-full">
         <article>
           <header className="mb-4 text-white">
+
+            {/* <<< START: Added Back Button Sample >>> */}
+            <div className="mb-3"> {/* Optional div for spacing */}
+              <Link
+                href="/" // --- IMPORTANT: Change this to the actual path of your news list page ---
+                className="inline-flex items-center text-sm text-blue-200 hover:text-blue-100 hover:underline transition-colors duration-200"
+              >
+                <IoArrowBack className="mr-1 h-4 w-4" /> {/* Back arrow icon */}
+                Back to News Feed
+              </Link>
+            </div>
+            {/* <<< END: Added Back Button Sample >>> */}
+
             <h1 className="text-3xl font-bold mb-2">{newsItem.title}</h1>
             <p className="text-sm">Posted on: {formattedDate}</p>
           </header>
@@ -281,12 +297,12 @@ export default async function NewsPage({
               </section>
 
               {/* Additional Info / Summary */}
-              <section className="mb-6 w-full">
+              <section className="mb-6 w-[1080px]">
                 <h2 className="text-xl font-semibold mb-3 text-white">
                   Summary
                 </h2>
                 <DetailCard>
-                  <p className="text-black leading-relaxed w-full">
+                  <p className="text-black leading-relaxed">
                     {newsItem.title}
                   </p>
                   <p className="text-sm text-black justify md:text-justify text-wrap overflow-y-auto">

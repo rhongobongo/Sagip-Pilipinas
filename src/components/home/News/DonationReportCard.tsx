@@ -25,15 +25,15 @@ const linkHref = `/donations/${item.donationId || item.id}`;
 
   return (
     <Link href={`/donation/${item.id}`} key={item.id}>
-      <div className="border-2 border-black rounded-2xl hover:shadow-[0px_10px_30px_rgba(0,0,0,0.7)] transition-shadow duration-300 bg-[#f3f3f3] p-4 h-full flex flex-col">
-        <div className="relative h-48 mb-4">
+      <div className="border-2 border-black rounded-2xl hover:shadow-[0px_10px_30px_rgba(0,0,0,0.7)] transition-shadow duration-300 bg-[#f3f3f3] p-4 h-96 flex flex-col">
+        <div className="relative h-48">
           {item.requestImageUrl ? (
             <Image
               src={item.requestImageUrl}
               alt={item.title || 'Aid request image'}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="rounded-2xl border-2 border-black object-cover"
+              className="rounded-2xl border-2 border-black"
             />
           ) : (
             <div className="w-full h-full bg-gray-300 flex items-center justify-center text-black rounded-2xl border-2 border-black">

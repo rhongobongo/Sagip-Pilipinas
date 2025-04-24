@@ -22,9 +22,9 @@ const RespondToAidRequestSection: React.FC<RespondToAidRequestSectionProps> = ({
     };
 
     return (
-        <div className="bg-blue-50 border-l-4 text-black p-4 rounded-md shadow-sm mb-6">
-            <h3 className="text-lg font-semibold mb-2">
-                Respond to this Request
+        <div className="bg-blue-50 border-l-4 text-black p-4 rounded-md shadow-sm mb-6 w-[718px] h-[199px] justify">
+            <h3 className="text-lg font-bold mb-6">
+                RESPOND TO THIS REQUEST?
             </h3>
             <p className="text-sm mb-1">
                 This aid request is located approximately{" "}
@@ -34,7 +34,7 @@ const RespondToAidRequestSection: React.FC<RespondToAidRequestSectionProps> = ({
                 from your organization&apos;s registered location (
                 {organizationName}).
             </p>
-            <p className="text-sm mb-3">
+            <p className="text-sm mb-6">
                 Your assistance may be valuable here. Would you like to assess
                 this request further or initiate a response?
             </p>
