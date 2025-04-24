@@ -1,11 +1,6 @@
 'use client';
 
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  RefObject,
-} from 'react';
+import React, { useState, useEffect, useRef, RefObject } from 'react';
 import NewsCard, { NewsItem } from './NewsCard';
 
 interface NewsDisplaySectionProps {
