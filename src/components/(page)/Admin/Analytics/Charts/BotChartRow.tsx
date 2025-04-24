@@ -1,63 +1,60 @@
-"use client"
+"use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Shirt, Users, UtensilsCrossed, Package } from "lucide-react";
 
-const BotChartRow = () => {
+interface OrganizationStockData {
+    [orgId: string]: OrganizationStock;
+}
+
+interface OrganizationStock {
+    orgName: string;
+    clothing: number;
+    medicine: number;
+    food: number;
+    volunteers: number;
+}
+
+interface BotChartRowProps {
+    orgStock: OrganizationStockData;
+    responseTime: string;
+}
+
+const BotChartRow: React.FC<BotChartRowProps> = ({ orgStock, responseTime }) => {
     const [selectedOrganization, setSelectedOrganization] = useState(
         "Select organization"
     );
 
-    const analyticsData = {
-        averageRequests: {
-            weekly: 7.86,
-            monthly: 11.5,
-            yearly: 52.33,
-            weeklyTrend: "down",
-            monthlyTrend: "up",
-            yearlyTrend: "up",
-        },
-        totalOrganizations: 22,
-        totalVolunteers: 538,
-        completedOperations: 241,
-        disasterTypes: [
-            { name: "Flood", percentage: 18, icon: "🌊", rank: 2 },
-            { name: "Earthquake", percentage: 25, icon: "🏚️", rank: 1 },
-            { name: "Typhoon", percentage: 17, icon: "🌀", rank: 3 },
-            { name: "Fire", percentage: 23, icon: "🔥", rank: 6 },
-            { name: "Landslide", percentage: 14, icon: "⛰️", rank: 5 },
-            { name: "Other", percentage: 10, icon: "❓", rank: 4 },
-        ],
+    const organizationIds = Object.keys(orgStock);
 
-        disasterTraffic: {
-            regions: [
-                "Manila",
-                "Cebu",
-                "Davao",
-                "Vigan",
-                "Quezon",
-                "Batangas",
-                "Laoag",
-            ],
-            values: [16.6, 8.7, 16.9, 3.3, 13.1, 21.1, 22.3],
-        },
-        aidTypesStocks: {
-            food: "10,500 packs",
-            clothes: "2,550 pairs",
-            volunteers: "220 people",
-            medicine: "1,720",
-        },
-        operationSuccessRate: "92%",
-        engagements: "12,256",
-        averageResponseTime: {
-            earthquake: "1 hour",
-            fire: "20 minutes",
-            flood: "35 minutes",
-            landslide: "45 minutes",
-            other: "1.5 hours",
-            typhoon: "3 hours",
-        },
-    };
+    const selectedOrgData =
+        selectedOrganization && selectedOrganization !== "Select organization"
+            ? orgStock[selectedOrganization]
+            : null;
+
+    const totalStocks = useMemo(() => {
+        if (!selectedOrgData && Object.keys(orgStock).length > 0) {
+            let totalFood = 0;
+            let totalVolunteers = 0;
+            let totalClothing = 0;
+            let totalMedicine = 0;
+
+            Object.values(orgStock).forEach((org) => {
+                totalFood += org.food;
+                totalVolunteers += org.volunteers;
+                totalClothing += org.clothing;
+                totalMedicine += org.medicine;
+            });
+
+            return {
+                food: totalFood,
+                volunteers: totalVolunteers,
+                clothing: totalClothing,
+                medicine: totalMedicine,
+            };
+        }
+        return null;
+    }, [selectedOrgData, orgStock]);
 
     return (
         <>
@@ -68,85 +65,137 @@ const BotChartRow = () => {
                 <div
                     className={`md:col-span-6 bg-red-800 rounded-lg shadow-sm p-4 flex flex-col`}
                 >
-                    <h3 className="text-sm font-medium uppercase tracking-wider text-center mb-4">
-                        {" "}
-                        Aid Types Stocks{" "}
+                    <h3 className="text-sm font-medium uppercase tracking-wider text-center mb-4 text-white">
+                        Aid Types Stocks
                     </h3>
-                    {/* Organization Dropdown - Styled */}
+                    {/* Organization Dropdown */}
                     <div className="mb-4 px-4">
                         <label htmlFor="org-select-b" className="sr-only">
                             Organization:
-                        </label>{" "}
-                        {/* Screen reader only label */}
+                        </label>
                         <select
                             id="org-select-b"
                             name="organization"
-                            value={selectedOrganization}
+                            value={selectedOrganization || ""}
                             onChange={(e) =>
                                 setSelectedOrganization(e.target.value)
                             }
-                            // Custom styling for dropdown to match dark theme
-                            className={`block w-full pl-3 pr-10 py-2 text-sm bg-red-700 border border-red-600 focus:outline-none focus:ring-1 focus:ring-white focus:border-white rounded-md appearance-none`} // Added appearance-none, check browser compatibility or add custom arrow
+                            className={`block w-full pl-3 pr-10 py-2 text-sm bg-red-700 border border-red-600 focus:outline-none focus:ring-1 focus:ring-white rounded-md appearance-none text-white`}
                         >
-                            <option>Select organization</option>
-                            <option>Red Cross Cebu</option>
-                            <option>DSWD Region 7</option>
-                            <option>Local LGU</option>
+                            <option value="">Select organization</option>
+                            {organizationIds.map((orgId) => (
+                                <option key={orgId} value={orgId}>
+                                    {orgStock[orgId].orgName}
+                                </option>
+                            ))}
                         </select>
-                        {/* Consider adding a custom arrow overlay for the select if appearance-none removes it */}
                     </div>
-                    {/* Stock Items Grid */}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-6 px-4 flex-grow">
-                        {/* Food */}
-                        <div className="flex items-center gap-3">
-                            <UtensilsCrossed className="w-8 h-8 text-white flex-shrink-0" />
-                            <div>
-                                <div className="text-xs text-red-200">
-                                    Food:
+
+                    {selectedOrgData && (
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-6 px-4 flex-grow text-white">
+                            {/* Food */}
+                            <div className="flex items-center gap-3">
+                                <UtensilsCrossed className="w-8 h-8 text-white flex-shrink-0" />
+                                <div>
+                                    <div className="text-xs text-red-200">
+                                        Food:
+                                    </div>
+                                    <div className="font-medium">
+                                        {selectedOrgData.food}
+                                    </div>
                                 </div>
-                                <div className="font-medium">
-                                    {analyticsData.aidTypesStocks.food}
+                            </div>
+                            {/* Volunteers */}
+                            <div className="flex items-center gap-3">
+                                <Users className="w-8 h-8 text-white flex-shrink-0" />
+                                <div>
+                                    <div className="text-xs text-red-200">
+                                        Volunteers:
+                                    </div>
+                                    <div className="font-medium">
+                                        {selectedOrgData.volunteers}
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Clothes */}
+                            <div className="flex items-center gap-3">
+                                <Shirt className="w-8 h-8 text-white flex-shrink-0" />
+                                <div>
+                                    <div className="text-xs text-red-200">
+                                        Clothes:
+                                    </div>
+                                    <div className="font-medium">
+                                        {selectedOrgData.clothing}
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Medicine */}
+                            <div className="flex items-center gap-3">
+                                <Package className="w-8 h-8 text-white flex-shrink-0" />
+                                <div>
+                                    <div className="text-xs text-red-200">
+                                        Medicine:
+                                    </div>
+                                    <div className="font-medium">
+                                        {selectedOrgData.medicine}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        {/* Volunteers */}
-                        <div className="flex items-center gap-3">
-                            <Users className="w-8 h-8 text-white flex-shrink-0" />
-                            <div>
-                                <div className="text-xs text-red-200">
-                                    Volunteers:
+                    )}
+
+                    {!selectedOrgData && totalStocks && (
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-6 px-4 flex-grow text-white">
+                            {/* Total Food */}
+                            <div className="flex items-center gap-3">
+                                <UtensilsCrossed className="w-8 h-8 text-white flex-shrink-0" />
+                                <div>
+                                    <div className="text-xs text-red-200">
+                                        Total Food:
+                                    </div>
+                                    <div className="font-medium">
+                                        {totalStocks.food}
+                                    </div>
                                 </div>
-                                <div className="font-medium">
-                                    {analyticsData.aidTypesStocks.volunteers}
+                            </div>
+                            {/* Total Volunteers */}
+                            <div className="flex items-center gap-3">
+                                <Users className="w-8 h-8 text-white flex-shrink-0" />
+                                <div>
+                                    <div className="text-xs text-red-200">
+                                        Total Volunteers:
+                                    </div>
+                                    <div className="font-medium">
+                                        {totalStocks.volunteers}
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Total Clothes */}
+                            <div className="flex items-center gap-3">
+                                <Shirt className="w-8 h-8 text-white flex-shrink-0" />
+                                <div>
+                                    <div className="text-xs text-red-200">
+                                        Total Clothes:
+                                    </div>
+                                    <div className="font-medium">
+                                        {totalStocks.clothing}
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Total Medicine */}
+                            <div className="flex items-center gap-3">
+                                <Package className="w-8 h-8 text-white flex-shrink-0" />
+                                <div>
+                                    <div className="text-xs text-red-200">
+                                        Total Medicine:
+                                    </div>
+                                    <div className="font-medium">
+                                        {totalStocks.medicine}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        {/* Clothes */}
-                        <div className="flex items-center gap-3">
-                            <Shirt className="w-8 h-8 text-white flex-shrink-0" />
-                            <div>
-                                <div className="text-xs text-red-200">
-                                    Clothes:
-                                </div>
-                                <div className="font-medium">
-                                    {analyticsData.aidTypesStocks.clothes}
-                                </div>
-                            </div>
-                        </div>
-                        {/* Medicine */}
-                        <div className="flex items-center gap-3">
-                            <Package className="w-8 h-8 text-white flex-shrink-0" />{" "}
-                            {/* Using Package as placeholder for Medicine */}
-                            <div>
-                                <div className="text-xs text-red-200">
-                                    Medicine:
-                                </div>
-                                <div className="font-medium">
-                                    {analyticsData.aidTypesStocks.medicine}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    )}
                 </div>
                 {/* Average Response Time - Spanning 3 columns */}
                 <div
@@ -156,19 +205,9 @@ const BotChartRow = () => {
                         {" "}
                         Average Response Time{" "}
                     </h3>
-                    <div className="space-y-2 px-2 flex-grow">
-                        {Object.entries(analyticsData.averageResponseTime).map(
-                            ([type, time]) => (
-                                <div
-                                    key={type}
-                                    className="flex justify-between items-center text-sm"
-                                >
-                                    <div className="capitalize">{type}:</div>
-                                    <div className="font-medium">{time}</div>
-                                </div>
-                            )
-                        )}
-                    </div>
+                        <div className="space-y-2 px-2 flex-grow flex justify-center">
+                            <div className="p-10 text-4xl text-center">{responseTime}</div>
+                        </div>
                 </div>
             </div>{" "}
         </>
