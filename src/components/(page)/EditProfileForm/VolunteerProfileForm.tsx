@@ -216,7 +216,7 @@ export default function VolunteerProfileForm({
           Profile Picture
         </h3>
         <div className="flex items-center flex-col">
-          <Image
+          <img
             src={imagePreview || displayImageUrl || '/default-avatar.png'}
             alt="Profile Preview"
             // Added border like Org form

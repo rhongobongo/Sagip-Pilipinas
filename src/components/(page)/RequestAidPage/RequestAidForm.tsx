@@ -30,7 +30,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   const [calamityLevel, setCalamityLevel] = useState('');
   const [calamityType, setCalamityType] = useState('');
   const [otherCalamity, setOtherCalamity] = useState('');
-const [aidNeeded, setAidNeeded] = useState('');
+  const [aidNeeded, setAidNeeded] = useState('');
   const [otherAidRequest, setOtherAidRequest] = useState('');
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
@@ -571,7 +571,7 @@ const [aidNeeded, setAidNeeded] = useState('');
           </div>
           {imagePreview && (
             <div className="mt-3 border-red-400 border-2 rounded-lg p-2 bg-gray-100">
-              <Image
+              <img
                 src={imagePreview}
                 alt="Preview"
                 className="max-h-40 max-w-full object-contain mx-auto"
