@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import NewsDisplaySection from './NewsDonation';
-import { NewsItem } from './NewsCard';
+import { NewsItem } from './NewsCard'; // Assuming NewsCard exports the NewsItem type
 import { DonationReportItem } from '@/types/reportTypes';
 
 interface NewsGridProps {
@@ -19,50 +19,60 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
   const [donationCurrentPage, setDonationCurrentPage] = useState<number>(1);
 
   // --- Function to trigger scroll ---
-  // Encapsulates the scroll logic with a timeout for reliability
   const triggerScroll = () => {
-     setTimeout(() => {
-        if (scrollTargetRef.current) {
-           scrollTargetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-     }, 0); // Timeout of 0ms defers execution slightly
-  }
+    setTimeout(() => {
+      if (scrollTargetRef.current) {
+        scrollTargetRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+    }, 0);
+  };
 
   // --- Handlers for page changes from child ---
-  // Updates the correct page state based on which view is active and triggers scroll
   const handleLatestPageChange = (pageNumber: number) => {
-    // Only update and scroll if page actually changes
     if (pageNumber !== latestCurrentPage) {
-        setLatestCurrentPage(pageNumber);
-        triggerScroll();
+      setLatestCurrentPage(pageNumber);
+      triggerScroll();
     }
   };
 
   const handleDonationPageChange = (pageNumber: number) => {
-     // Only update and scroll if page actually changes
     if (pageNumber !== donationCurrentPage) {
-        setDonationCurrentPage(pageNumber);
-        triggerScroll();
+      setDonationCurrentPage(pageNumber);
+      triggerScroll();
     }
   };
 
   const showView = (view: NewsView) => {
     if (view !== currentView) {
       setCurrentView(view);
-      // Reset the page number for the view we are switching TO
       if (view === 'latest') {
-          // Reset only if not already 1 to avoid unnecessary trigger
-          if (latestCurrentPage !== 1) setLatestCurrentPage(1);
+        if (latestCurrentPage !== 1) setLatestCurrentPage(1);
       } else {
-          // Reset only if not already 1
-          if (donationCurrentPage !== 1) setDonationCurrentPage(1);
+        if (donationCurrentPage !== 1) setDonationCurrentPage(1);
       }
-      triggerScroll(); // Scroll when view changes
+      triggerScroll();
     }
   };
 
   const latestNewsMinHeight = 'min-h-[1098px]';
-  const donationNewsMinHeight = 'min-h-[1098px]'; 
+  const donationNewsMinHeight = 'min-h-[1098px]';
+
+  // FIX: Map DonationReportItem[] to NewsItem[]
+  const mappedDonationItems: NewsItem[] = donationNewsItems.map((item) => ({
+    id: item.id, // Use donation ID as the primary ID here
+    slug: item.id, // Use donation ID for slug as well (or aidRequestId if preferred)
+    title: item.title, // Title from the related aid request
+    summary: item.donationSummary || `Donated: ${item.donatedTypes.join(', ')}`, // Create summary
+    imageUrl: item.requestImageUrl || '/placeholder-donation.jpg', // Use request image or placeholder
+    timestamp: item.donationTimestamp, // Use donation timestamp
+    // These might not directly apply or need default values for donation view
+    calamityType: item.calamityType || 'N/A',
+    calamityLevel: item.calamityLevel || 'N/A',
+    // Add other NewsItem fields if necessary, potentially with default values
+  }));
 
   return (
     <div className="w-full transition-all duration-300">
@@ -90,27 +100,27 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
         </div>
 
         {currentView === 'latest' && (
-        <NewsDisplaySection
-          key="latest-news"
-          newsItems={newsItems}
-          listMinHeightClass={latestNewsMinHeight}
-          idPrefix="latest"
-          currentPage={latestCurrentPage}
-          onPageChange={handleLatestPageChange}
-          isDonationView={false}
-        />
-      )}
+          <NewsDisplaySection
+            key="latest-news"
+            newsItems={newsItems} // Pass original NewsItem[]
+            listMinHeightClass={latestNewsMinHeight}
+            idPrefix="latest"
+            currentPage={latestCurrentPage}
+            onPageChange={handleLatestPageChange}
+            isDonationView={false}
+          />
+        )}
 
-          {currentView === 'donation' && (
-        <NewsDisplaySection
-          key="donation-news"
-          newsItems={donationNewsItems as any}
-          listMinHeightClass={donationNewsMinHeight}
-          idPrefix="donation"
-          currentPage={donationCurrentPage}
-          onPageChange={handleDonationPageChange}
-          isDonationView={true}
-        />
+        {currentView === 'donation' && (
+          <NewsDisplaySection
+            key="donation-news"
+            newsItems={mappedDonationItems} // Pass the mapped array
+            listMinHeightClass={donationNewsMinHeight}
+            idPrefix="donation"
+            currentPage={donationCurrentPage}
+            onPageChange={handleDonationPageChange}
+            isDonationView={true}
+          />
         )}
       </div>
     </div>

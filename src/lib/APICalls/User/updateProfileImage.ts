@@ -65,17 +65,47 @@ export const updateProfileImage = async (
     let errorMessage = 'An unknown error occurred during image processing.';
     let errorCode: string | null = null;
 
-    if (typeof error === 'object' && error !== null) {
-      if ('message' in error && typeof (error as any).message === 'string') {
-        errorMessage = (error as any).message;
-      }
-      if ('code' in error && typeof (error as any).code === 'string') {
-        errorCode = (error as any).code;
-      }
-    } else if (error instanceof Error) {
+    // FIX: Refined type checking for 'unknown'
+    if (error instanceof Error) {
+      // Standard JavaScript Error or extended error
       errorMessage = error.message;
-    }
 
+      // Check for 'code' property *after* confirming it's an Error object.
+      // Use 'in' operator for type narrowing.
+      if ('code' in error && typeof error.code === 'string') {
+        // Although 'in' narrows, direct access might still be problematic
+        // if base Error type lacks 'code'. Assert type minimally for access.
+        errorCode = (error as { code: string }).code;
+      }
+      console.log(
+        `Caught Error: Code=${errorCode ?? 'N/A'}, Message=${errorMessage}`
+      );
+    } else if (typeof error === 'object' && error !== null) {
+      // Handle non-Error objects
+      // Use 'in' for narrowing and assert type for accessing
+      if (
+        'message' in error &&
+        typeof (error as { message: unknown }).message === 'string'
+      ) {
+        errorMessage = (error as { message: string }).message;
+      }
+      if (
+        'code' in error &&
+        typeof (error as { code: unknown }).code === 'string'
+      ) {
+        errorCode = (error as { code: string }).code;
+      }
+      console.log(
+        `Caught object error: Code=${errorCode ?? 'N/A'}, Message=${errorMessage}`
+      );
+    } else if (typeof error === 'string') {
+      // Handle plain string errors
+      errorMessage = error;
+      console.log(`Caught string error: ${errorMessage}`);
+    }
+    // else: Keep default errorMessage for truly unknown types
+
+    // --- Keep the specific error message enhancement logic ---
     if (errorCode) {
       errorMessage = `Error Code (${errorCode}): ${errorMessage}`;
       if (errorCode === 'storage/unauthorized') {
@@ -93,6 +123,7 @@ export const updateProfileImage = async (
       }
     }
 
+    // Re-throw the processed error
     throw new Error(`Failed to update profile image: ${errorMessage}`);
   }
 };
