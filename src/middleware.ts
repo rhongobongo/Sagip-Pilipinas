@@ -11,15 +11,13 @@ const PUBLIC_PATHS = [
     "/request-aid",
     "/404",
     "/news",
+    "/api/organizations",
 ];
 const AUTH_PATHS = ["/register", "/login", "/forgot-password"];
 const ADMIN_PATH_REGEX = /^\/admin(?:\/([a-zA-Z0-9-]+))?(?:\/|$)/;
 
 const isPublicPath = (pathname: string) => {
-    return (
-        PUBLIC_PATHS.includes(pathname) ||
-        pathname.startsWith("/news/")
-    );
+    return PUBLIC_PATHS.includes(pathname) || pathname.startsWith("/news/");
 };
 
 export default async function middleware(request: NextRequest) {
@@ -53,7 +51,7 @@ export default async function middleware(request: NextRequest) {
                     headers,
                 },
                 headers: {
-                    'x-pathname': pathname,
+                    "x-pathname": pathname,
                 },
             });
         },
@@ -65,11 +63,11 @@ export default async function middleware(request: NextRequest) {
             if (isPublicPath(pathname)) {
                 return NextResponse.next({
                     headers: {
-                        'x-pathname': pathname,
+                        "x-pathname": pathname,
                     },
                 });
             }
-            
+
             return redirectToLogin(request, {
                 path: "/login",
                 publicPaths: [...PUBLIC_PATHS, ...AUTH_PATHS],
