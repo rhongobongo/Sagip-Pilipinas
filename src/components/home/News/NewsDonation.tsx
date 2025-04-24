@@ -2,11 +2,9 @@
 
 import React, { useState, useEffect, useRef, RefObject } from 'react';
 import NewsCard, { NewsItem } from './NewsCard';
-import NewsDonationCard, { DonationItem } from './NewsDonationCard';
 
 interface NewsDisplaySectionProps {
   newsItems: NewsItem[];
-  donationNewsItems: DonationItem[];
   //scrollTargetRef: React.RefObject<HTMLDivElement | null>;
   listMinHeightClass: string;
   idPrefix: string;
@@ -16,7 +14,6 @@ interface NewsDisplaySectionProps {
 
 const NewsDisplaySection = ({
   newsItems,
-  donationNewsItems,
   // scrollTargetRef,
   listMinHeightClass = 'min-h-[1098px]',
   idPrefix,

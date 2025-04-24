@@ -12,6 +12,17 @@ export interface NewsItem {
   slug: string;
 }
 
+export interface DonationItem {
+  id: string;
+  title: string;
+  summary: string;
+  imageUrl: string | null;
+  timestamp: string;
+  calamityType: string;
+  calamityLevel: string;
+  slug: string;
+}
+
 const NewsCard = ({ item }: { item: NewsItem }) => {
   return (
     <Link href={`/news/${item.slug}`} key={item.id}>
