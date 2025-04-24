@@ -162,7 +162,7 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
               {selectedPin.imageURL && (
                 <div className="mt-3">
                   <p className="font-semibold">Image:</p>
-                  <Image
+                  <img
                     src={selectedPin.imageURL}
                     alt="Aid request"
                     className="mt-1 rounded-md w-full object-cover max-h-48"

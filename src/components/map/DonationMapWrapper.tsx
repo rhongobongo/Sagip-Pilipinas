@@ -94,22 +94,22 @@ const DonationMapWrapper: React.FC<DonationMapWrapperProps> = ({
 
         // If there's an aid request ID in the URL, find and select that pin
         // In your useEffect where you handle aidRequestId from URL
-          if (aidRequestId) {
-            const matchedPin = aidRequests.find((pin) => pin.id === aidRequestId);
-            if (matchedPin) {
-              setSelectedPin(matchedPin);
-              
-              // Make sure to notify parent component here as well
-              if (onPinSelect) {
-                onPinSelect(matchedPin);
+        if (aidRequestId) {
+          const matchedPin = aidRequests.find((pin) => pin.id === aidRequestId);
+          if (matchedPin) {
+            setSelectedPin(matchedPin);
+
+            // Make sure to notify parent component here as well
+            if (onPinSelect) {
+              onPinSelect(matchedPin);
+            }
+
+            // Zoom to the pin after a short delay to ensure map is ready
+            setTimeout(() => {
+              if (mapRef.current?.zoomMarker) {
+                mapRef.current.zoomMarker(matchedPin);
               }
-              
-              // Zoom to the pin after a short delay to ensure map is ready
-              setTimeout(() => {
-                if (mapRef.current?.zoomMarker) {
-                  mapRef.current.zoomMarker(matchedPin);
-                }
-              }, 500); // Delay might be adjusted or handled with map load state
+            }, 500); // Delay might be adjusted or handled with map load state
           } else {
             console.warn(
               `Aid request ID "${aidRequestId}" from URL not found in fetched pins.`
@@ -136,18 +136,18 @@ const DonationMapWrapper: React.FC<DonationMapWrapperProps> = ({
   const handlePinSelect = (pin: RequestPin) => {
     // Prevent re-selecting the same pin unnecessarily
     if (selectedPin?.id === pin.id) return;
-  
+
     setSelectedPin(pin); // Update component state
-  
+
     // Always notify parent component when a pin is selected
     if (onPinSelect) {
       onPinSelect(pin);
     }
-  
+
     // Update URL with the selected aid request ID using Next.js router
     const currentPath = window.location.pathname;
     router.push(`${currentPath}?aidRequestId=${pin.id}`, { scroll: false });
-  
+
     // Zoom the map to the selected pin
     if (mapRef.current?.zoomMarker) {
       mapRef.current.zoomMarker(pin);
@@ -269,7 +269,7 @@ const DonationMapWrapper: React.FC<DonationMapWrapperProps> = ({
               {selectedPin.imageURL && (
                 <div className="mt-3">
                   <p className="font-semibold">Image:</p>
-                  <Image
+                  <img
                     src={selectedPin.imageURL}
                     alt="Aid request visual"
                     className="mt-1 rounded-md w-full object-cover max-h-48 border "

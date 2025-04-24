@@ -18,7 +18,7 @@ const formatDateTime = (isoString: string) => {
 };
 
 const DonationReportCard = ({ item }: { item: DonationReportItem }) => {
-const linkHref = `/donations/${item.donationId || item.id}`;
+  const linkHref = `/donations/${item.donationId || item.id}`;
 
   // Construct a dynamic summary
   const summary = `Donation by ${item.organizationName || 'an organization'}. Items: ${item.donatedTypes?.join(', ') || 'various'}. Responding to ${item.calamityType || 'an event'}.`;
@@ -27,9 +27,9 @@ const linkHref = `/donations/${item.donationId || item.id}`;
     <Link href={`/donation/${item.id}`} key={item.id}>
       <div className="border-2 border-black rounded-2xl hover:shadow-[0px_10px_30px_rgba(0,0,0,0.7)] transition-shadow duration-300 bg-[#f3f3f3] p-4 h-96 flex flex-col">
         <div className="relative h-48">
-          {item.requestImageUrl ? (
+          {item.imageUrl ? (
             <Image
-              src={item.requestImageUrl}
+              src={item.imageUrl}
               alt={item.title || 'Aid request image'}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -54,17 +54,26 @@ const linkHref = `/donations/${item.donationId || item.id}`;
         {/* Content Area */}
         <div className="flex-grow p-1 flex flex-col justify-between">
           <div>
-            <h2 className="text-black font-semibold text-lg truncate mb-1" title={item.title}>
+            <h2
+              className="text-black font-semibold text-lg truncate mb-1"
+              title={item.title}
+            >
               {item.title || 'Aid Request'}
             </h2>
             <p className="text-gray-700 text-xs mb-2">
-              by <span className="font-medium">{item.organizationName || 'Unknown Org'}</span>
+              by{' '}
+              <span className="font-medium">
+                {item.organizationName || 'Unknown Org'}
+              </span>
             </p>
             <p className="text-black text-sm line-clamp-3 mb-3">
               {item.donationSummary || summary}
             </p>
             <p className="text-gray-600 text-xs mb-2">
-              Donated Items: <span className="font-medium">{item.donatedTypes?.join(', ') || 'N/A'}</span>
+              Donated Items:{' '}
+              <span className="font-medium">
+                {item.donatedTypes?.join(', ') || 'N/A'}
+              </span>
             </p>
           </div>
 

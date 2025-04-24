@@ -1,4 +1,3 @@
-
 import type { Timestamp } from 'firebase/firestore';
 
 export interface DonationReportItem {
@@ -8,7 +7,7 @@ export interface DonationReportItem {
   title: string;
   calamityType: string;
   calamityLevel: string;
-  requestImageUrl: string | null;
+  imageUrl: string | null;
   requestTimestamp: string;
   organizationId: string;
   organizationName: string;
