@@ -6,7 +6,6 @@ import {
     collection,
     getDocs,
     doc,
-    getDoc,
     deleteDoc,
     DocumentData,
     FirestoreError
@@ -36,10 +35,51 @@ type OrganizationLookup = {
     [id: string]: string;
 };
 
+interface ConfirmationModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    itemName: string;
+}
+
+const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, onConfirm, itemName }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900">Confirm Deactivation</h3>
+                <p className="mb-6 text-gray-700">
+                    Are you sure you want to deactivate the volunteer "<span className="font-bold">{itemName}</span>"? This action might delete their record.
+                </p>
+                <div className="flex justify-end space-x-3">
+                    <button
+                        onClick={onClose}
+                        type="button"
+                        className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors text-sm font-medium"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        type="button"
+                        className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition-colors text-sm font-medium"
+                    >
+                        Confirm Deactivate
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const VolunteersPage: React.FC = () => {
     const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string } | null>(null);
 
     const fetchVolunteersAndOrgs = useCallback(async () => {
         if (!db) {
@@ -69,7 +109,7 @@ const VolunteersPage: React.FC = () => {
                 const firstName = data.firstName ?? '';
                 const middleName = data.middleName ?? '';
                 const surname = data.surname ?? '';
-                const fullName = [firstName, middleName, surname].filter(name => name && name.trim() !== '').join(' ');
+                const fullName = [firstName, middleName, surname].filter(name => name && name.trim() !== '').join(' ').trim();
 
                 return {
                     id: doc.id,
@@ -96,38 +136,60 @@ const VolunteersPage: React.FC = () => {
         fetchVolunteersAndOrgs();
     }, [fetchVolunteersAndOrgs]);
 
-    const handleDeactivateClick = async (volunteerId: string, volunteerName: string) => {
-         if (!db) {
+    const initiateDelete = (volunteerId: string, volunteerName: string) => {
+        if (!db) {
             alert("Firestore is not available. Check Firebase configuration.");
             return;
         }
-        console.log(`Attempting to deactivate volunteer: ${volunteerName} (ID: ${volunteerId})`);
+        console.log(`Attempting to open deactivation confirm for: ${volunteerName} (ID: ${volunteerId})`);
+        setItemToDelete({ id: volunteerId, name: volunteerName });
+        setIsModalOpen(true);
+    };
 
-        if (window.confirm(`Are you sure you want to deactivate the volunteer "${volunteerName}" (ID: ${volunteerId})? This action might delete the record.`)) {
-            try {
-                const volunteerDocRef = doc(db, 'volunteers', volunteerId);
-                await deleteDoc(volunteerDocRef);
-
-                setVolunteers(prevVolunteers => prevVolunteers.filter(vol => vol.id !== volunteerId));
-                alert(`Volunteer "${volunteerName}" deactivated successfully.`);
-                console.log(`Volunteer "${volunteerName}" deactivated.`);
-
-            } catch (err: FirestoreError | unknown) {
-                const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-                alert(`Failed to deactivate volunteer: ${errorMessage}`);
-                console.error(`Failed to deactivate volunteer ${volunteerId}:`, err);
-            }
-        } else {
-            console.log("Volunteer deactivation cancelled by user.");
+    const handleConfirmDelete = async () => {
+        if (!itemToDelete || !db) {
+            alert("Error: Could not deactivate. Volunteer details missing or Firestore not initialized.");
+            setIsModalOpen(false);
+            setItemToDelete(null);
+            return;
         }
+        const { id, name } = itemToDelete;
+
+        try {
+            const volunteerDocRef = doc(db, 'volunteers', id);
+            await deleteDoc(volunteerDocRef);
+
+            setVolunteers(prevVolunteers => prevVolunteers.filter(vol => vol.id !== id));
+            alert(`Volunteer "${name}" deactivated successfully.`);
+            console.log(`Volunteer "${name}" deactivated.`);
+
+        } catch (err: FirestoreError | unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+            alert(`Failed to deactivate volunteer "${name}": ${errorMessage}`);
+            console.error(`Failed to deactivate volunteer ${id}:`, err);
+        } finally {
+            setIsModalOpen(false);
+            setItemToDelete(null);
+        }
+    };
+
+    const handleCancelDelete = () => {
+        setIsModalOpen(false);
+        setItemToDelete(null);
+        console.log("Volunteer deactivation cancelled by user.");
     };
 
     return (
         <div className="w-full min-h-screen p-4 font-inter bg-gray-50">
-            <style jsx global>{`
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-                html { scroll-behavior: smooth; }
-            `}</style>
+             <style jsx global>{`
+                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+                 html { scroll-behavior: smooth; }
+                 .custom-red-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+                 .custom-red-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+                 .custom-red-scrollbar::-webkit-scrollbar-thumb { background: #DC2626; border-radius: 10px; }
+                 .custom-red-scrollbar::-webkit-scrollbar-thumb:hover { background: #B91C1C; }
+                 .custom-red-scrollbar { scrollbar-width: thin; scrollbar-color: #DC2626 #f1f1f1; }
+             `}</style>
 
             <div className={'bg-red-800 p-6 rounded-lg mb-6 text-white shadow relative overflow-hidden'}>
                 <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-red-700 opacity-30 transform translate-x-1/4 -translate-y-1/4" aria-hidden="true"></div>
@@ -138,11 +200,11 @@ const VolunteersPage: React.FC = () => {
                         Manage and review volunteer profiles and activities on the platform.
                     </p>
                     <div className="flex flex-wrap justify-center items-center mt-4 space-x-2 sm:space-x-4">
-                        <NavTab label="Review Requests" href="/admin/review-requests" />
-                        <NavTab label="Dashboard" href="/admin/analytics" />
-                        <NavTab label="News Articles" href="/admin/news" />
-                        <NavTab label="Organizations" href="/admin/organizations" />
-                        <NavTab label="Volunteers" href="/admin/volunteers" active={true} />
+                         <NavTab label="Review Requests" href="/admin/review-requests" />
+                         <NavTab label="Dashboard" href="/admin/analytics" />
+                         <NavTab label="News Articles" href="/admin/news" />
+                         <NavTab label="Organizations" href="/admin/organizations" />
+                         <NavTab label="Volunteers" href="/admin/volunteers" active={true} />
                     </div>
                 </div>
             </div>
@@ -152,9 +214,9 @@ const VolunteersPage: React.FC = () => {
                     <h2 className="text-xl md:text-2xl font-semibold text-gray-800">Volunteer Management</h2>
                 </div>
 
-                <div className="overflow-x-auto rounded-md border border-red-300">
+                <div className="overflow-x-auto rounded-md border border-red-300 custom-red-scrollbar">
                     <table className="w-full min-w-[900px] table-auto border-collapse">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-50 sticky top-0 z-10">
                             <tr>
                                 <th className="px-4 py-3 text-center text-xs font-bold text-red-600 uppercase tracking-wider border-b border-r border-red-200 w-[5%]">#</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b border-r border-red-200 w-[20%]">Full Name</th>
@@ -167,28 +229,21 @@ const VolunteersPage: React.FC = () => {
                         </thead>
                         <tbody className="bg-white divide-y divide-red-200">
                             {isLoading ? (
-                                <tr key="loading">
-                                    <td colSpan={7} className="text-center py-10 px-4 text-gray-500">Loading volunteers...</td>
-                                </tr>
+                                <tr key="loading"><td colSpan={7} className="text-center py-10 px-4 text-gray-500">Loading volunteers...</td></tr>
                             ) : error ? (
-                                <tr key="error">
-                                    <td colSpan={7} className="text-center py-10 px-4 text-red-600 border border-red-200 bg-red-50">
-                                        <p className="font-semibold">Error Loading Volunteers</p>
-                                        <p>{error}</p>
-                                    </td>
-                                </tr>
+                                <tr key="error"><td colSpan={7} className="text-center py-10 px-4 text-red-600 border border-red-200 bg-red-50"><p className="font-semibold">Error Loading Volunteers</p><p>{error}</p></td></tr>
                             ) : volunteers.length > 0 ? (
                                 volunteers.map((volunteer, index) => (
                                     <tr key={volunteer.id} className="hover:bg-red-50 transition-colors duration-150 ease-in-out">
                                         <td className="px-4 py-2 text-sm font-bold text-red-600 text-center border-r border-red-200">{index + 1}</td>
                                         <td className="px-4 py-2 text-sm text-gray-800 font-medium border-r border-red-200">{volunteer.fullName}</td>
-                                        <td className="px-4 py-2 text-sm text-gray-600 whitespace-nowrap border-r border-red-200">{volunteer.contactNumber}</td>
+                                        <td className="px-4 py-2 text-sm text-gray-600 font-bold whitespace-nowrap border-r border-red-200">{volunteer.contactNumber}</td>
                                         <td className="px-4 py-2 text-sm text-gray-600 border-r border-red-200">{volunteer.organizationName}</td>
                                         <td className="px-4 py-2 text-sm text-gray-600 border-r border-red-200">{volunteer.address}</td>
-                                        <td className="px-4 py-2 text-sm text-gray-600 border-r border-red-200">{volunteer.email}</td>
+                                        <td className="px-4 py-2 text-sm text-gray-600 font-bold border-r border-red-200">{volunteer.email}</td>
                                         <td className="px-4 py-2 text-center whitespace-nowrap">
                                             <button
-                                                onClick={() => handleDeactivateClick(volunteer.id, volunteer.fullName)}
+                                                onClick={() => initiateDelete(volunteer.id, volunteer.fullName)} 
                                                 className="text-xs font-bold py-1 px-4 rounded-full transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-75 bg-red-600 hover:bg-red-700 text-white focus:ring-red-500"
                                                 aria-label={`Deactivate ${volunteer.fullName}`}
                                             >
@@ -198,14 +253,20 @@ const VolunteersPage: React.FC = () => {
                                     </tr>
                                 ))
                             ) : (
-                                <tr key="no-items">
-                                    <td colSpan={7} className="text-center py-10 px-4 text-gray-500">No volunteers found.</td>
-                                </tr>
+                                <tr key="no-items"><td colSpan={7} className="text-center py-10 px-4 text-gray-500">No volunteers found.</td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
             </div>
+
+             <ConfirmationModal
+                 isOpen={isModalOpen}
+                 onClose={handleCancelDelete}
+                 onConfirm={handleConfirmDelete}
+                 itemName={itemToDelete?.name || ''}
+             />
+
         </div>
     );
 };

@@ -20,6 +20,11 @@ type NewsItem = {
     status?: 'pending' | 'approved' | 'completed';
     imageUrl?: string;
     coordinates?: { latitude: number; longitude: number; };
+    timestamp?: FirebaseTimestamp | string;
+    submissionDate?: string;
+    submissionTime?: string;
+    address?: string;
+    name?: string;
 };
 
 function formatDateTimeClient(timestamp: FirebaseTimestamp | string | null | undefined, dateStr?: string, timeStr?: string): { date: string; time: string } {
@@ -28,7 +33,7 @@ function formatDateTimeClient(timestamp: FirebaseTimestamp | string | null | und
 
     if (timestamp && typeof timestamp === 'object' && 'toDate' in timestamp && typeof timestamp.toDate === 'function') {
         const dateObj = timestamp.toDate();
-        finalDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit'});
+        finalDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
         finalTime = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     } else if (typeof timestamp === 'string') {
         const parts = timestamp.split(' at ');
@@ -39,11 +44,11 @@ function formatDateTimeClient(timestamp: FirebaseTimestamp | string | null | und
                  if (timePartMatch) {
                      finalTime = timePartMatch[1];
                  } else {
-                      finalTime = parts[1].replace(/ UTC\+\d+$/, '');
+                     finalTime = parts[1].replace(/ UTC\+\d+$/, '');
                  }
              }
         } else if (!dateStr) {
-            finalDate = timestamp;
+             finalDate = timestamp;
         }
     } else if (dateStr && timeStr) {
         finalDate = dateStr;
@@ -51,21 +56,13 @@ function formatDateTimeClient(timestamp: FirebaseTimestamp | string | null | und
     }
 
     try {
-        if (finalDate && isNaN(Date.parse(finalDate)) && !/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(finalDate) && !/^[A-Za-z]+ \d{1,2}, \d{4}$/.test(finalDate) ) {
-             finalDate = finalDate || 'N/A';
-        } else if (finalDate) {
-             const d = new Date(finalDate);
-             if (!isNaN(d.getTime())) {
-                  finalDate = d.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit'});
-             } else {
-                   finalDate = finalDate || 'N/A';
-             }
+        if (finalDate && !/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(finalDate)) {
+            const d = new Date(finalDate);
+            if (!isNaN(d.getTime())) {
+                 finalDate = d.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            }
         }
     } catch (e) {
-       finalDate = finalDate || 'N/A';
-    }
-
-    if (finalTime && /^\d{1,2}:\d{2}$/.test(finalTime)) {
     }
 
     finalDate = finalDate || 'N/A';
@@ -85,11 +82,52 @@ const NavTab: React.FC<{ label: string; href: string; active?: boolean }> = ({ l
     );
 };
 
+interface ConfirmationModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    requesterName: string;
+}
+
+const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, onConfirm, requesterName }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900">Confirm Deletion</h3>
+                <p className="mb-6 text-gray-700">
+                    Are you sure you want to delete the request from <span className="font-bold">{requesterName}</span>? This action cannot be undone.
+                </p>
+                <div className="flex justify-end space-x-3">
+                    <button
+                        onClick={onClose}
+                        type="button"
+                        className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors text-sm font-medium"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        type="button"
+                        className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition-colors text-sm font-medium"
+                    >
+                        Confirm Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const NewsArticlePage: React.FC = () => {
     const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string } | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -107,38 +145,27 @@ const NewsArticlePage: React.FC = () => {
 
                 const fetchedRequests: NewsItem[] = querySnapshot.docs.map((doc) => {
                     const data = doc.data();
-
-                    const { date, time } = formatDateTimeClient(
-                        data.timestamp,
-                        data.submissionDate,
-                        data.submissionTime
-                    );
-
+                    const { date, time } = formatDateTimeClient(data.timestamp, data.submissionDate, data.submissionTime);
                     let location = 'Location Unavailable';
                     let coordinates: { latitude: number; longitude: number; } | undefined = undefined;
 
                     if (data.coordinates && typeof data.coordinates.latitude === 'number' && typeof data.coordinates.longitude === 'number') {
-                        const lat = data.coordinates.latitude;
-                        const lon = data.coordinates.longitude;
+                        const lat = data.coordinates.latitude; const lon = data.coordinates.longitude;
                         location = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
                         coordinates = { latitude: lat, longitude: lon };
-                    } else if (data.address && typeof data.address === 'string') {
-                        location = data.address;
+                    } else if (data.address && typeof data.address === 'string') { location = data.address;
                     } else if (data.coordinates && typeof data.coordinates === 'string') {
-                          const match = data.coordinates.match(/(\-?\d+\.?\d*)\s*[°]?\s*[NS],\s*(\-?\d+\.?\d*)\s*[°]?\s*[EW]/i);
-                          if (match && match.length === 3) {
-                              const lat = parseFloat(match[1]);
-                              const lon = parseFloat(match[2]);
-                              if (!isNaN(lat) && !isNaN(lon)) {
-                                  location = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
-                                  coordinates = { latitude: lat, longitude: lon };
-                              }
-                          }
-                     }
+                         const match = data.coordinates.match(/(\-?\d+\.?\d*)\s*[°]?\s*[NS],\s*(\-?\d+\.?\d*)\s*[°]?\s*[EW]/i);
+                         if (match && match.length === 3) {
+                             const lat = parseFloat(match[1]); const lon = parseFloat(match[2]);
+                             if (!isNaN(lat) && !isNaN(lon)) {
+                                 location = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
+                                 coordinates = { latitude: lat, longitude: lon };
+                             }
+                         }
+                    }
 
-                    const status: NewsItem['status'] = ['pending', 'approved', 'completed'].includes(data.status)
-                         ? data.status
-                         : 'pending';
+                    const status: NewsItem['status'] = ['pending', 'approved', 'completed'].includes(data.status) ? data.status : 'pending';
                     const shortDesc: string = data.shortDesc || '';
 
                     return {
@@ -156,28 +183,23 @@ const NewsArticlePage: React.FC = () => {
                         coordinates: coordinates,
                     };
                 });
-
                 setNewsItems(fetchedRequests);
-
             } catch (err) {
-                let specificError = "An unknown error occurred.";
-                if (err instanceof Error) {
-                    specificError = err.message;
-                } else if (typeof err === 'string') {
-                    specificError = err;
-                } else if (err && typeof err === 'object' && 'code' in err) {
-                    const firestoreError = err as FirestoreError;
-                    specificError = `Firestore error (${firestoreError.code}): ${firestoreError.message}`;
-                    if (firestoreError.code === 'failed-precondition' && specificError.includes('index')) {
-                        specificError += " Ensure the required Firestore index is created.";
-                    }
-                }
-                setError(`Failed to load news: ${specificError}. Please check console for details.`);
+                 let specificError = "An unknown error occurred.";
+                 if (err instanceof Error) { specificError = err.message;
+                 } else if (typeof err === 'string') { specificError = err;
+                 } else if (err && typeof err === 'object' && 'code' in err) {
+                     const firestoreError = err as FirestoreError;
+                     specificError = `Firestore error (${firestoreError.code}): ${firestoreError.message}`;
+                     if (firestoreError.code === 'failed-precondition' && specificError.includes('index')) {
+                         specificError += " Ensure the required Firestore index is created.";
+                     }
+                 }
+                 setError(`Failed to load news: ${specificError}. Please check console for details.`);
             } finally {
                 setIsLoading(false);
             }
         };
-
         fetchData();
     }, []);
 
@@ -185,54 +207,71 @@ const NewsArticlePage: React.FC = () => {
         router.push(`/admin/news/edit/${id}`);
     };
 
-    const handleDelete = async (id: string) => {
-        const itemToDelete = newsItems.find(item => item.id === id);
-        const confirmMessage = itemToDelete
-            ? `Are you sure you want to delete the request: ${itemToDelete.calamityType} - ${itemToDelete.calamityLevel} (ID: ${id})?`
-            : `Are you sure you want to delete this item (ID: ${id})? This action cannot be undone.`;
+    const initiateDelete = (id: string, name: string) => {
+        const item = newsItems.find(i => i.id === id);
+        const requesterName = item?.requesterName || name || 'this item';
+        setItemToDelete({ id, name: requesterName });
+        setIsModalOpen(true);
+    };
 
-        if (window.confirm(confirmMessage)) {
-            try {
-                if (!db) throw new Error("Firestore is not available.");
-                await deleteDoc(doc(db, 'aidRequest', id));
-                setNewsItems(prevItems => prevItems.filter(item => item.id !== id));
-                alert(`Item ${id} deleted successfully.`);
-            } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-                setError(`Failed to delete item ${id}. ${errorMessage}`);
-                alert(`Error deleting item ${id}. Error: ${errorMessage}. See console for details.`);
-            }
+    const handleConfirmDelete = async () => {
+        if (!itemToDelete || !db) {
+            alert("Error: Could not delete. Item details missing or Firestore not initialized.");
+            setIsModalOpen(false);
+            setItemToDelete(null);
+            return;
         }
+
+        const { id, name } = itemToDelete;
+
+        try {
+            await deleteDoc(doc(db, 'aidRequest', id));
+            setNewsItems(prevItems => prevItems.filter(item => item.id !== id));
+            alert(`Request from ${name} (ID: ${id}) deleted successfully.`);
+        } catch (error) {
+            console.error(`Error deleting item ${id}:`, error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            setError(`Failed to delete item ${id}. ${errorMessage}`);
+            alert(`Error deleting request from ${name} (ID: ${id}). Error: ${errorMessage}. See console for details.`);
+        } finally {
+            setIsModalOpen(false);
+            setItemToDelete(null);
+        }
+    };
+
+    const handleCancelDelete = () => {
+        setIsModalOpen(false);
+        setItemToDelete(null);
     };
 
     return (
         <div className="w-full min-h-screen p-4 font-inter bg-gray-50">
             <style jsx global>{`
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-                html { scroll-behavior: smooth; }
-                .custom-red-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-                .custom-red-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-                .custom-red-scrollbar::-webkit-scrollbar-thumb { background: #DC2626; }
-                .custom-red-scrollbar::-webkit-scrollbar-thumb:hover { background: #B91C1C; }
-                .custom-red-scrollbar { scrollbar-width: thin; scrollbar-color: #DC2626 #f1f1f1; }
-            `}</style>
+                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+                 html { scroll-behavior: smooth; }
+                 .custom-red-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+                 .custom-red-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+                 .custom-red-scrollbar::-webkit-scrollbar-thumb { background: #DC2626; border-radius: 10px; }
+                 .custom-red-scrollbar::-webkit-scrollbar-thumb:hover { background: #B91C1C; }
+                 .custom-red-scrollbar { scrollbar-width: thin; scrollbar-color: #DC2626 #f1f1f1; }
+             `}</style>
 
             <div className={'bg-red-800 p-6 rounded-lg mb-6 text-white shadow relative overflow-hidden'}>
-                <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-red-700 opacity-30 transform translate-x-1/4 -translate-y-1/4" aria-hidden="true"></div>
-                <div className="absolute top-10 right-20 w-40 h-40 rounded-full bg-red-600 opacity-20" aria-hidden="true"></div>
-                <div className="relative z-10">
-                     <h1 className="text-3xl font-bold mb-2">Hello Admin!</h1>
-                     <p className="text-base text-gray-200 font-medium mb-4 text-center md:text-left">
-                          Manage and review news articles (aid requests) for the platform. Edit or delete requests as needed.
-                     </p>
-                     <div className="flex flex-wrap justify-center items-center mt-4 space-x-2 sm:space-x-4">
-                         <NavTab label="Review Requests" href="/admin/review-requests" />
-                         <NavTab label="Dashboard" href="/admin/analytics" />
-                         <NavTab label="News Articles" href="/admin/news" active />
-                         <NavTab label="Organizations" href="/admin/organizations" />
-                         <NavTab label="Volunteers" href="/admin/volunteers" />
-                     </div>
-                 </div>
+                 <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-red-700 opacity-30 transform translate-x-1/4 -translate-y-1/4" aria-hidden="true"></div>
+                 <div className="absolute top-10 right-20 w-40 h-40 rounded-full bg-red-600 opacity-20" aria-hidden="true"></div>
+                 <div className="relative z-10">
+                      <h1 className="text-3xl font-bold mb-2">Hello Admin!</h1>
+                      <p className="text-base text-gray-200 font-medium mb-4 text-center md:text-left">
+                           Manage and review news articles (aid requests) for the platform. Edit or delete requests as needed.
+                      </p>
+                      <div className="flex flex-wrap justify-center items-center mt-4 space-x-2 sm:space-x-4">
+                           <NavTab label="Review Requests" href="/admin/review-requests" />
+                           <NavTab label="Dashboard" href="/admin/analytics" />
+                           <NavTab label="News Articles" href="/admin/news" active />
+                           <NavTab label="Organizations" href="/admin/organizations" />
+                           <NavTab label="Volunteers" href="/admin/volunteers" />
+                      </div>
+                  </div>
              </div>
 
             <div className="bg-white p-4 md:p-6 rounded-lg shadow-md border border-gray-200">
@@ -240,91 +279,89 @@ const NewsArticlePage: React.FC = () => {
                     <h2 className="text-xl md:text-2xl font-semibold text-gray-800">News Feed Management (Aid Requests)</h2>
                 </div>
 
-                {isLoading ? (
-                    <div className="p-10 text-center text-gray-600">Loading news articles... Please wait.</div>
-                ) : error ? (
-                    <div className="p-6 text-center text-red-700 border border-red-300 bg-red-50 rounded-md">
-                        <p className="font-semibold text-lg">Error Loading News</p>
-                        <p className="mt-2 text-sm">{error}</p>
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto overflow-y-auto max-h-[75vh] custom-red-scrollbar rounded-md overflow-hidden border-2 border-orange-500">
-                        <table className="w-full min-w-[700px] table-auto border-collapse">
-                            <thead className="bg-gray-100 sticky top-0 z-10">
-                                <tr>
-                                    <th className="px-3 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[5%]">#</th>
-                                    <th className="px-3 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[13%]">News Title</th>
-                                    <th className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[12%]">Actual Condition</th>
-                                    <th className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[10%]">Classification</th>
-                                    <th className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[10%]">Calamity Level</th>
-                                    <th className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[13%]">Short Description</th>
-                                    <th className="px-3 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[15%]">Location (Coords/Address)</th>
-                                    <th className="px-3 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[10%]">Date & Time</th>
-                                    <th className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-gray-700 tracking-wider w-[12%]">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-orange-200">
-                                {newsItems.length > 0
-                                    ? newsItems.map((item, index) => (
-                                        <tr key={item.id} className="hover:bg-orange-50 transition-colors duration-150 ease-in-out">
-                                            <td className="px-3 py-2 text-sm font-bold text-orange-600 align-top border-r border-orange-200">{index + 1}</td>
-                                            <td className="px-3 py-2 text-sm text-gray-800 font-bold align-top border-r border-orange-200">
-                                                <Link href={`/news/${item.id}`} className="hover:underline" legacyBehavior={false}>
-                                                    {`${item.calamityType} - ${item.calamityLevel}`}
-                                                </Link>
-                                            </td>
-                                            <td className="px-3 py-2 text-sm text-gray-600 align-middle text-center border-r border-orange-200">
-                                                {item.imageUrl ? (
-                                                    <Image
-                                                        src={item.imageUrl}
-                                                        alt={`Condition for ${item.calamityType} request ${item.id}`}
-                                                        width={64}
-                                                        height={64}
-                                                        className="inline-block object-cover rounded"
-                                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                                    />
-                                                ) : (
-                                                    <span className="text-xs text-gray-400">No Image</span>
-                                                )}
-                                            </td>
-                                            <td className="px-3 py-2 text-sm text-gray-600 align-top text-center border-r border-orange-200">{item.calamityType}</td>
-                                            <td className="px-3 py-2 text-sm text-gray-600 font-bold align-top text-center border-r border-orange-200">{item.calamityLevel}</td>
-                                            <td className="px-3 py-2 text-sm text-gray-600 max-w-[12rem] truncate align-top border-r border-orange-200" title={item.shortDesc || ''}>
-                                                {item.shortDesc || 'N/A'}
-                                            </td>
-                                            <td className="px-3 py-2 text-sm text-gray-600 align-top border-r border-orange-200 min-w-[12rem]">{item.location}</td>
-                                            <td className="px-3 py-2 text-sm text-gray-600 whitespace-nowrap align-top border-r border-orange-200">{`${item.date} ${item.time}`}</td>
-                                            <td className="px-3 py-2 text-sm text-center whitespace-nowrap align-top">
-                                                <button
-                                                    onClick={() => handleEdit(item.id)}
-                                                    className="bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-1 px-3 rounded-full mr-1 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
-                                                    aria-label={`Edit ${item.calamityType} - ${item.id}`}
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(item.id)}
-                                                    className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-3 rounded-full transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75"
-                                                    aria-label={`Delete ${item.calamityType} - ${item.id}`}
-                                                >
-                                                   Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                    : (
-                                        <tr key="no-items">
-                                            <td colSpan={9} className="text-center py-10 px-3 text-gray-500">
-                                                No news articles (aid requests) found.
-                                            </td>
-                                        </tr>
-                                    )
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                 {isLoading ? (
+                     <div className="p-10 text-center text-gray-600">Loading news articles... Please wait.</div>
+                 ) : error ? (
+                     <div className="p-6 text-center text-red-700 border border-red-300 bg-red-50 rounded-md">
+                         <p className="font-semibold text-lg">Error Loading News</p>
+                         <p className="mt-2 text-sm">{error}</p>
+                     </div>
+                 ) : (
+                     <div className="overflow-x-auto overflow-y-auto max-h-[75vh] custom-red-scrollbar rounded-md overflow-hidden border-2 border-orange-500">
+                         <table className="w-full min-w-[700px] table-auto border-collapse">
+                             <thead className="bg-gray-100 sticky top-0 z-10">
+                                 <tr>
+                                      <th className="px-3 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[5%]">#</th>
+                                      <th className="px-3 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[13%]">News Title</th>
+                                      <th className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[12%]">Actual Condition</th>
+                                      <th className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[10%]">Classification</th>
+                                      <th className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[10%]">Calamity Level</th>
+                                      <th className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[13%]">Short Description</th>
+                                      <th className="px-3 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[15%]">Location (Coords/Address)</th>
+                                      <th className="px-3 py-2 text-left text-xs sm:text-sm font-semibold text-gray-700 tracking-wider border-r border-orange-200 w-[10%]">Date & Time</th>
+                                      <th className="px-3 py-2 text-center text-xs sm:text-sm font-semibold text-gray-700 tracking-wider w-[12%]">Actions</th>
+                                  </tr>
+                             </thead>
+                             <tbody className="bg-white divide-y divide-orange-200">
+                                 {newsItems.length > 0
+                                     ? newsItems.map((item, index) => (
+                                         <tr key={item.id} className="hover:bg-orange-50 transition-colors duration-150 ease-in-out">
+                                             <td className="px-3 py-2 text-sm font-bold text-orange-600 align-top border-r border-orange-200">{index + 1}</td>
+                                             <td className="px-3 py-2 text-sm text-gray-800 font-bold align-top border-r border-orange-200">
+                                                 <Link href={`/news/${item.id}`} className="hover:underline" legacyBehavior={false}>
+                                                      {`${item.calamityType} - ${item.calamityLevel}`}
+                                                 </Link>
+                                             </td>
+                                             <td className="px-3 py-2 text-sm text-gray-600 align-middle text-center border-r border-orange-200">
+                                                 {item.imageUrl ? (
+                                                     <Image 
+                                                          src={item.imageUrl} alt={`Condition for ${item.calamityType} request ${item.id}`}
+                                                          width={64} height={64} className="inline-block object-cover rounded"
+                                                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}/>)
+                                                 : ( <span className="text-xs text-gray-400">No Image</span> )}
+                                             </td>
+                                             <td className="px-3 py-2 text-sm text-gray-600 align-top text-center border-r border-orange-200">{item.calamityType}</td>
+                                             <td className="px-3 py-2 text-sm text-gray-600 font-bold align-top text-center border-r border-orange-200">{item.calamityLevel}</td>
+                                             <td className="px-3 py-2 text-sm text-gray-600 max-w-[12rem] truncate align-top border-r border-orange-200" title={item.shortDesc || ''}>
+                                                 {item.shortDesc || 'N/A'}
+                                             </td>
+                                             <td className="px-3 py-2 text-sm text-gray-600 align-top border-r border-orange-200 min-w-[12rem]">{item.location}</td>
+                                             <td className="px-3 py-2 text-sm text-gray-600 whitespace-nowrap align-top border-r border-orange-200">{`${item.date} ${item.time}`}</td>
+                                             <td className="px-3 py-2 text-sm text-center whitespace-nowrap align-top">
+                                                 <button
+                                                     onClick={() => handleEdit(item.id)}
+                                                     className="bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-1 px-3 rounded-full mr-1 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
+                                                     aria-label={`Edit request from ${item.requesterName} (ID: ${item.id})`}
+                                                 > Edit </button>
+                                                 <button
+                                                     onClick={() => initiateDelete(item.id, item.requesterName)}
+                                                     className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-3 rounded-full transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75"
+                                                     aria-label={`Delete request from ${item.requesterName} (ID: ${item.id})`}
+                                                 > Delete </button>
+                                             </td>
+                                         </tr>
+                                     ))
+                                     : (
+                                         <tr key="no-items">
+                                             <td colSpan={9} className="text-center py-10 px-3 text-gray-500">
+                                                 No news articles (aid requests) found.
+                                             </td>
+                                         </tr>
+                                     )
+                                 }
+                             </tbody>
+                         </table>
+                     </div>
                  )}
             </div>
+
+            <ConfirmationModal
+                isOpen={isModalOpen}
+                onClose={handleCancelDelete}
+                onConfirm={handleConfirmDelete}
+                requesterName={itemToDelete?.name || ''}
+            />
+
         </div>
     );
 };
