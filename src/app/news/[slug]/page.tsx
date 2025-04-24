@@ -318,7 +318,6 @@ export default async function NewsPage({
                 imageUrl={newsItem.imageUrl}
                 altText={newsItem.title}
               />
-              <StatusCard formattedDate={formattedDate} />
               {isOrganizationLoggedIn && organizationCoordinates && (
                 <DetailCard title="Your Location Proximity">
                   <DetailItem
@@ -393,16 +392,6 @@ const DetailItem = ({
 );
 
 // ImageCard definition is removed (should be imported)
-
-const StatusCard = ({ formattedDate }: { formattedDate: string }) => (
-  <DetailCard title="Request Status">
-    <div className="flex items-center mb-2">
-      <span className="h-3 w-3 bg-yellow-500 rounded-full mr-2 animate-pulse"></span>
-      <p className="text-black font-medium">Pending Assessment</p>
-    </div>
-    <p className="text-black text-xs">Last update approx: {formattedDate}</p>
-  </DetailCard>
-);
 
 const EmergencyContacts = () => (
   <DetailCard title="Emergency Contacts">
