@@ -1,8 +1,9 @@
+// src/types/types.ts
 import type { Timestamp } from 'firebase/firestore';
 
 export interface DefaultPin {
   coordinates: { latitude: number; longitude: number };
-  id: string;
+  id: string; // Add id if it's always expected
 }
 
 export interface MainPin extends DefaultPin {
@@ -10,7 +11,7 @@ export interface MainPin extends DefaultPin {
   date?: Timestamp;
 }
 
-export interface RequestPin extends DefaultPin {
+export interface RequestPin extends DefaultPin { // Ensure DefaultPin includes id if needed
   name?: string;
   contactNum?: string;
   date?: Timestamp;
@@ -20,4 +21,5 @@ export interface RequestPin extends DefaultPin {
   imageURL?: string;
   submissionDate?: string;
   submissionTime?: string;
+  aidNeeded?: string; // <-- ADDED: For the selected aid type
 }

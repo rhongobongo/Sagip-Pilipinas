@@ -9,13 +9,7 @@ import { getAuthTokens } from '@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdg
 import { setAdminRole } from '@/actions/example/setAdminRole';
 
 export default async function Home() {
-  const cookieStore = await cookies();
-  const token = await getAuthTokens(cookieStore);
 
-  if (token) {
-    const decodedToken = token.decodedToken;
-    setAdminRole(decodedToken.uid);
-  }
 
   return (
     <div>

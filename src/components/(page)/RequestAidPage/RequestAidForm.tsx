@@ -29,7 +29,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   const [calamityLevel, setCalamityLevel] = useState('');
   const [calamityType, setCalamityType] = useState('');
   const [otherCalamity, setOtherCalamity] = useState('');
-  const [aidRequestDesc, setAidRequestDesc] = useState(''); // Renamed state variable
+const [aidNeeded, setAidNeeded] = useState('');
   const [otherAidRequest, setOtherAidRequest] = useState('');
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
@@ -158,6 +158,20 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
     setIsConfirmationOpen(true);
   };
 
+  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 1. Get the raw input value
+    const rawValue = e.target.value;
+
+    // 2. Remove any character that is NOT a digit (0-9)
+    const numericValue = rawValue.replace(/[^0-9]/g, '');
+
+    // 3. Limit the length to 10 digits
+    const limitedValue = numericValue.slice(0, 10);
+
+    // 4. Update the state only with the cleaned, limited numeric value
+    setContactNum(limitedValue); // Updates your existing contactNum state
+  };
+
   const cancelSubmission = () => {
     setIsConfirmationOpen(false);
   };
@@ -224,6 +238,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
         submissionDate: formattedDate,
         submissionTime: formattedTime,
         coordinates: { latitude: latitude!, longitude: longitude! }, // Use confirmed non-null coords
+        aidNeeded: aidNeeded === 'other' ? otherAidRequest : aidNeeded,
       };
 
       // --- 4. Submit Aid Request to Firestore & Get ID ---
@@ -396,9 +411,13 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
             </label>
             <input
               type="text"
+              inputMode="numeric" // Explicitly suggest numeric keypad
+              pattern="[0-9]*" //Optional: helps with form validation, reinforces numeric input
+              maxLength={10} // HTML attribute to limit input length
+              placeholder="+63 | 9123456789"
               value={contactNum}
-              onChange={(e) => setContactNum(e.target.value)}
-              className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
+              onChange={handleContactChange}
+              className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none placeholder:text-gray-400"
               required
             />
           </div>
@@ -477,8 +496,8 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
               Aid Needed:
             </label>
             <select
-              value={aidRequestDesc}
-              onChange={(e) => setAidRequestDesc(e.target.value)}
+              value={aidNeeded}
+              onChange={(e) => setAidNeeded(e.target.value)}
               className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
               required
             >
@@ -492,7 +511,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
               <option value="other">Other</option>
             </select>
           </div>
-          {aidRequestDesc === 'other' && (
+          {aidNeeded === 'other' && (
             <div className=" items-center mt-2">
               <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
                 Specify Aid:
