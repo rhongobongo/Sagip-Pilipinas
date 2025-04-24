@@ -200,7 +200,7 @@ export default async function NewsPage({
                 <IoCloseCircleOutline className="h-16 w-16" />
               </Link>
             </div>
-            
+
             <p className="text-sm">Posted on: {formattedDate}</p>
           </header>
 
@@ -296,7 +296,7 @@ export default async function NewsPage({
               </section>
 
               {/* Additional Info / Summary */}
-              <section className="mb-6 w-[1080px]">
+              <section className="mb-6">
                 <h2 className="text-xl font-semibold mb-3 text-white">
                   Summary
                 </h2>
