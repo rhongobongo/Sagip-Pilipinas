@@ -256,8 +256,8 @@ const AidRequestsPage: React.FC = () => {
                      Track real-time insights and performance metrics to make informed decisions. Explore user activity, disaster reports, and aid distribution data all in one place.
                  </p>
                  <div className="flex flex-wrap justify-center items-center mt-4 space-x-4 relative z-10">
-                     <NavTab label="Review Requests" href="/admin/review-requests" />
-                     <NavTab label="Dashboard" href="/admin/analytics" active />
+                     <NavTab label="Review Requests" href="/admin/review-requests" active/>
+                     <NavTab label="Dashboard" href="/admin/analytics" />
                      <NavTab label="News Articles" href="/admin/news" />
                      <NavTab label="Organizations" href="/admin/organizations" />
                      <NavTab label="Volunteers" href="/admin/volunteers" />
