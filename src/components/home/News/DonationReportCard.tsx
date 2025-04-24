@@ -24,7 +24,7 @@ const linkHref = `/donations/${item.donationId || item.id}`;
   const summary = `Donation by ${item.organizationName || 'an organization'}. Items: ${item.donatedTypes.join(', ') || 'various'}. Responding to ${item.calamityType || 'an event'}.`;
 
   return (
-    <Link href={linkHref} key={item.id}>
+    <Link href={`/donation/${item.id}`} key={item.id}>
       <div className="border-2 border-black rounded-2xl hover:shadow-[0px_10px_30px_rgba(0,0,0,0.7)] transition-shadow duration-300 bg-[#f3f3f3] p-4 h-full flex flex-col">
         <div className="relative h-48 mb-4">
           {item.requestImageUrl ? (

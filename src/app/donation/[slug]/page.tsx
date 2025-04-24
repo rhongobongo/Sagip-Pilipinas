@@ -146,7 +146,7 @@ export default async function DonationPage({
       id="main-content-area"
       className="mx-auto lg:py-6 bg-[#fffdfd] shadow-sm text-black transition-all duration-300"
     >
-      <div className="bg-[#0047AB] p-6 w-full lg:w-3/4 lg:rounded-xl mx-auto lg:h-full">
+      <div className="bg-[#B0022A] p-6 w-full lg:w-3/4 lg:rounded-xl mx-auto lg:h-full">
         <article>
           <header className="mb-4 text-white">
             <h1 className="text-3xl font-bold mb-2">Donation: {donationItem.title}</h1>
@@ -164,7 +164,7 @@ export default async function DonationPage({
             {/* Main Content Area */}
             <div className="w-full lg:w-2/3">
               {/* Donation Details */}
-              <section className="mb-6 rounded-xl p-4 bg-[#003785] border border-black">
+              <section className="mb-6 rounded-xl p-4 bg-[#8F0022] border border-black">
                 <h2 className="text-xl font-semibold mb-3 text-white tracking wide">
                   DONATION OVERVIEW
                 </h2>
@@ -172,7 +172,7 @@ export default async function DonationPage({
                   <DetailCard
                     title={'Donation Information'}
                     titleStyle={{ fontWeight: 'bold' }}
-                    titleColor="#003785"
+                    titleColor="#8F0022"
                   >
                     <DetailItem label="Items Donated" value={donationItem.donationType} />
                     <DetailItem label="Date Donated" value={formattedDate} />
@@ -182,7 +182,7 @@ export default async function DonationPage({
                   <DetailCard
                     title={'Donor Information'}
                     titleStyle={{ fontWeight: 'bold' }}
-                    titleColor="#003785"
+                    titleColor="#8F0022"
                   >
                     <DetailItem label="Organization" value={donationItem.organizationName} />
                     <DetailItem label="Contact" value={donationItem.organizationContact} />
@@ -192,7 +192,8 @@ export default async function DonationPage({
                     <DetailCard
                       title={'Aid Request Information'}
                       titleStyle={{ fontWeight: 'bold' }}
-                      titleColor="#003785"
+                      titleColor="#8F0022"
+                      fullWidth
                     >
                       <DetailItem label="Calamity Type" value={donationItem.calamityType} />
                       <DetailItem label="Calamity Level" value={donationItem.calamityLevel} />
@@ -203,7 +204,7 @@ export default async function DonationPage({
                     <DetailCard
                       title={'Delivery Location'}
                       titleStyle={{ fontWeight: 'bold' }}
-                      titleColor="#003785"
+                      titleColor="#8F0022"
                       fullWidth
                     >
                       <DetailItem
