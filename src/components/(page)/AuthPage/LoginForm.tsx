@@ -25,6 +25,7 @@ const LoginForm: React.FC = () => {
   const handleLoginSuccess = async (idToken: string) => {
     try {
       await loginWithCredentials(idToken);
+      router.push('/');
       toast.success('Login Successful! Redirecting...', { duration: 2000 });
       router.push('/');
       setTimeout(() => {
