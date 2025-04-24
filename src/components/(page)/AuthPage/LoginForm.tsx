@@ -29,8 +29,7 @@ const LoginForm: React.FC = () => {
       router.push('/');
       setTimeout(() => {
         document.location.reload();
-      }, 700);
-      
+      }, 1000);
     } catch (backendError) {
       console.error('Backend login error:', backendError);
       let backendErrorMessage = 'Login failed during server verification.';
