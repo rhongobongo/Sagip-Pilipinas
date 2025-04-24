@@ -8,6 +8,9 @@ import { cookies } from 'next/headers';
 import ClientMapWrapper from '@/components/map/ClientMapWrapper';
 import ScrollToMainOnLoad from '@/components/utils/ScrollToMainOnLoad';
 
+import Link from 'next/link';
+import { IoCloseCircleOutline } from 'react-icons/io5';
+
 // Reuse the existing coordinate interfaces
 interface Coordinates {
   latitude: number;
@@ -77,24 +80,24 @@ export default async function DonationPage({
       console.error(`[Error] Donation with slug ${slug} not found.`);
       return notFound();
     }
-    
+
     donationData = donationSnapshot.data() ?? {};
-    
+
     // Fetch linked aid request data if available
     if (donationData.aidRequestId) {
       const aidRequestRef = db.collection('aidRequest').doc(donationData.aidRequestId);
       const aidRequestSnapshot = await aidRequestRef.get();
-      
+
       if (aidRequestSnapshot.exists) {
         linkedAidRequestData = aidRequestSnapshot.data() ?? {};
       }
     }
-    
+
     // Fetch organization data
     if (donationData.organizationId) {
       const orgRef = db.collection('organizations').doc(donationData.organizationId);
       const orgSnapshot = await orgRef.get();
-      
+
       if (orgSnapshot.exists) {
         organizationData = orgSnapshot.data() ?? {};
       }
@@ -105,7 +108,7 @@ export default async function DonationPage({
   }
 
   // --- Process Donation Data ---
-  const donationTypes = donationData?.donationTypes 
+  const donationTypes = donationData?.donationTypes
     ? Object.keys(donationData.donationTypes).filter(type => donationData.donationTypes[type])
     : [];
 
@@ -123,7 +126,7 @@ export default async function DonationPage({
     calamityLevel: linkedAidRequestData?.calamityLevel || 'Not specified',
     organizationName: organizationData?.name || donationData?.organizationName || 'Anonymous Donor',
     organizationContact: organizationData?.phoneNumber || donationData?.contactInfo || 'Not provided',
-    coordinates: linkedAidRequestData?.coordinates 
+    coordinates: linkedAidRequestData?.coordinates
       ? getCoords(linkedAidRequestData.coordinates)
       : null,
     aidRequestId: donationData?.aidRequestId || null,
@@ -132,12 +135,12 @@ export default async function DonationPage({
 
   const formattedDate = donationItem.timestamp
     ? new Date(donationItem.timestamp).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
     : 'Date unavailable';
 
   // --- Render Donation Detail Page ---
@@ -149,7 +152,18 @@ export default async function DonationPage({
       <div className="bg-[#B0022A] p-6 w-full lg:w-3/4 lg:rounded-xl mx-auto lg:h-full">
         <article>
           <header className="mb-4 text-white">
-            <h1 className="text-3xl font-bold mb-2">Donation: {donationItem.title}</h1>
+
+            {/*for back button na circle*/}
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-3xl font-bold mb-2"> Donation: {donationItem.title}</h1>              <Link
+                href="/" //padulong ni home
+                className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200" // Adjusted hover for icon
+                aria-label="Back to News Feed"
+              >
+                <IoCloseCircleOutline className="h-16 w-16" />
+              </Link>
+            </div>
+
             <p className="text-sm">Donated on: {formattedDate}</p>
             {donationItem.aidRequestId && (
               <p className="text-sm mt-2">
@@ -274,13 +288,13 @@ export default async function DonationPage({
                 imageUrl={donationItem.imageUrl}
                 altText={`Donation for ${donationItem.title}`}
               />
-              
-              <StatusCard 
-                status="Donation Recorded" 
-                formattedDate={formattedDate} 
+
+              <StatusCard
+                status="Donation Recorded"
+                formattedDate={formattedDate}
                 estimatedDropoff={donationItem.estimatedDropoffDate}
               />
-              
+
               <ThankYouMessage organizationName={donationItem.organizationName} />
             </aside>
           </div>
@@ -338,12 +352,12 @@ const DetailItem = ({
   </p>
 );
 
-const StatusCard = ({ 
-  status, 
+const StatusCard = ({
+  status,
   formattedDate,
   estimatedDropoff
-}: { 
-  status: string; 
+}: {
+  status: string;
   formattedDate: string;
   estimatedDropoff: string;
 }) => (
