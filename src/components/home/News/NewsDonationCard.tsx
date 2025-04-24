@@ -1,54 +1,87 @@
+// src/components/DonationReportCard.tsx
 import Image from 'next/image';
 import Link from 'next/link';
+import type { DonationReportItem } from '@/types/reportTypes'; // Adjust path if needed
 
-export interface DonationItem {
-  id: string;
-  title: string;
-  summary: string;
-  imageUrl: string | null;
-  timestamp: string;
-  calamityType: string;
-  calamityLevel: string;
-  slug: string;
-}
+// Helper function to format the timestamp (optional)
+const formatDateTime = (isoString: string) => {
+  if (!isoString) return 'N/A';
+  try {
+    return new Date(isoString).toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      // hour: 'numeric',
+      // minute: '2-digit',
+    });
+  } catch (e) {
+    return 'Invalid Date';
+  }
+};
 
-const NewsCard = ({ item }: { item: DonationItem }) => {
+const DonationReportCard = ({ item }: { item: DonationReportItem }) => {
+  // THE KEY CHANGE: Link to donations/[id] instead of news/[aidRequestId]
+  // Use the donation ID as the slug for the donation detail page
+ // In DonationReportCard.tsx
+const linkHref = `/donations/${item.donationId || item.id}`;
+
+  // Construct a dynamic summary
+  const summary = `Donation by ${item.organizationName || 'an organization'}. Items: ${item.donatedTypes.join(', ') || 'various'}. Responding to ${item.calamityType || 'an event'}.`;
+
   return (
-    <Link href={`/news/${item.slug}`} key={item.id}>
-      <div className="border-2 border-black rounded-2xl hover:shadow-[0px_10px_30px_rgba(0,0,0,0.7)] transition-shadow duration-300 bg-[#f3f3f3] p-4">
-        <div className="relative h-48">
-          {item.imageUrl ? (
+    <Link href={linkHref} key={item.id}>
+      <div className="border-2 border-black rounded-2xl hover:shadow-[0px_10px_30px_rgba(0,0,0,0.7)] transition-shadow duration-300 bg-[#f3f3f3] p-4 h-full flex flex-col">
+        <div className="relative h-48 mb-4">
+          {item.requestImageUrl ? (
             <Image
-              src={item.imageUrl}
-              alt={item.title || 'News image'}
+              src={item.requestImageUrl}
+              alt={item.title || 'Aid request image'}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="rounded-2xl border-2 border-black "
+              className="rounded-2xl border-2 border-black object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-black">
-              <span className="text-black">{item.calamityType || 'News'}</span>
+            <div className="w-full h-full bg-gray-300 flex items-center justify-center text-black rounded-2xl border-2 border-black">
+              <span className="text-black">{item.calamityType || 'Event'}</span>
             </div>
           )}
-          {item.calamityLevel && ( //Notification-like circle
-            <div className="absolute top-1 right-1 bg-red-500 text-white text-lg px-3 py-1 rounded-full font-bold">
-              {item.calamityLevel}
+          {item.calamityLevel && (
+            <div className="absolute top-1 right-1 bg-red-500 text-white text-sm px-2 py-0.5 rounded-full font-semibold shadow-md">
+              Level: {item.calamityLevel}
             </div>
           )}
+          {/* Badge for Donation */}
+          <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-md">
+            Donation Report
+          </div>
         </div>
 
-        <div className="p-1">
-          <div className="p-3 rounded-md">
-            <h2 className="text-black font-medium text-lg truncate mb-2">
-              {item.title || 'News Title'}
+        {/* Content Area */}
+        <div className="flex-grow p-1 flex flex-col justify-between">
+          <div>
+            <h2 className="text-black font-semibold text-lg truncate mb-1" title={item.title}>
+              {item.title || 'Aid Request'}
             </h2>
-            <p className="text-black text-sm line-clamp-4">
-              {item.summary || 'No summary available'}
+            <p className="text-gray-700 text-xs mb-2">
+              by <span className="font-medium">{item.organizationName || 'Unknown Org'}</span>
             </p>
+            <p className="text-black text-sm line-clamp-3 mb-3">
+              {item.donationSummary || summary}
+            </p>
+            <p className="text-gray-600 text-xs mb-2">
+              Donated Items: <span className="font-medium">{item.donatedTypes.join(', ') || 'N/A'}</span>
+            </p>
+          </div>
 
-            {item.timestamp && (
-              <div className="flex justify-end items-center text-xs text-black mt-2">
-                <span>{item.timestamp}</span>
+          <div>
+            <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
+              <span>Request: {formatDateTime(item.requestTimestamp)}</span>
+              <span>Donated: {formatDateTime(item.donationTimestamp)}</span>
+            </div>
+            {/* Optional: Estimated Drop-off */}
+            {item.estimatedDropoffDate && (
+              <div className="text-right text-xs text-gray-500 mt-1">
+                Est. Drop-off: {item.estimatedDropoffDate}
               </div>
             )}
           </div>
@@ -58,4 +91,4 @@ const NewsCard = ({ item }: { item: DonationItem }) => {
   );
 };
 
-export default NewsCard;
+export default DonationReportCard;

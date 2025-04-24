@@ -1,59 +1,70 @@
 'use client';
-
-import React, { useState, useEffect, useRef, RefObject } from 'react';
+import React, { useState, useRef } from 'react';
 import NewsCard, { NewsItem } from './NewsCard';
+import DonationReportCard from './NewsDonationCard';
+import { DonationReportItem } from '@/types/reportTypes';
 
 interface NewsDisplaySectionProps {
-  newsItems: NewsItem[];
-  //scrollTargetRef: React.RefObject<HTMLDivElement | null>;
-  listMinHeightClass: string;
+  newsItems: NewsItem[] | DonationReportItem[];
+  listMinHeightClass?: string;
   idPrefix: string;
-  currentPage: number; // Receive current page from parent
+  currentPage: number;
   onPageChange: (pageNumber: number) => void;
+  isDonationView?: boolean;
 }
 
 const NewsDisplaySection = ({
   newsItems,
-  // scrollTargetRef,
   listMinHeightClass = 'min-h-[1098px]',
   idPrefix,
   currentPage,
   onPageChange,
+  isDonationView = false
 }: NewsDisplaySectionProps) => {
-  //const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(9);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  // const prevPageRef = useRef<number>(null);
   const prevSearchTermRef = useRef<string>('');
 
-  const filteredNews = searchTerm
+  // Type-safe filtering based on the view type
+  const filteredItems = searchTerm
     ? newsItems.filter((item) => {
         const term = searchTerm.toLowerCase();
+        
+        // Common properties for both types
         const titleMatch = item.title?.toLowerCase().includes(term) ?? false;
-        const typeMatch =
-          item.calamityType?.toLowerCase().includes(term) ?? false;
-        const summaryMatch =
-          item.summary?.toLowerCase().includes(term) ?? false;
-        return titleMatch || typeMatch || summaryMatch;
+        
+        if (isDonationView) {
+          // DonationReportItem specific properties
+          const donationItem = item as DonationReportItem;
+          const organizationMatch = donationItem.organizationName?.toLowerCase().includes(term) ?? false;
+          const calamityTypeMatch = donationItem.calamityType?.toLowerCase().includes(term) ?? false;
+          const donationSummaryMatch = donationItem.donationSummary?.toLowerCase().includes(term) ?? false;
+          const donatedTypesMatch = donationItem.donatedTypes?.some(type => 
+            type.toLowerCase().includes(term)
+          ) ?? false;
+          
+          return titleMatch || organizationMatch || calamityTypeMatch || 
+                 donationSummaryMatch || donatedTypesMatch;
+        } else {
+          // NewsItem specific properties
+          const newsItem = item as NewsItem;
+          const typeMatch = newsItem.calamityType?.toLowerCase().includes(term) ?? false;
+          const summaryMatch = newsItem.summary?.toLowerCase().includes(term) ?? false;
+          return titleMatch || typeMatch || summaryMatch;
+        }
       })
     : newsItems;
 
-  const totalPages = Math.max(1, Math.ceil(filteredNews.length / itemsPerPage));
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
+  
   // Ensure currentPage resets if filters reduce total pages below current page
   const safeCurrentPage = Math.min(currentPage, totalPages);
 
-  /* Reset to page 1 if search term changes and current page becomes invalid
-  React.useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(1);
-    }
-  }, [totalPages, currentPage]); */
-
   const indexOfLastItem = safeCurrentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredNews.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
-  // --- Modify the paginate function ---
+  // Paginate function
   const paginate = (pageNumber: number) => {
     const clampedPage = Math.min(Math.max(1, pageNumber), totalPages);
     // Only call if page actually changes to prevent unnecessary calls/scrolls
@@ -62,19 +73,12 @@ const NewsDisplaySection = ({
     }
   };
 
-  // --- Remove the useEffect for scrolling ---
-  // useEffect(() => {
-  //     // ... (removed code) ...
-  // }, [safeCurrentPage, scrollTargetRef]);
-
   return (
     <>
-      {/* ... (Search input JSX remains the same) ... */}
       <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md mb-4 ml-auto">
-        {/* Search Input JSX */}
         <input
           type="text"
-          id={`${idPrefix}-search`} // Unique ID using prefix
+          id={`${idPrefix}-search`}
           placeholder="Search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -93,17 +97,23 @@ const NewsDisplaySection = ({
         </svg>
       </div>
 
-      {/* ... (News card grid JSX remains the same) ... */}
       <div
         className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6
-        ${
-          // Apply specified min-height class only when on the last page
-          safeCurrentPage === totalPages ? listMinHeightClass : ''
-        }`}
+        ${safeCurrentPage === totalPages ? listMinHeightClass : ''}`}
       >
         {currentItems.length > 0 ? (
           currentItems.map((item) => (
-            <NewsCard key={`${idPrefix}-${item.id}`} item={item} />
+            isDonationView ? (
+              <DonationReportCard 
+                key={`${idPrefix}-${item.id}`} 
+                item={item as DonationReportItem} 
+              />
+            ) : (
+              <NewsCard 
+                key={`${idPrefix}-${item.id}`} 
+                item={item as NewsItem} 
+              />
+            )
           ))
         ) : (
           <p className="text-black col-span-full text-center py-10">
@@ -112,28 +122,23 @@ const NewsDisplaySection = ({
         )}
       </div>
 
-      {/* ... (Pagination controls JSX remains the same) ... */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center space-x-2 mt-8 pb-8 mt-12">
-          {/* Pagination JSX */}
-          {/* Previous Page Button */}
           <button
             onClick={() => paginate(safeCurrentPage - 1)}
             disabled={safeCurrentPage === 1}
             className={`px-3 py-1 rounded font-bold ${
               safeCurrentPage === 1
-                ? 'text-transparent cursor-default' // Make it invisible and non-interactive
+                ? 'text-transparent cursor-default'
                 : 'text-white hover:scale-105'
             }`}
             aria-label="Previous Page"
-            style={{ visibility: safeCurrentPage === 1 ? 'hidden' : 'visible' }} // Hide completely when disabled
+            style={{ visibility: safeCurrentPage === 1 ? 'hidden' : 'visible' }}
           >
-            &lt; {/* Left arrow */}
+            &lt;
           </button>
-
-          {/* Page Number Buttons Indicator Container */}
+          
           <div className="flex relative rounded-md">
-            {/* Sliding background */}
             <div
               className={`absolute top-0 left-0 h-full bg-[#fefefe] rounded-md transition-transform duration-300 ease-in-out`}
               style={{
@@ -143,7 +148,6 @@ const NewsDisplaySection = ({
               }}
               aria-hidden="true"
             />
-            {/* Page Number Buttons */}
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(
               (pageNumber) => (
                 <button
@@ -151,8 +155,8 @@ const NewsDisplaySection = ({
                   onClick={() => paginate(pageNumber)}
                   className={`font-bold relative z-10 px-3 py-1 transition-colors duration-300 ease-in-out ${
                     safeCurrentPage === pageNumber
-                      ? 'text-[#B0022A]' // Active
-                      : 'text-white' // Inactive
+                      ? 'text-[#B0022A]'
+                      : 'text-white'
                   }`}
                   aria-current={
                     safeCurrentPage === pageNumber ? 'page' : undefined
@@ -163,22 +167,21 @@ const NewsDisplaySection = ({
               )
             )}
           </div>
-
-          {/* Next Page Button */}
+          
           <button
             onClick={() => paginate(safeCurrentPage + 1)}
             disabled={safeCurrentPage === totalPages}
             className={`px-3 py-1 rounded font-bold ${
               safeCurrentPage === totalPages
-                ? 'text-transparent cursor-default' // Make it invisible and non-interactive
+                ? 'text-transparent cursor-default'
                 : 'text-white hover:scale-105'
             }`}
             aria-label="Next Page"
             style={{
               visibility: safeCurrentPage === totalPages ? 'hidden' : 'visible',
-            }} // Hide completely when disabled
+            }} 
           >
-            &gt; {/* Right arrow */}
+            &gt; 
           </button>
         </div>
       )}

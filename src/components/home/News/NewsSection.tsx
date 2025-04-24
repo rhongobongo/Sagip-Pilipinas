@@ -19,6 +19,70 @@ interface NewsDetail {
   contactInfo?: string;
 }
 
+export async function fetchDonationNews(): Promise<NewsDetail[]> {
+  try {
+    const donationsRef = db.collection('donations');
+    const snapshot = await donationsRef.orderBy('timestamp', 'desc').get();
+
+    const donationNewsItems: NewsDetail[] = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      
+      // Create a readable title based on donation details
+      const donationType = Object.keys(data.donationTypes || {})
+        .filter(type => data.donationTypes[type])
+        .join(', ');
+      
+      // Create a summary from the donation details
+      let summary = `Donation of ${donationType} to ${data.organizationName || 'an organization'}`;
+      if (data.aidRequestId) {
+        summary += ` for aid request #${data.aidRequestId.substring(0, 8)}`;
+      }
+      
+      return {
+        id: doc.id,
+        title: `${donationType} Donation`,
+        summary: summary,
+        content: generateDonationContent(data),
+        imageUrl: '/donation-image.jpg', // Use a default donation image
+        timestamp: data.timestamp ? data.timestamp.toDate().toISOString() : '',
+        calamityType: 'Donation', // Set a category for donations
+        calamityLevel: '', // Donations don't have calamity levels
+        slug: doc.id,
+      };
+    });
+
+    return donationNewsItems;
+  } catch (error: unknown) {
+    console.error('Error fetching donation news:', error);
+    return []; // Return empty array instead of throwing
+  }
+}
+
+// Helper function to generate readable content from donation details
+function generateDonationContent(data: any): string {
+  let content = `<p>Donation made to ${data.organizationName || 'an organization'}</p>`;
+  
+  if (data.estimatedDropoffDate) {
+    content += `<p>Estimated dropoff date: ${data.estimatedDropoffDate}</p>`;
+  }
+  
+  // Add details about each donation type
+  Object.keys(data.donationTypes || {}).forEach(type => {
+    if (data.donationTypes[type] && data.details && data.details[type]) {
+      content += `<h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3>`;
+      
+      const typeDetails = data.details[type];
+      Object.keys(typeDetails).forEach(detail => {
+        if (typeDetails[detail]) {
+          content += `<p>${detail}: ${typeDetails[detail]}</p>`;
+        }
+      });
+    }
+  });
+  
+  return content;
+}
+
 export async function fetchNews(): Promise<NewsDetail[]> {
   try {
     const newsRef = db.collection('aidRequest');
@@ -58,10 +122,11 @@ export async function fetchNews(): Promise<NewsDetail[]> {
 
 const NewsSection = async () => {
   const initialNews = await fetchNews();
+  const donationNews = await fetchDonationNews(); // New function to fetch donation-specific news
 
   return (
     <div>
-      <NewsGrid newsItems={initialNews} />
+      <NewsGrid newsItems={initialNews} donationNewsItems={donationNews} />
     </div>
   );
 };

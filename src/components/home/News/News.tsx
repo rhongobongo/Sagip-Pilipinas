@@ -117,6 +117,7 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
             idPrefix="latest"
             currentPage={latestCurrentPage}
             onPageChange={handleLatestPageChange}
+            isDonationView={false}
           />
         )}
 
@@ -129,6 +130,7 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
             idPrefix="donation"
             currentPage={donationCurrentPage}
             onPageChange={handleDonationPageChange}
+            isDonationView={true}
           />
         )}
       </div>
