@@ -24,9 +24,9 @@ function calculateDistance(point1: Coordinates, point2: Coordinates): number {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(deg2rad(point1.latitude)) *
-    Math.cos(deg2rad(point2.latitude)) *
-    Math.sin(dLon / 2) *
-    Math.sin(dLon / 2);
+      Math.cos(deg2rad(point2.latitude)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = R * c; // Distance in km
   return distance;
@@ -133,8 +133,8 @@ export default async function NewsPage({
         ? newsItemData.timestamp.toDate().toISOString()
         : newsItemData?.submissionDate && newsItemData?.submissionTime
           ? new Date(
-            `${newsItemData.submissionDate} ${newsItemData.submissionTime}`
-          ).toISOString()
+              `${newsItemData.submissionDate} ${newsItemData.submissionTime}`
+            ).toISOString()
           : new Date().toISOString(),
     calamityType: newsItemData?.calamityType || 'Not specified',
     calamityLevel: newsItemData?.calamityLevel || 'Not specified',
@@ -147,12 +147,12 @@ export default async function NewsPage({
 
   const formattedDate = newsItem.timestamp
     ? new Date(newsItem.timestamp).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
     : 'Date unavailable';
 
   // --- Proximity Logic ---
@@ -188,9 +188,8 @@ export default async function NewsPage({
       <div className="bg-[#B0022A] p-6 w-full lg:w-3/4 lg:rounded-xl mx-auto lg:h-full">
         <article>
           <header className="mb-4 text-white">
-
             {/*for back button na circle*/}
-            <div className="flex items-center justify-between mb-2"> 
+            <div className="flex items-center justify-between mb-2">
               <h1 className="text-3xl font-bold"> {newsItem.title} </h1>
               <Link
                 href="/" //padulong ni home
@@ -205,9 +204,9 @@ export default async function NewsPage({
           </header>
 
           <div className="flex flex-col md:flex-row gap-6">
-            <div className="w-full lg:w-2/3">
+            <div className="w-full">
               {/* Main Content Area */}
-              <div className="w-full lg:w-2/3 space-y-6">
+              <div className="w-full space-y-6">
                 {/* --- Conditional Send Help Section --- */}
                 {showSendHelpSection && (
                   <RespondToAidRequestSection
@@ -301,9 +300,7 @@ export default async function NewsPage({
                   Summary
                 </h2>
                 <DetailCard>
-                  <p className="text-black leading-relaxed">
-                    {newsItem.title}
-                  </p>
+                  <p className="text-black leading-relaxed">{newsItem.title}</p>
                   <p className="text-sm text-black justify md:text-justify text-wrap overflow-y-auto">
                     This aid request was submitted on {formattedDate}. Emergency
                     services have been notified. Updates will be posted as the
