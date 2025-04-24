@@ -8,7 +8,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/Firebase/Firebase'; // Make sure this is your client-side Firebase import
 import { CiCircleAlert } from 'react-icons/ci';
 import { useRouter } from 'next/navigation';
-
+import Image from 'next/image';
 // Use dynamic import with ssr: false for the map component
 const DynamicMap = dynamic(() => import('./GoogleMapComponent'), {
   ssr: false,
@@ -162,7 +162,7 @@ const AidRequestMapWrapper: React.FC<AidRequestMapWrapperProps> = ({
               {selectedPin.imageURL && (
                 <div className="mt-3">
                   <p className="font-semibold">Image:</p>
-                  <img
+                  <Image
                     src={selectedPin.imageURL}
                     alt="Aid request"
                     className="mt-1 rounded-md w-full object-cover max-h-48"

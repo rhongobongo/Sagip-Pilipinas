@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { MapRef } from './GoogleMapComponent'; // Assuming MapRef is exported from here
 import { RequestPin } from '@/types/types';
+import Image from 'next/image';
 import {
   collection,
   getDocs,
@@ -268,7 +269,7 @@ const DonationMapWrapper: React.FC<DonationMapWrapperProps> = ({
               {selectedPin.imageURL && (
                 <div className="mt-3">
                   <p className="font-semibold">Image:</p>
-                  <img
+                  <Image
                     src={selectedPin.imageURL}
                     alt="Aid request visual"
                     className="mt-1 rounded-md w-full object-cover max-h-48 border "

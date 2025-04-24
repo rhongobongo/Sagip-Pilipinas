@@ -7,6 +7,7 @@ import { uploadImage } from './uploadImage';
 import { format } from 'date-fns';
 import emailjs from '@emailjs/browser';
 import { getDistance } from 'geolib';
+import Image from 'next/image';
 // import { GeoPoint } from 'firebase/firestore'; // Client-side GeoPoint if needed
 
 interface RequestFormProps {
@@ -570,7 +571,7 @@ const [aidNeeded, setAidNeeded] = useState('');
           </div>
           {imagePreview && (
             <div className="mt-3 border-red-400 border-2 rounded-lg p-2 bg-gray-100">
-              <img
+              <Image
                 src={imagePreview}
                 alt="Preview"
                 className="max-h-40 max-w-full object-contain mx-auto"
@@ -606,7 +607,7 @@ const [aidNeeded, setAidNeeded] = useState('');
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center text-black z-50">
           <div className="bg-gray-100 p-6 sm:p-8 rounded-lg shadow-lg w-[90%] max-w-md border-2 border-red-500">
             <div className="flex mb-4 items-center">
-              <img
+              <Image
                 src="/Warning.svg" // Ensure path is correct
                 alt="Warning Symbol"
                 width="32"
