@@ -50,7 +50,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, 
             <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
                 <h3 className="text-lg font-semibold mb-4 text-gray-900">Confirm Deactivation</h3>
                 <p className="mb-6 text-gray-700">
-                    Are you sure you want to deactivate the volunteer "<span className="font-bold">{itemName}</span>"? This action might delete their record.
+                    Are you sure you want to deactivate the volunteer &quot;<span className="font-bold">{itemName}</span>&quot;? This action might delete their record.
                 </p>
                 <div className="flex justify-end space-x-3">
                     <button

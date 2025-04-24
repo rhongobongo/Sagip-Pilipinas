@@ -6,7 +6,7 @@ import { updateProfileData } from '@/actions/profileActions';
 import imageCompression from 'browser-image-compression';
 
 // Interface for the profile data structure
-interface VolunteerProfile {
+export interface VolunteerProfile {
   userId: string;
   firstName?: string;
   surname?: string; // Changed from 'surname' to match form field if needed, check consistency
@@ -298,7 +298,7 @@ export default function VolunteerProfileForm({
         {/* Show selected file name based on preview existing */}
         {imagePreview && !isCompressing && (
           <p className="text-xs text-gray-500 mt-2">
-            New image selected. Click "Save Changes" to apply.
+            New image selected. Click &quot;Save Changes&quot; to apply.
           </p>
         )}
         {/* Show error specifically related to compression if it exists */}
