@@ -21,7 +21,7 @@ const DonationReportCard = ({ item }: { item: DonationReportItem }) => {
 const linkHref = `/donations/${item.donationId || item.id}`;
 
   // Construct a dynamic summary
-  const summary = `Donation by ${item.organizationName || 'an organization'}. Items: ${item.donatedTypes.join(', ') || 'various'}. Responding to ${item.calamityType || 'an event'}.`;
+  const summary = `Donation by ${item.organizationName || 'an organization'}. Items: ${item.donatedTypes?.join(', ') || 'various'}. Responding to ${item.calamityType || 'an event'}.`;
 
   return (
     <Link href={`/donation/${item.id}`} key={item.id}>
@@ -64,7 +64,7 @@ const linkHref = `/donations/${item.donationId || item.id}`;
               {item.donationSummary || summary}
             </p>
             <p className="text-gray-600 text-xs mb-2">
-              Donated Items: <span className="font-medium">{item.donatedTypes.join(', ') || 'N/A'}</span>
+              Donated Items: <span className="font-medium">{item.donatedTypes?.join(', ') || 'N/A'}</span>
             </p>
           </div>
 
