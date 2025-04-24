@@ -1,23 +1,19 @@
-// src/types/reportTypes.ts (or similar)
+
 import type { Timestamp } from 'firebase/firestore';
 
 export interface DonationReportItem {
-  id: string; // Use donation ID as the unique key for the report card
+  id: string;
   donationId: string;
-  aidRequestId: string | null; // The ID of the original aid request (slug for linking)
-
-  // Information primarily from Aid Request (or fallback)
-  title: string; // e.g., "Urgent Need: Flood in Cebu City"
+  aidRequestId: string | null;
+  title: string;
   calamityType: string;
   calamityLevel: string;
-  requestImageUrl: string | null; // Image associated with the aid request
-  requestTimestamp: string; // When the aid request was made
-
-  // Information primarily from Donation
+  requestImageUrl: string | null;
+  requestTimestamp: string;
   organizationId: string;
   organizationName: string;
-  donationTimestamp: string; // When the donation was recorded
+  donationTimestamp: string;
   estimatedDropoffDate?: string;
-  donatedTypes: string[]; // Array of donated item types (e.g., ['food', 'clothing'])
-  donationSummary?: string; // Optional summary specifically about the donation
+  donatedTypes: string[];
+  donationSummary?: string;
 }

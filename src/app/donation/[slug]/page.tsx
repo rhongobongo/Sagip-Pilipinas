@@ -352,7 +352,7 @@ const StatusCard = ({
       <p className="text-black font-medium">{status}</p>
     </div>
     <p className="text-black text-xs">Recorded on: {formattedDate}</p>
-    {estimatedDropoff && estimatedDropoff !== 'Not specified' && (
+    {estimatedDropoff && estimatedDropoff !== 'Not specif   ied' && (
       <p className="text-black text-xs mt-2">
         Estimated delivery: {estimatedDropoff}
       </p>

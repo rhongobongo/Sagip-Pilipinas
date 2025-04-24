@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useRef } from 'react';
 import NewsCard, { NewsItem } from './NewsCard';
-import DonationReportCard from './NewsDonationCard';
+import DonationReportCard from './DonationReportCard';
 import { DonationReportItem } from '@/types/reportTypes';
 
 interface NewsDisplaySectionProps {
@@ -19,7 +19,7 @@ const NewsDisplaySection = ({
   idPrefix,
   currentPage,
   onPageChange,
-  isDonationView = false
+  isDonationView = false // Default to false (news view)
 }: NewsDisplaySectionProps) => {
   const [itemsPerPage] = useState<number>(9);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -78,7 +78,7 @@ const NewsDisplaySection = ({
       <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md mb-4 ml-auto">
         <input
           type="text"
-          id={`${idPrefix}-search`}
+          id={`${idPrefix}-search`} // Unique ID using prefix
           placeholder="Search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -99,7 +99,10 @@ const NewsDisplaySection = ({
 
       <div
         className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6
-        ${safeCurrentPage === totalPages ? listMinHeightClass : ''}`}
+        ${
+          // Apply specified min-height class only when on the last page
+          safeCurrentPage === totalPages ? listMinHeightClass : ''
+        }`}
       >
         {currentItems.length > 0 ? (
           currentItems.map((item) => (
@@ -129,16 +132,18 @@ const NewsDisplaySection = ({
             disabled={safeCurrentPage === 1}
             className={`px-3 py-1 rounded font-bold ${
               safeCurrentPage === 1
-                ? 'text-transparent cursor-default'
+                ? 'text-transparent cursor-default' // Make it invisible and non-interactive
                 : 'text-white hover:scale-105'
             }`}
             aria-label="Previous Page"
-            style={{ visibility: safeCurrentPage === 1 ? 'hidden' : 'visible' }}
+            style={{ visibility: safeCurrentPage === 1 ? 'hidden' : 'visible' }} // Hide completely when disabled
           >
-            &lt;
+            &lt; {/* Left arrow */}
           </button>
           
+          {/* Page Number Buttons Indicator Container */}
           <div className="flex relative rounded-md">
+            {/* Sliding background */}
             <div
               className={`absolute top-0 left-0 h-full bg-[#fefefe] rounded-md transition-transform duration-300 ease-in-out`}
               style={{
@@ -155,8 +160,8 @@ const NewsDisplaySection = ({
                   onClick={() => paginate(pageNumber)}
                   className={`font-bold relative z-10 px-3 py-1 transition-colors duration-300 ease-in-out ${
                     safeCurrentPage === pageNumber
-                      ? 'text-[#B0022A]'
-                      : 'text-white'
+                      ? 'text-[#B0022A]' // Active
+                      : 'text-white' // Inactive
                   }`}
                   aria-current={
                     safeCurrentPage === pageNumber ? 'page' : undefined
@@ -168,12 +173,13 @@ const NewsDisplaySection = ({
             )}
           </div>
           
+          {/* Next Page Button */}
           <button
             onClick={() => paginate(safeCurrentPage + 1)}
             disabled={safeCurrentPage === totalPages}
             className={`px-3 py-1 rounded font-bold ${
               safeCurrentPage === totalPages
-                ? 'text-transparent cursor-default'
+                ? 'text-transparent cursor-default' // Make it invisible and non-interactive
                 : 'text-white hover:scale-105'
             }`}
             aria-label="Next Page"

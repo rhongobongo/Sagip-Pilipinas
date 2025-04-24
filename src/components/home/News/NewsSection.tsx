@@ -1,6 +1,6 @@
 import { db } from '@/lib/Firebase-Admin';
 import NewsGrid from './News';
-
+import { DonationReportItem } from '@/types/reportTypes';
 interface NewsDetail {
   id: string;
   title: string;
@@ -18,69 +18,76 @@ interface NewsDetail {
   };
   contactInfo?: string;
 }
-
-export async function fetchDonationNews(): Promise<NewsDetail[]> {
+export async function fetchDonations(): Promise<DonationReportItem[]> {
   try {
     const donationsRef = db.collection('donations');
     const snapshot = await donationsRef.orderBy('timestamp', 'desc').get();
 
-    const donationNewsItems: NewsDetail[] = snapshot.docs.map((doc) => {
-      const data = doc.data();
-      
-      // Create a readable title based on donation details
-      const donationType = Object.keys(data.donationTypes || {})
-        .filter(type => data.donationTypes[type])
-        .join(', ');
-      
-      // Create a summary from the donation details
-      let summary = `Donation of ${donationType} to ${data.organizationName || 'an organization'}`;
-      if (data.aidRequestId) {
-        summary += ` for aid request #${data.aidRequestId.substring(0, 8)}`;
-      }
-      
-      return {
-        id: doc.id,
-        title: `${donationType} Donation`,
-        summary: summary,
-        content: generateDonationContent(data),
-        imageUrl: '/donation-image.jpg', // Use a default donation image
-        timestamp: data.timestamp ? data.timestamp.toDate().toISOString() : '',
-        calamityType: 'Donation', // Set a category for donations
-        calamityLevel: '', // Donations don't have calamity levels
-        slug: doc.id,
-      };
-    });
-
-    return donationNewsItems;
-  } catch (error: unknown) {
-    console.error('Error fetching donation news:', error);
-    return []; // Return empty array instead of throwing
-  }
-}
-
-// Helper function to generate readable content from donation details
-function generateDonationContent(data: any): string {
-  let content = `<p>Donation made to ${data.organizationName || 'an organization'}</p>`;
-  
-  if (data.estimatedDropoffDate) {
-    content += `<p>Estimated dropoff date: ${data.estimatedDropoffDate}</p>`;
-  }
-  
-  // Add details about each donation type
-  Object.keys(data.donationTypes || {}).forEach(type => {
-    if (data.donationTypes[type] && data.details && data.details[type]) {
-      content += `<h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3>`;
-      
-      const typeDetails = data.details[type];
-      Object.keys(typeDetails).forEach(detail => {
-        if (typeDetails[detail]) {
-          content += `<p>${detail}: ${typeDetails[detail]}</p>`;
+    const donationItems: DonationReportItem[] = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        const data = doc.data();
+        
+        // Try to get aid request data if it exists
+        let requestImageUrl = null;
+        let requestTimestamp = '';
+        let calamityType = '';
+        let calamityLevel = '';
+        
+        if (data.aidRequestId) {
+          try {
+            const aidRequestDoc = await db.collection('aidRequest').doc(data.aidRequestId).get();
+            if (aidRequestDoc.exists) {
+              const aidData = aidRequestDoc.data();
+              requestImageUrl = aidData?.imageUrl || null;
+              requestTimestamp = aidData?.timestamp ? aidData.timestamp.toDate().toISOString() : '';
+              calamityType = aidData?.calamityType || '';
+              calamityLevel = aidData?.calamityLevel || '';
+            }
+          } catch (error) {
+            console.error("Error fetching associated aid request:", error);
+          }
         }
-      });
-    }
-  });
-  
-  return content;
+
+        // Get donation types as an array
+        const donatedTypes = Object.keys(data.donationTypes || {}).filter(
+          key => data.donationTypes[key] === true
+        );
+        
+        // Create a meaningful title based on organization and calamity type
+        const title = `${data.organizationName || 'Organization'} Donation${calamityType ? ` for ${calamityType}` : ''}`;
+        
+        // Create a summary of what was donated
+        let donationSummary = "Donation includes: ";
+        if (donatedTypes.length > 0) {
+          donationSummary += donatedTypes.join(', ');
+        } else {
+          donationSummary += "various aid items";
+        }
+
+        return {
+          id: doc.id,
+          donationId: doc.id,
+          aidRequestId: data.aidRequestId || null,
+          title: title,
+          calamityType: calamityType,
+          calamityLevel: calamityLevel,
+          requestImageUrl: requestImageUrl,
+          requestTimestamp: requestTimestamp,
+          organizationId: data.organizationId || '',
+          organizationName: data.organizationName || 'Unknown Organization',
+          donationTimestamp: data.timestamp ? data.timestamp.toDate().toISOString() : '',
+          estimatedDropoffDate: data.estimatedDropoffDate || undefined,
+          donatedTypes: donatedTypes,
+          donationSummary: donationSummary
+        };
+      })
+    );
+
+    return donationItems;
+  } catch (error) {
+    console.error('Error fetching donations:', error);
+    throw new Error('Failed to fetch donation items');
+  }
 }
 
 export async function fetchNews(): Promise<NewsDetail[]> {
@@ -122,11 +129,14 @@ export async function fetchNews(): Promise<NewsDetail[]> {
 
 const NewsSection = async () => {
   const initialNews = await fetchNews();
-  const donationNews = await fetchDonationNews(); // New function to fetch donation-specific news
+  const donationNews = await fetchDonations(); 
 
   return (
     <div>
-      <NewsGrid newsItems={initialNews} donationNewsItems={donationNews} />
+      <NewsGrid 
+        newsItems={initialNews} 
+        donationNewsItems={donationNews}
+      />
     </div>
   );
 };

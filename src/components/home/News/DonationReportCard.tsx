@@ -11,8 +11,6 @@ const formatDateTime = (isoString: string) => {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-      // hour: 'numeric',
-      // minute: '2-digit',
     });
   } catch (e) {
     return 'Invalid Date';
@@ -20,9 +18,6 @@ const formatDateTime = (isoString: string) => {
 };
 
 const DonationReportCard = ({ item }: { item: DonationReportItem }) => {
-  // THE KEY CHANGE: Link to donations/[id] instead of news/[aidRequestId]
-  // Use the donation ID as the slug for the donation detail page
- // In DonationReportCard.tsx
 const linkHref = `/donations/${item.donationId || item.id}`;
 
   // Construct a dynamic summary

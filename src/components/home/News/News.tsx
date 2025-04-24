@@ -3,12 +3,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import NewsDisplaySection from './NewsDonation';
 import { NewsItem } from './NewsCard';
+import { DonationReportItem } from '@/types/reportTypes';
 
 interface NewsGridProps {
   newsItems: NewsItem[];
-  donationNewsItems?: NewsItem[];
+  donationNewsItems?: DonationReportItem[];
 }
-
 type NewsView = 'latest' | 'donation';
 
 const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
@@ -46,9 +46,6 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
     }
   };
 
-  // --- Handler to switch views ---
-  // Switches the view state and scrolls to the top.
-  // Resets the page of the view being switched TO back to 1.
   const showView = (view: NewsView) => {
     if (view !== currentView) {
       setCurrentView(view);
@@ -63,22 +60,6 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
       triggerScroll(); // Scroll when view changes
     }
   };
-
-
-  /* Changes the currentView state and scrolls the target div into view
-  const showView = (view: NewsView) => {
-    if (view !== currentView) {
-      setCurrentView(view);
-      setTimeout(() => {
-        if (scrollTargetRef.current) {
-          scrollTargetRef.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-          });
-        }
-      }, 0);
-    }
-  };*/
 
   const latestNewsMinHeight = 'min-h-[1098px]';
   const donationNewsMinHeight = 'min-h-[1098px]'; 
@@ -109,29 +90,27 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
         </div>
 
         {currentView === 'latest' && (
-          <NewsDisplaySection
-            key="latest-news"
-            newsItems={newsItems} // Pass the latest news data
-            //scrollTargetRef={scrollTargetRef}
-            listMinHeightClass={latestNewsMinHeight}
-            idPrefix="latest"
-            currentPage={latestCurrentPage}
-            onPageChange={handleLatestPageChange}
-            isDonationView={false}
-          />
-        )}
+        <NewsDisplaySection
+          key="latest-news"
+          newsItems={newsItems}
+          listMinHeightClass={latestNewsMinHeight}
+          idPrefix="latest"
+          currentPage={latestCurrentPage}
+          onPageChange={handleLatestPageChange}
+          isDonationView={false}
+        />
+      )}
 
-        {currentView === 'donation' && (
-          <NewsDisplaySection
-            key="donation-news"
-            newsItems={donationNewsItems} // Pass the donation news data
-            //scrollTargetRef={scrollTargetRef}
-            listMinHeightClass={donationNewsMinHeight}
-            idPrefix="donation"
-            currentPage={donationCurrentPage}
-            onPageChange={handleDonationPageChange}
-            isDonationView={true}
-          />
+          {currentView === 'donation' && (
+        <NewsDisplaySection
+          key="donation-news"
+          newsItems={donationNewsItems as any}
+          listMinHeightClass={donationNewsMinHeight}
+          idPrefix="donation"
+          currentPage={donationCurrentPage}
+          onPageChange={handleDonationPageChange}
+          isDonationView={true}
+        />
         )}
       </div>
     </div>
