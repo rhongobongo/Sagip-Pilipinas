@@ -7,8 +7,7 @@ import { authMiddleware, redirectToLogin } from "next-firebase-auth-edge";
 const PUBLIC_PATHS = [
     "/",
     "/about",
-    "/contact-us",
-    "/map",
+    "/learnmore",
     "/request-aid",
     "/404",
     "/news",
