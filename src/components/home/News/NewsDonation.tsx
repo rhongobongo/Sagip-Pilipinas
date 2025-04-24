@@ -19,7 +19,7 @@ const NewsDisplaySection = ({
   idPrefix,
   currentPage,
   onPageChange,
-  isDonationView = false // Default to false (news view)
+  isDonationView = false, // Default to false (news view)
 }: NewsDisplaySectionProps) => {
   const [itemsPerPage] = useState<number>(9);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -29,34 +29,49 @@ const NewsDisplaySection = ({
   const filteredItems = searchTerm
     ? newsItems.filter((item) => {
         const term = searchTerm.toLowerCase();
-        
+
         // Common properties for both types
         const titleMatch = item.title?.toLowerCase().includes(term) ?? false;
-        
+
         if (isDonationView) {
           // DonationReportItem specific properties
           const donationItem = item as DonationReportItem;
-          const organizationMatch = donationItem.organizationName?.toLowerCase().includes(term) ?? false;
-          const calamityTypeMatch = donationItem.calamityType?.toLowerCase().includes(term) ?? false;
-          const donationSummaryMatch = donationItem.donationSummary?.toLowerCase().includes(term) ?? false;
-          const donatedTypesMatch = donationItem.donatedTypes?.some(type => 
-            type.toLowerCase().includes(term)
-          ) ?? false;
-          
-          return titleMatch || organizationMatch || calamityTypeMatch || 
-                 donationSummaryMatch || donatedTypesMatch;
+          const organizationMatch =
+            donationItem.organizationName?.toLowerCase().includes(term) ??
+            false;
+          const calamityTypeMatch =
+            donationItem.calamityType?.toLowerCase().includes(term) ?? false;
+          const donationSummaryMatch =
+            donationItem.donationSummary?.toLowerCase().includes(term) ?? false;
+          const donatedTypesMatch =
+            donationItem.donatedTypes?.some((type) =>
+              type.toLowerCase().includes(term)
+            ) ?? false;
+
+          return (
+            titleMatch ||
+            organizationMatch ||
+            calamityTypeMatch ||
+            donationSummaryMatch ||
+            donatedTypesMatch
+          );
         } else {
           // NewsItem specific properties
           const newsItem = item as NewsItem;
-          const typeMatch = newsItem.calamityType?.toLowerCase().includes(term) ?? false;
-          const summaryMatch = newsItem.summary?.toLowerCase().includes(term) ?? false;
+          const typeMatch =
+            newsItem.calamityType?.toLowerCase().includes(term) ?? false;
+          const summaryMatch =
+            newsItem.summary?.toLowerCase().includes(term) ?? false;
           return titleMatch || typeMatch || summaryMatch;
         }
       })
     : newsItems;
 
-  const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
-  
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredItems.length / itemsPerPage)
+  );
+
   // Ensure currentPage resets if filters reduce total pages below current page
   const safeCurrentPage = Math.min(currentPage, totalPages);
 
@@ -82,10 +97,10 @@ const NewsDisplaySection = ({
           placeholder="Search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border w-[430px] border-gray-300 rounded-full px-4 text-black py-2 pl-10 focus:outline-none ml-4"
+          className="border w-full border-gray-300 rounded-full px-4 text-black py-2 pl-10 focus:outline-none"
         />
         <svg
-          className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-black ml-4"
+          className="w-5 h-5 absolute top-1/2 transform -translate-y-1/2 text-black ml-4"
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -105,19 +120,19 @@ const NewsDisplaySection = ({
         }`}
       >
         {currentItems.length > 0 ? (
-          currentItems.map((item) => (
+          currentItems.map((item) =>
             isDonationView ? (
-              <DonationReportCard 
-                key={`${idPrefix}-${item.id}`} 
-                item={item as DonationReportItem} 
+              <DonationReportCard
+                key={`${idPrefix}-${item.id}`}
+                item={item as DonationReportItem}
               />
             ) : (
-              <NewsCard 
-                key={`${idPrefix}-${item.id}`} 
-                item={item as NewsItem} 
+              <NewsCard
+                key={`${idPrefix}-${item.id}`}
+                item={item as NewsItem}
               />
             )
-          ))
+          )
         ) : (
           <p className="text-black col-span-full text-center py-10">
             {searchTerm ? 'No similar results found.' : 'No items available.'}
@@ -140,7 +155,7 @@ const NewsDisplaySection = ({
           >
             &lt; {/* Left arrow */}
           </button>
-          
+
           {/* Page Number Buttons Indicator Container */}
           <div className="flex relative rounded-md">
             {/* Sliding background */}
@@ -172,7 +187,7 @@ const NewsDisplaySection = ({
               )
             )}
           </div>
-          
+
           {/* Next Page Button */}
           <button
             onClick={() => paginate(safeCurrentPage + 1)}
@@ -185,9 +200,9 @@ const NewsDisplaySection = ({
             aria-label="Next Page"
             style={{
               visibility: safeCurrentPage === totalPages ? 'hidden' : 'visible',
-            }} 
+            }}
           >
-            &gt; 
+            &gt;
           </button>
         </div>
       )}
