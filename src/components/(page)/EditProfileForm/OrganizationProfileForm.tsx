@@ -13,9 +13,8 @@ import {
   aidTypes,
 } from '@/components/(page)/AuthPage/OrgRegForm/types';
 import LocationSetterMapWrapper from './LocationSetterMapWrapper';
-
 // --- Interfaces (Keep as is) ---
-interface OrganizationProfile {
+export interface OrganizationProfile {
   userId: string;
   name?: string;
   contactNumber?: string;
@@ -102,6 +101,8 @@ const aidTypeFields = {
     { name: 'details', label: 'Details', type: 'text' },
   ],
 };
+
+
 
 export default function OrganizationProfileForm({
   userId,
@@ -460,7 +461,7 @@ export default function OrganizationProfileForm({
         {/* Show selected file name based on preview existing */}
         {imagePreview && !isCompressing && (
           <p className="text-xs text-gray-500 mt-2">
-            New image selected. Click "Save Changes" to apply.
+            New image selected. Click &quot;Save Changes&quot; to apply.
           </p>
         )}
         {/* Show error specifically related to compression if it exists */}
