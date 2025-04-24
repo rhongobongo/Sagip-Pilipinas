@@ -2,8 +2,10 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { getProfileData } from '@/actions/profileActions';
-import OrganizationProfileForm, { OrganizationProfile } from './OrganizationProfileForm'; // <-- IMPORT OrganizationProfile
-import VolunteerProfileForm, { VolunteerProfile } from './VolunteerProfileForm';       // <-- IMPORT VolunteerProfile
+import OrganizationProfileForm, {
+  OrganizationProfile,
+} from './OrganizationProfileForm'; // <-- IMPORT OrganizationProfile
+import VolunteerProfileForm, { VolunteerProfile } from './VolunteerProfileForm'; // <-- IMPORT VolunteerProfile
 
 type UserType = 'volunteer' | 'organization' | 'unknown';
 
@@ -48,7 +50,8 @@ export default function EditProfileForm({
           // TypeScript might still need assertions below depending on getProfileData's return type
           const fetchedProfile = result.profile as ProfileData; // You might need type assertion here
 
-          const profileWithDefaults: ProfileData = { // Ensure this assignment is type-safe
+          const profileWithDefaults: ProfileData = {
+            // Ensure this assignment is type-safe
             ...fetchedProfile,
             socialMedia: fetchedProfile.socialMedia || {},
             profileImageUrl: fetchedProfile.profileImageUrl || undefined,
@@ -86,7 +89,7 @@ export default function EditProfileForm({
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">
         Edit{' '}
         {userType === 'volunteer'
