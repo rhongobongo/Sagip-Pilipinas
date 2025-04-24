@@ -1,8 +1,11 @@
+// ./src/components/(page)/EditProfileForm/EditProfileForm.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
 import { getProfileData } from '@/actions/profileActions';
-import OrganizationProfileForm from './OrganizationProfileForm';
-import VolunteerProfileForm from './VolunteerProfileForm';
+import OrganizationProfileForm, {
+  OrganizationProfile,
+} from './OrganizationProfileForm'; // <-- IMPORT OrganizationProfile
+import VolunteerProfileForm, { VolunteerProfile } from './VolunteerProfileForm'; // <-- IMPORT VolunteerProfile
 
 type UserType = 'volunteer' | 'organization' | 'unknown';
 
@@ -11,6 +14,9 @@ interface EditProfileFormProps {
   organizations?: { id: string; name: string }[]; // For volunteer org selection
 }
 
+// Define a union type for the profile state
+type ProfileData = OrganizationProfile | VolunteerProfile; // <-- Define a union type
+
 export default function EditProfileForm({
   userId,
   organizations = [],
@@ -18,7 +24,8 @@ export default function EditProfileForm({
   const [userType, setUserType] = useState<UserType>('unknown');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [profile, setProfile] = useState<any | null>(null);
+  // Use the specific union type instead of 'any'
+  const [profile, setProfile] = useState<ProfileData | null>(null); // <-- FIX HERE
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,20 +39,27 @@ export default function EditProfileForm({
       setError(null);
 
       try {
+        // Assuming getProfileData returns a profile matching one of the interfaces
         const result = await getProfileData(userId);
         if (result.error) {
           setError(result.error);
           setProfile(null);
           setUserType('unknown');
         } else if (result.profile) {
-          const profileWithDefaults = {
-            ...result.profile,
-            socialMedia: result.profile.socialMedia || {},
-            profileImageUrl: result.profile.profileImageUrl || undefined,
+          // Basic check to ensure profile has necessary fields, adjust as needed
+          // TypeScript might still need assertions below depending on getProfileData's return type
+          const fetchedProfile = result.profile as ProfileData; // You might need type assertion here
+
+          const profileWithDefaults: ProfileData = {
+            // Ensure this assignment is type-safe
+            ...fetchedProfile,
+            socialMedia: fetchedProfile.socialMedia || {},
+            profileImageUrl: fetchedProfile.profileImageUrl || undefined,
+            // Add defaults for any other potentially missing fields defined in the interfaces
           };
 
           setProfile(profileWithDefaults);
-          setUserType(result.userType);
+          setUserType(result.userType as UserType); // Assert userType as well if needed
         } else {
           setError('Profile data not found.');
           setProfile(null);
@@ -86,14 +100,19 @@ export default function EditProfileForm({
         Profile
       </h2>
 
+      {/* TypeScript might still warn here if it can't guarantee the type based on userType */}
+      {/* You can use type assertion if confident, but the runtime check is key */}
       {profile && userType === 'organization' && (
-        <OrganizationProfileForm userId={userId} profile={profile} />
+        <OrganizationProfileForm
+          userId={userId}
+          profile={profile as OrganizationProfile} // Type assertion adds clarity
+        />
       )}
 
       {profile && userType === 'volunteer' && (
         <VolunteerProfileForm
           userId={userId}
-          profile={profile}
+          profile={profile as VolunteerProfile} // Type assertion adds clarity
           organizations={organizations}
         />
       )}
