@@ -2,22 +2,72 @@ import React from "react";
 import BotChartRow from "@/components/(page)/Admin/Analytics/Charts/BotChartRow";
 import TopChartRow from "@/components/(page)/Admin/Analytics/Charts/TopChartRow";
 import MidChartRow from "@/components/(page)/Admin/Analytics/Charts/MidChartRow";
+import { manualAnalyticsUpdater } from "@/lib/APICalls/Admin/manualAnalyticsUpdater";
+import { fetchAndProcessStats } from "@/lib/APICalls/Admin/getAnalytics";
+import updateOrganizationsWithVolunteerIds from "@/lib/APICalls/Admin/forceUpdateVolOrg";
 
+export const revalidate = 1500;
 
-export const revalidate = 300
+interface AverageAidRequests {
+    monthly: number;
+    weekly: number;
+    yearly: number;
+    mTrend?: "up" | "down";
+    wTrend?: "up" | "down";
+    yTrend?: "up" | "down";
+}
 
-const AnalyticsDashboard: React.FC = () => {
+interface StatsData {
+    "volunteer-count"?: number;
+    "org-count"?: number;
+    operationsCompleted?: number;
+}
+
+interface RankedDisasterType {
+    name: string;
+    percentage: number;
+    icon: string;
+    rank: number;
+    count: number;
+}
+
+interface LocationData {
+    [location: string]: number;
+}
+
+interface OrganizationStock {
+    orgName: string;
+    clothing: number;
+    medicine: number;
+    food: number;
+    volunteers: number;
+}
+
+interface OrganizationStockData {
+    [orgId: string]: OrganizationStock;
+}
+
+const AnalyticsDashboard: React.FC = async () => {
+    const data = await fetchAndProcessStats();
+    manualAnalyticsUpdater();
     return (
         <>
-            {/* Stats Grid - Top Row (Flex layout remains the same) */}
-            <TopChartRow></TopChartRow>
-            {/* End of Top Stats Row */}
-            {/* --- Charts Row - REVISED 50/50 Layout --- */}
-            {/* Changed lg:grid-cols-3 to lg:grid-cols-2 */}
-            <MidChartRow></MidChartRow>
-            {/* --- Bottom Row - REVISED based on image_5a0ef1.png --- */}
-            <BotChartRow></BotChartRow>
-            {/* End Bottom Row */}
+            <TopChartRow
+                countStats={data.currentStats as StatsData}
+                aidRequestStats={
+                    data.averageAidRequestsComparison as AverageAidRequests
+                }
+            ></TopChartRow>
+            <MidChartRow
+                rankedDisasterTypes={
+                    data.rankedDisasters as RankedDisasterType[]
+                }
+                locationData={data.location_data as LocationData}
+            ></MidChartRow>
+            <BotChartRow
+                orgStock={data.orgStock as OrganizationStockData}
+                responseTime={data.responseTime as string}
+            ></BotChartRow>
         </>
     );
 };

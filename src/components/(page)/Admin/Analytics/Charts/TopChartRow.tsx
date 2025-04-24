@@ -1,59 +1,30 @@
 import TrendIcon from "../TrendIcon";
 import { HandHelping, Building2 } from "lucide-react";
 
-const analyticsData = {
-    averageRequests: {
-        weekly: 7.86,
-        monthly: 11.5,
-        yearly: 52.33,
-        weeklyTrend: "down",
-        monthlyTrend: "up",
-        yearlyTrend: "up",
-    },
-    totalOrganizations: 22,
-    totalVolunteers: 538,
-    completedOperations: 241,
-    disasterTypes: [
-        { name: "Flood", percentage: 18, icon: "🌊", rank: 2 },
-        { name: "Earthquake", percentage: 25, icon: "🏚️", rank: 1 },
-        { name: "Typhoon", percentage: 17, icon: "🌀", rank: 3 },
-        { name: "Fire", percentage: 23, icon: "🔥", rank: 6 },
-        { name: "Landslide", percentage: 14, icon: "⛰️", rank: 5 },
-        { name: "Other", percentage: 10, icon: "❓", rank: 4 },
-    ],
+interface TopChartRowProps {
+    aidRequestStats: AverageAidRequests;
+    countStats: StatsData;
+}
 
-    disasterTraffic: {
-        regions: [
-            "Manila",
-            "Cebu",
-            "Davao",
-            "Vigan",
-            "Quezon",
-            "Batangas",
-            "Laoag",
-        ],
-        values: [16.6, 8.7, 16.9, 3.3, 13.1, 21.1, 22.3],
-    },
-    aidTypesStocks: {
-        food: "10,500 packs",
-        clothes: "2,550 pairs",
-        volunteers: "220 people",
-        medicine: "1,720",
-    },
-    operationSuccessRate: "92%",
-    engagements: "12,256",
-    averageResponseTime: {
-        earthquake: "1 hour",
-        fire: "20 minutes",
-        flood: "35 minutes",
-        landslide: "45 minutes",
-        other: "1.5 hours",
-        typhoon: "3 hours",
-    },
-};
+interface AverageAidRequests {
+    monthly: number;
+    weekly: number;
+    yearly: number;
+    mTrend?: "up" | "down";
+    wTrend?: "up" | "down";
+    yTrend?: "up" | "down";
+}
 
+interface StatsData {
+    "volunteer-count"?: number;
+    "org-count"?: number;
+    operationsCompleted?: number;
+}
 
-const TopChartRow = () => {
+const TopChartRow: React.FC<TopChartRowProps> = ({
+    aidRequestStats,
+    countStats,
+}) => {
     return (
         <>
             {/* Stats Grid - Top Row (Flex layout remains the same) */}
@@ -73,39 +44,24 @@ const TopChartRow = () => {
                             {" "}
                             <div className="text-small mb-1">Weekly</div>{" "}
                             <div className="text-2xl font-bold">
-                                <TrendIcon
-                                    trend={
-                                        analyticsData.averageRequests
-                                            .weeklyTrend
-                                    }
-                                />{" "}
-                                {analyticsData.averageRequests.weekly}
+                                <TrendIcon trend={aidRequestStats.wTrend as string} />{" "}
+                                {aidRequestStats.weekly}
                             </div>{" "}
                         </div>
                         <div className="text-center">
                             {" "}
                             <div className="text-small mb-1">Monthly</div>{" "}
                             <div className="text-2xl font-bold">
-                                <TrendIcon
-                                    trend={
-                                        analyticsData.averageRequests
-                                            .monthlyTrend
-                                    }
-                                />{" "}
-                                {analyticsData.averageRequests.monthly}
+                                <TrendIcon trend={aidRequestStats.mTrend as string} />{" "}
+                                {aidRequestStats.monthly}
                             </div>{" "}
                         </div>
                         <div className="text-center">
                             {" "}
                             <div className="text-small mb-1">Yearly</div>{" "}
                             <div className="text-2xl font-bold">
-                                <TrendIcon
-                                    trend={
-                                        analyticsData.averageRequests
-                                            .yearlyTrend
-                                    }
-                                />{" "}
-                                {analyticsData.averageRequests.yearly}
+                                <TrendIcon trend={aidRequestStats.yTrend as string} />{" "}
+                                {aidRequestStats.yearly}
                             </div>{" "}
                         </div>
                     </div>
@@ -126,7 +82,7 @@ const TopChartRow = () => {
                                 <Building2 className="w-8 h-8 text-white" />
                             </div>
                             <div className="text-4xl font-bold">
-                                {analyticsData.totalOrganizations}
+                                {countStats["org-count"]}
                             </div>
                         </div>
                     </div>
@@ -145,7 +101,7 @@ const TopChartRow = () => {
                                 <HandHelping className="w-8 h-8 text-white" />
                             </div>
                             <div className="text-4xl font-bold">
-                                {analyticsData.totalVolunteers}
+                                {countStats["volunteer-count"]}
                             </div>
                         </div>
                     </div>
@@ -176,7 +132,7 @@ const TopChartRow = () => {
                                 {/* Consider replacing with Lucide's CheckCircle2 */}
                             </div>
                             <div className="text-4xl font-bold">
-                                {analyticsData.completedOperations}
+                                {countStats.operationsCompleted}
                             </div>
                         </div>
                     </div>
@@ -187,4 +143,4 @@ const TopChartRow = () => {
     );
 };
 
-export default TopChartRow
+export default TopChartRow;
