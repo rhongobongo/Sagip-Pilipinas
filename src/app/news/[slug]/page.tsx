@@ -78,6 +78,13 @@ async function getCurrentUserSession(): Promise<{ userId: string | null }> {
   }
 }
 
+// Add this type definition
+type ReportEntry = {
+  reason: string;
+  reportedBy: string | null;
+  timestamp: Date | admin.firestore.Timestamp; // Allow both JS Date and Firestore Timestamp initially
+};
+
 // --- Main Page Component ---
 export default async function NewsPage({
   params,
@@ -184,10 +191,8 @@ export default async function NewsPage({
   let hasUserAlreadyReported = false;
   if (loggedInUserId && Array.isArray(newsItem.reports)) {
     hasUserAlreadyReported = newsItem.reports.some(
-      // Need to handle both Date and potential Firestore Timestamp objects if fetching directly
-      // For simplicity, assuming 'reportedBy' comparison is sufficient here
-      // If reports can be complex, adjust the check accordingly
-      (report: any) => report?.reportedBy === loggedInUserId
+      // FIX: Use the defined ReportEntry type instead of any
+      (report: ReportEntry) => report?.reportedBy === loggedInUserId
     );
   }
 
