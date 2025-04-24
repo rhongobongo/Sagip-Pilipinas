@@ -397,11 +397,13 @@ export default function OrganizationProfileForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 bg-gray-50">
       {/* Profile Picture Section */}
-      <div className="bg-gray-50 p-4 rounded-lg shadow">
-        <h3 className="text-xl font-semibold mb-3">Profile Picture</h3>
-        <div className="flex items-center space-x-4">
+      <div className="bg-white p-4 rounded-lg shadow textbox flex flex-col">
+        <h3 className="text-xl font-semibold mb-3 text-center">
+          Profile Picture
+        </h3>
+        <div className="flex items-center flex-col">
           {/* --- *** MODIFIED: img src logic *** --- */}
           <img
             src={
@@ -410,14 +412,14 @@ export default function OrganizationProfileForm({
               '/default-avatar.png' // 3. Else, show default
             }
             alt="Profile Preview" // Changed alt text for clarity
-            className="w-24 h-24 rounded-full object-cover border border-gray-300"
+            className="w-24 h-24 rounded-full object-cover border border-red-300 mb-4"
           />
           {/* --- *** End img src logic modification *** --- */}
-          <div>
+          <div className="mx-auto flex flex-col sm:flex-row items-center justify-center  transition-all duration-300">
             {/* Input and Buttons (Keep as is, including cancel button logic) */}
             <label
               htmlFor="profileImage"
-              className={`cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isCompressing ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`cursor-pointer  transition-all duration-300 py-2 px-3 border bg-red-500 hover:bg-red-600 rounded-lg shadow-sm text-sm leading-4 font-medium text-white  mx-auto focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isCompressing ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isCompressing ? 'Processing...' : 'Change Picture'}{' '}
               {/* Changed label slightly */}
@@ -446,7 +448,7 @@ export default function OrganizationProfileForm({
                   ) as HTMLInputElement;
                   if (input) input.value = '';
                 }}
-                className="ml-3 text-sm text-red-600 hover:text-red-800"
+                className="text-sm my-4 sm:my-0 sm:ml-5 border py-1.5 px-3 text-white rounded-lg border-gray-400 bg-gray-500 hover:bg-gray-600  transition-all duration-300"
               >
                 Cancel Change
               </button>
@@ -471,18 +473,21 @@ export default function OrganizationProfileForm({
 
       {/* Other Form Sections (Keep as is) */}
       {/* Organization Details */}
-      <div className="bg-gray-50 p-4 rounded-lg shadow">
+      <div className="bg-white p-4 rounded-lg shadow pinkBorder ">
         <h3 className="text-xl font-semibold mb-3">Organization Details</h3>
         {/* Name (Read Only) */}
         <div className="mb-4">
           <label htmlFor="name" className="block mb-1 font-medium">
             Organization Name:
           </label>
+          <label className="opacity-50 text-sm">
+            *Contact Admin to Change Organization Name*
+          </label>
           <input
             type="text"
             id="name"
             name="name"
-            className="w-full p-2 border rounded bg-gray-100"
+            className="w-full p-2 border rounded bg-gray-300 textbox"
             defaultValue={profile.name || ''}
             readOnly
           />
@@ -495,7 +500,7 @@ export default function OrganizationProfileForm({
           <textarea
             id="description"
             name="description"
-            className="w-full p-2 border rounded h-32"
+            className="w-full p-2 border rounded h-32 textbox"
             defaultValue={profile.description || ''}
           />
         </div>
@@ -508,7 +513,7 @@ export default function OrganizationProfileForm({
             type="text"
             id="contactPerson"
             name="contactPerson"
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded textbox"
             defaultValue={profile.contactPerson || ''}
           />
         </div>
@@ -521,14 +526,14 @@ export default function OrganizationProfileForm({
             type="text"
             id="orgPosition"
             name="orgPosition"
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded textbox"
             defaultValue={profile.orgPosition || ''}
           />
         </div>
       </div>
 
       {/* Location Section */}
-      <div className="bg-gray-50 p-4 rounded-lg shadow">
+      <div className="bg-gray-50 p-4 rounded-lg shadow pinkBorder">
         <h3 className="text-xl font-semibold mb-3">Organization Location</h3>
         <p className="text-sm text-gray-600 mb-2">
           Click on the map to set or update your organization&apos;s precise
@@ -552,7 +557,7 @@ export default function OrganizationProfileForm({
       </div>
 
       {/* Contact Information */}
-      <div className="bg-gray-50 p-4 rounded-lg shadow">
+      <div className="bg-white p-4 rounded-lg shadow pinkBorder">
         <h3 className="text-xl font-semibold mb-3">Contact Information</h3>
         {/* Contact Number */}
         <div className="mb-4">
@@ -563,7 +568,7 @@ export default function OrganizationProfileForm({
             type="tel"
             id="contactNumber"
             name="contactNumber"
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded textbox"
             defaultValue={profile.contactNumber || ''}
           />
         </div>
@@ -585,7 +590,7 @@ export default function OrganizationProfileForm({
                 onChange={(e) =>
                   handleSocialLinkChange(platform, e.target.value)
                 }
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded textbox"
                 placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} profile URL`}
               />
             </div>
@@ -594,34 +599,45 @@ export default function OrganizationProfileForm({
       </div>
 
       {/* Aid Stock Management */}
-      <div className="bg-gray-50 p-4 rounded-lg shadow">
-        <h3 className="text-xl font-semibold mb-3">Aid Stock Management</h3>
-        <div className="space-y-4">
+      <div className="bg-gray-50 p-4 rounded-lg shadow textbox">
+        <h3 className="text-xl font-semibold p-4">Aid Stock Management</h3>
+        <div className="space-y-4 px-4">
           {aidTypes.map((aidType) => {
             const isAvailable =
               (aidStock[aidType.id]?.available as boolean) || false;
             return (
-              <div key={aidType.id} className="border p-3 rounded">
-                <div className="flex items-center mb-2">
+              <div key={aidType.id} className="border p-3 rounded pinkBorder">
+                {/* --- Modified Line: Label now wraps the span and text --- */}
+                <label // Use label as the main container for click handling
+                  htmlFor={`aid-${aidType.id}`}
+                  className="flex items-center mb-2 cursor-pointer" // Add cursor-pointer to the label
+                >
                   <input
                     type="checkbox"
                     id={`aid-${aidType.id}`}
                     checked={isAvailable}
                     onChange={() => toggleAidAvailability(aidType.id)}
-                    className="mr-2"
+                    className="custom-checkbox-input peer sr-only"
                   />
-                  <label
-                    htmlFor={`aid-${aidType.id}`}
-                    className="font-medium text-black"
-                  >
+                  {/* --- Span is now INSIDE the label --- */}
+                  <span className="custom-checkbox-indicator flex-shrink-0 mr-2"></span>{' '}
+                  {/* Added margin-right for spacing */}
+                  <span className="font-medium text-black">
+                    {' '}
+                    {/* Span for text if needed, or just text */}
                     {aidType.label}
-                  </label>
-                </div>
+                  </span>
+                </label>
+                {/* --- End Modification --- */}
+
                 {isAvailable && (
                   <div className="pl-6 space-y-2">
+                    {' '}
+                    {/* Adjust padding if needed based on new layout */}
                     {aidTypeFields[
                       aidType.id as keyof typeof aidTypeFields
                     ]?.map((field) => (
+                      // ... rest of the fields rendering ...
                       <div key={`${aidType.id}-${field.name}`}>
                         <label className="text-sm block text-black">
                           {field.label}:
@@ -642,7 +658,7 @@ export default function OrganizationProfileForm({
                                 e.target.value
                               )
                             }
-                            className="w-full p-1 border rounded text-black"
+                            className="w-full p-1 border rounded text-black textbox"
                             min="0"
                           />
                         ) : (
@@ -659,7 +675,7 @@ export default function OrganizationProfileForm({
                                 e.target.value
                               )
                             }
-                            className="w-full p-1 border rounded text-black"
+                            className="w-full p-1 border rounded text-black textbox"
                           />
                         )}
                       </div>
@@ -673,22 +689,24 @@ export default function OrganizationProfileForm({
       </div>
 
       {/* Sponsor Management */}
-      <div className="bg-gray-50 p-4 rounded-lg shadow">
+      <div className="bg-gray-50 p-4 rounded-lg shadow pinkBorder">
         <h3 className="text-xl font-semibold mb-3">Sponsors</h3>
         {/* Current Sponsors List */}
-        <div className="mb-4">
+        <div className="mb-4 pinkBorder">
           <h4 className="font-medium mb-2">Current Sponsors</h4>
           {sponsors.length > 0 ? (
             <ul className="space-y-2">
               {sponsors.map((sponsor, index) => (
                 <li
                   key={sponsor.id || index}
-                  className="flex items-center justify-between border p-2 rounded"
+                  className="flex items-center justify-between sm:border sm:border-red-400 p-2 rounded flex-col sm:flex-row textbox"
                 >
                   <div>
                     <p className="font-medium">{sponsor.name}</p>
                     {sponsor.other && (
-                      <p className="text-sm text-gray-600">{sponsor.other}</p>
+                      <p className="text-sm text-gray-600 overflow-auto text-wrap">
+                        {sponsor.other}
+                      </p>
                     )}
                     {(sponsor.photoPreview || sponsor.imageUrl) && (
                       <img
@@ -702,14 +720,14 @@ export default function OrganizationProfileForm({
                     <button
                       type="button"
                       onClick={() => handleEditSponsor(index)}
-                      className="px-2 py-1 bg-blue-500 text-white rounded text-sm"
+                      className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm  transition-all duration-300"
                     >
                       Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveSponsor(index)}
-                      className="px-2 py-1 bg-red-500 text-white rounded text-sm"
+                      className="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm  transition-all duration-300"
                     >
                       Remove
                     </button>
@@ -722,7 +740,7 @@ export default function OrganizationProfileForm({
           )}
         </div>
         {/* Add/Edit Sponsor Form */}
-        <div className="border-t pt-4">
+        <div className="pt-4">
           <h4 className="font-medium mb-2">
             {editingSponsorIndex !== null ? 'Edit Sponsor' : 'Add New Sponsor'}
           </h4>
@@ -738,7 +756,7 @@ export default function OrganizationProfileForm({
                 onChange={(e) =>
                   setCurrentSponsor({ ...currentSponsor, name: e.target.value })
                 }
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded textbox"
               />
             </div>
             <div>
@@ -754,14 +772,14 @@ export default function OrganizationProfileForm({
                     other: e.target.value,
                   })
                 }
-                className="w-full p-2 border rounded h-20"
+                className="w-full p-2 border rounded h-20 textbox"
               />
             </div>
             <div className="flex space-x-2">
               <button
                 type="button"
                 onClick={handleAddSponsor}
-                className="px-3 py-1 bg-green-500 text-white rounded"
+                className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg  transition-all duration-300 mx-auto sm:mx-0"
               >
                 {editingSponsorIndex !== null ? 'Update' : 'Add'} Sponsor
               </button>
@@ -772,7 +790,7 @@ export default function OrganizationProfileForm({
                     setEditingSponsorIndex(null);
                     setCurrentSponsor({ name: '', other: '' });
                   }}
-                  className="px-3 py-1 bg-gray-500 text-white rounded"
+                  className="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded-lg  transition-all duration-300"
                 >
                   Cancel
                 </button>
@@ -783,14 +801,14 @@ export default function OrganizationProfileForm({
       </div>
 
       {/* Submission Area */}
-      <div className="flex justify-between items-center mt-6">
+      <div className="flex justify-between items-center mt-6 transition-all duration-300">
         <button
           type="submit"
           disabled={isSubmitting || isCompressing}
-          className={`px-6 py-2 rounded-lg text-white font-semibold transition-colors duration-200 ${
+          className={`px-6 py-2 rounded-lg text-white font-semibold  mx-auto sm:mx-0 ${
             isSubmitting || isCompressing
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700'
+              : 'bg-red-500 hover:bg-red-600'
           }`}
         >
           {isSubmitting

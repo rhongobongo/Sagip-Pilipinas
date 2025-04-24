@@ -43,7 +43,7 @@ export default function EditProfileForm({
             socialMedia: result.profile.socialMedia || {},
             profileImageUrl: result.profile.profileImageUrl || undefined,
           };
-          
+
           setProfile(profileWithDefaults);
           setUserType(result.userType);
         } else {
@@ -75,7 +75,7 @@ export default function EditProfileForm({
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">
         Edit{' '}
         {userType === 'volunteer'
@@ -91,10 +91,10 @@ export default function EditProfileForm({
       )}
 
       {profile && userType === 'volunteer' && (
-        <VolunteerProfileForm 
-          userId={userId} 
-          profile={profile} 
-          organizations={organizations} 
+        <VolunteerProfileForm
+          userId={userId}
+          profile={profile}
+          organizations={organizations}
         />
       )}
 
