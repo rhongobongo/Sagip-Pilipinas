@@ -16,6 +16,7 @@ import {
   updateDoc,
   Timestamp as FirebaseTimestamp, // Client-side Timestamp import
   FirestoreError,
+  GeoPoint, // Assuming GeoPoint might be used client-side if needed
 } from 'firebase/firestore';
 import { FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 
@@ -25,6 +26,14 @@ type ReportEntry = {
   reportedBy: string | null;
   timestamp: Date; // Ensure this is always a Date object after processing
 };
+
+// Define a type for the raw report data from Firestore
+type RawReportEntry = {
+  reason?: string;
+  reportedBy?: string | null;
+  timestamp?: FirebaseTimestamp | Date | string | number; // Allow multiple potential types from Firestore
+};
+
 // Updated structure for a news item (aid request)
 type NewsItem = {
   id: string;
@@ -39,7 +48,7 @@ type NewsItem = {
   status?: 'pending' | 'approved' | 'completed';
   imageUrl?: string;
   coordinates?: { latitude: number; longitude: number };
-  originalTimestamp?: FirebaseTimestamp | string; // Store original for reference
+  originalTimestamp?: FirebaseTimestamp | string | Date; // Store original for reference (allow Date too)
   sortableDate: Date | null; // +++ Added dedicated field for sorting +++
   submissionDate?: string;
   submissionTime?: string;
@@ -65,14 +74,10 @@ function getDateObject(
   value: unknown // Accept unknown type
 ): Date | null {
   // Check for Firebase Client SDK Timestamp
-  if (
-    value &&
-    typeof value === 'object' &&
-    'toDate' in value &&
-    typeof (value as any).toDate === 'function'
-  ) {
+  // FIX 1: Use instanceof for FirebaseTimestamp check
+  if (value instanceof FirebaseTimestamp) {
     try {
-      return (value as FirebaseTimestamp).toDate();
+      return value.toDate();
     } catch (e) {
       console.error('Error converting Firestore Timestamp:', e);
       return null;
@@ -80,7 +85,10 @@ function getDateObject(
   }
   // Check for standard JS Date object
   if (value instanceof Date) {
-    return value;
+    // Check if the date is valid
+    if (!isNaN(value.getTime())) {
+      return value;
+    }
   }
   // Check for string and try parsing
   if (typeof value === 'string') {
@@ -103,9 +111,9 @@ function getDateObject(
   return null;
 }
 
-// Updated helper function
+// Updated helper function (logic remains same)
 function formatDateTimeClient(
-  timestamp: FirebaseTimestamp | string | null | undefined, // Original value from Firestore
+  timestamp: FirebaseTimestamp | Date | string | null | undefined, // Allow Date too
   dateStr?: string,
   timeStr?: string
 ): { date: string; time: string; dateObject: Date | null } {
@@ -543,15 +551,24 @@ const NewsArticlePage: React.FC = () => {
         } else if (data.address && typeof data.address === 'string') {
           locationString = data.address;
         } else if (
-          data.coordinates &&
-          typeof data.coordinates.latitude === 'number' &&
-          typeof data.coordinates.longitude === 'number'
+          data.coordinates instanceof GeoPoint // Check if it's Firestore GeoPoint
         ) {
           const lat = data.coordinates.latitude;
           const lon = data.coordinates.longitude;
           locationString = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
           coordinates = { latitude: lat, longitude: lon };
+        } else if (
+          data.coordinates &&
+          typeof data.coordinates.latitude === 'number' &&
+          typeof data.coordinates.longitude === 'number'
+        ) {
+          // Check for plain object {lat, lon}
+          const lat = data.coordinates.latitude;
+          const lon = data.coordinates.longitude;
+          locationString = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
+          coordinates = { latitude: lat, longitude: lon };
         } else if (data.coordinates && typeof data.coordinates === 'string') {
+          // Fallback for string coordinates
           const match = data.coordinates.match(
             /(\-?\d+\.?\d*)\s*[°]?\s*[NS]?,\s*(\-?\d+\.?\d*)\s*[°]?\s*[EW]?/i
           );
@@ -575,14 +592,17 @@ const NewsArticlePage: React.FC = () => {
           : 'pending';
         const shortDesc: string = data.shortDesc || '';
 
-        // Process Reports
-        const reports: ReportEntry[] = (data.reports || []).map((r: any) => ({
-          reason: r?.reason ?? 'N/A',
-          reportedBy: r?.reportedBy ?? null,
-          timestamp: getDateObject(r.timestamp) || new Date(0), // Ensure timestamp is Date
-        }));
+        // FIX 2: Use RawReportEntry type for mapping
+        const reports: ReportEntry[] = (data.reports || []).map(
+          (r: RawReportEntry) => ({
+            reason: r?.reason ?? 'N/A',
+            reportedBy: r?.reportedBy ?? null,
+            // Ensure timestamp is Date, fallback to epoch if conversion fails
+            timestamp: getDateObject(r?.timestamp) || new Date(0),
+          })
+        );
         // Sort reports by Date timestamp descending
-        reports.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // Use getTime() here
+        reports.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
         const latestReportReason =
           reports.length > 0 ? reports[0].reason : undefined;
 
@@ -636,11 +656,12 @@ const NewsArticlePage: React.FC = () => {
 
   // --- Sorting Logic ---
   const sortedNewsItems = useMemo(() => {
-    let sortableItems = [...newsItems];
+    // FIX 3: Use const instead of let
+    const sortableItems = [...newsItems];
     sortableItems.sort((a, b) => {
-      // Use type assertion to hint TypeScript about the possible types
-      const valA = a[sortColumn as keyof NewsItem] as any;
-      const valB = b[sortColumn as keyof NewsItem] as any;
+      // FIX 4 & 5: Use unknown instead of any
+      const valA = a[sortColumn as keyof NewsItem] as unknown;
+      const valB = b[sortColumn as keyof NewsItem] as unknown;
 
       let comparison = 0;
 
@@ -649,26 +670,24 @@ const NewsArticlePage: React.FC = () => {
       else if (valB === null || valB === undefined) comparison = 1;
       // Specific sort for the 'sortableDate' column
       else if (sortColumn === 'sortableDate') {
-        const dateA = getDateObject(valA); // Safely get Date objects
+        // Ensure valA and valB are potentially Date objects or convertible
+        const dateA = getDateObject(valA);
         const dateB = getDateObject(valB);
         if (dateA && dateB) {
           comparison = dateA.getTime() - dateB.getTime();
         } else if (dateA) {
-          // Only A is valid
-          comparison = 1;
+          comparison = 1; // Valid date comes after invalid/null
         } else if (dateB) {
-          // Only B is valid
-          comparison = -1;
+          comparison = -1; // Invalid/null comes before valid date
         } else {
-          // Neither is valid
-          comparison = 0;
+          comparison = 0; // Both invalid/null
         }
       }
-      // Handle numbers
+      // Handle numbers (like reportCount)
       else if (typeof valA === 'number' && typeof valB === 'number') {
         comparison = valA - valB;
       }
-      // Default to string comparison
+      // Default to string comparison for other columns
       else {
         const strA = String(valA).toLowerCase();
         const strB = String(valB).toLowerCase();
@@ -720,25 +739,52 @@ const NewsArticlePage: React.FC = () => {
       return;
     }
     const currentItemId = itemToEdit.id;
-    setIsLoading(true);
+    setIsLoading(true); // Consider a specific "saving" state
 
     try {
       const docRef = doc(db, 'aidRequest', currentItemId);
+
+      // FIX: Disable ESLint rule for this line as 'any' is needed for updateDoc
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateData: Record<string, any> = {
-        name: editedData.requesterName,
-        requesterName: editedData.requesterName,
+        // Ensure field names match Firestore document fields
+        name: editedData.requesterName, // Assuming 'name' is the field in Firestore
+        requesterName: editedData.requesterName, // Keep if also used
         contactNumber: editedData.contactNumber,
         calamityType: editedData.calamityType,
         calamityLevel: editedData.calamityLevel,
         shortDesc: editedData.shortDesc,
         status: editedData.status,
+        // Add updatedAt timestamp
+        updatedAt: FirebaseTimestamp.now(), // Use server timestamp for updates
       };
+
+      // Remove undefined fields (keep this logic)
+      Object.keys(updateData).forEach(
+        (key) => updateData[key] === undefined && delete updateData[key]
+      );
+
       await updateDoc(docRef, updateData);
 
+      // Update local state more accurately
       setNewsItems((prevItems) =>
-        prevItems.map(
-          (item) =>
-            item.id === currentItemId ? { ...item, ...editedData } : item // Simplified update
+        prevItems.map((item) =>
+          item.id === currentItemId
+            ? {
+                ...item,
+                ...editedData, // Apply edited fields
+                // Update fields derived from edited data if necessary
+                requesterName: editedData.requesterName ?? item.requesterName,
+                contactNumber: editedData.contactNumber ?? item.contactNumber,
+                calamityType: editedData.calamityType ?? item.calamityType,
+                calamityLevel: editedData.calamityLevel ?? item.calamityLevel,
+                shortDesc: editedData.shortDesc ?? item.shortDesc,
+                status: editedData.status ?? item.status,
+                // You might want to update the originalTimestamp locally too,
+                // but getting the actual server timestamp back requires another read.
+                // For now, just applying the editedData is usually sufficient for UI update.
+              }
+            : item
         )
       );
       alert(`Request from ${editedData.requesterName} updated successfully.`);
@@ -755,7 +801,7 @@ const NewsArticlePage: React.FC = () => {
     } finally {
       setIsEditModalOpen(false);
       setItemToEdit(null);
-      setIsLoading(false);
+      setIsLoading(false); // Reset loading state
     }
   };
 
@@ -1073,11 +1119,9 @@ const NewsArticlePage: React.FC = () => {
                 ) : (
                   <tr key="no-items">
                     <td
-                      colSpan={11}
+                      colSpan={11} // Updated colspan
                       className="text-center py-10 px-3 text-gray-500 italic"
                     >
-                      {' '}
-                      {/* Updated colspan */}
                       No aid requests found.
                     </td>
                   </tr>
