@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import ClientMapWrapper from '@/components/map/ClientMapWrapper';
 import * as admin from 'firebase-admin';
 import RespondToAidRequestSection from '@/components/news/RespondToAidRequestSection';
-
+import ReportAidRequestSection from '@/components/news/ReportAidRequestSection'; // +++ Import the new component
 import { getAuthTokens } from '@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge';
 import { cookies } from 'next/headers';
 import ImageCard from '@/components/ui/ImageCard'; // Adjust path as needed
@@ -143,6 +143,7 @@ export default async function NewsPage({
     requestDate: newsItemData?.submissionDate || 'Not specified',
     coordinates: getCoords(newsItemData?.coordinates),
     aidRequested: newsItemData?.aidRequest || 'Details not provided',
+    reports: newsItemData?.reports || [], // +++ Fetch reports array +++
   };
 
   const formattedDate = newsItem.timestamp
@@ -178,6 +179,17 @@ export default async function NewsPage({
     organizationCoordinates &&
     newsItem.coordinates &&
     isNearby;
+
+  // +++ Check if the current logged-in user has already reported +++
+  let hasUserAlreadyReported = false;
+  if (loggedInUserId && Array.isArray(newsItem.reports)) {
+    hasUserAlreadyReported = newsItem.reports.some(
+      // Need to handle both Date and potential Firestore Timestamp objects if fetching directly
+      // For simplicity, assuming 'reportedBy' comparison is sufficient here
+      // If reports can be complex, adjust the check accordingly
+      (report: any) => report?.reportedBy === loggedInUserId
+    );
+  }
 
   // --- Render Page ---
   return (
@@ -335,6 +347,12 @@ export default async function NewsPage({
                 </DetailCard>
               )}
               <EmergencyContacts />
+              {/* +++ Add the Report Section Here +++ */}
+              <ReportAidRequestSection
+                aidRequestId={newsItem.id}
+                loggedInUserId={loggedInUserId} // Pass the user ID
+                hasUserAlreadyReported={hasUserAlreadyReported} // +++ Pass the check result ++
+              />{' '}
             </aside>
           </div>
         </article>
