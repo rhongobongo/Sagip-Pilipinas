@@ -1,57 +1,33 @@
-import { Building, Waves, Wind, Mountain, Flame, HelpCircle } from "lucide-react";
+import {
+    Building,
+    Waves,
+    Wind,
+    Mountain,
+    Flame,
+    HelpCircle,
+} from "lucide-react";
 
-const analyticsData = {
-    averageRequests: {
-        weekly: 7.86,
-        monthly: 11.5,
-        yearly: 52.33,
-        weeklyTrend: "down",
-        monthlyTrend: "up",
-        yearlyTrend: "up",
-    },
-    totalOrganizations: 22,
-    totalVolunteers: 538,
-    completedOperations: 241,
-    disasterTypes: [
-        { name: "Flood", percentage: 18, icon: "🌊", rank: 2 },
-        { name: "Earthquake", percentage: 25, icon: "🏚️", rank: 1 },
-        { name: "Typhoon", percentage: 17, icon: "🌀", rank: 3 },
-        { name: "Fire", percentage: 23, icon: "🔥", rank: 6 },
-        { name: "Landslide", percentage: 14, icon: "⛰️", rank: 5 },
-        { name: "Other", percentage: 10, icon: "❓", rank: 4 },
-    ],
+interface RankedDisasterType {
+    name: string;
+    percentage: number;
+    icon: string;
+    rank: number;
+    count: number;
+}
 
-    disasterTraffic: {
-        regions: [
-            "Manila",
-            "Cebu",
-            "Davao",
-            "Vigan",
-            "Quezon",
-            "Batangas",
-            "Laoag",
-        ],
-        values: [16.6, 8.7, 16.9, 3.3, 13.1, 21.1, 22.3],
-    },
-    aidTypesStocks: {
-        food: "10,500 packs",
-        clothes: "2,550 pairs",
-        volunteers: "220 people",
-        medicine: "1,720",
-    },
-    operationSuccessRate: "92%",
-    engagements: "12,256",
-    averageResponseTime: {
-        earthquake: "1 hour",
-        fire: "20 minutes",
-        flood: "35 minutes",
-        landslide: "45 minutes",
-        other: "1.5 hours",
-        typhoon: "3 hours",
-    },
-};
+interface LocationData {
+    [location: string]: number;
+}
 
-const MidChartRow = () => {
+interface MidChartRowProps {
+    rankedDisasterTypes: RankedDisasterType[];
+    locationData: LocationData;
+}
+
+const MidChartRow: React.FC<MidChartRowProps> = ({
+    rankedDisasterTypes,
+    locationData,
+}) => {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 text-center">
             {/* Disaster Traffic Chart - Now 50% width on large screens */}
@@ -71,40 +47,26 @@ const MidChartRow = () => {
                         className="flex-grow relative"
                         style={{ height: "240px" }}
                     >
-                        {/* Y-axis with visible values */}
-                        <div className="absolute top-0 left-0 h-full flex flex-col justify-between text-xs text-gray-500">
-                            <span>100</span> <span>90</span> <span>80</span>{" "}
-                            <span>70</span> <span>60</span> <span>50</span>{" "}
-                            <span>40</span> <span>30</span> <span>20</span>{" "}
-                            <span>10</span> <span>0</span>
-                        </div>
-
                         {/* Bar Chart - With accurate height representation */}
                         <div className="h-full flex items-end justify-around gap-4 pl-8">
-                            {analyticsData.disasterTraffic.regions.map(
-                                (region, index) => (
+                            {Object.entries(locationData).map(
+                                ([location, value]) => (
                                     <div
-                                        key={region}
+                                        key={location}
                                         className="flex flex-col items-center flex-1 h-full justify-end"
                                     >
                                         {/* Bar */}
                                         <div
                                             className="w-1/3 bg-black rounded-t"
-                                            style={{
-                                                height: `${analyticsData.disasterTraffic.values[index]}%`,
-                                            }}
+                                            style={{ height: `${value}%` }}
                                         ></div>
                                         {/* Percentage */}
                                         <div className="mt-2 text-gray-800 text-xs font-medium">
-                                            {
-                                                analyticsData.disasterTraffic
-                                                    .values[index]
-                                            }
-                                            %
+                                            {value}%
                                         </div>
                                         {/* Region name */}
                                         <div className="mt-1 text-gray-800 text-sm">
-                                            {region}
+                                            {location}
                                         </div>
                                     </div>
                                 )
@@ -137,12 +99,76 @@ const MidChartRow = () => {
                                 // Using percentages from the design image (approximated to 100%)
                                 // Flood: 19%, Earthquake: 25%, Typhoon: 17%, Fire: 9%, Landslide: 14%, Other: 16%
                                 background: `conic-gradient(
-                    #38BDF8 0% 19%,      /* sky-400 (Flood) */
-                    #4ADE80 19% 44%,      /* green-400 (Earthquake) */
-                    #F87171 44% 61%,      /* red-400 (Typhoon) */
-                    #FACC15 61% 70%,      /* yellow-400 (Fire) */
-                    #FB923C 70% 84%,      /* orange-400 (Landslide) */
-                    #C084FC 84% 100%     /* purple-400 (Other) */
+                                    #38BDF8 0% ${rankedDisasterTypes[0]?.percentage?.toFixed(2) || 0}%, /* sky-400 (Flood) */
+                                    #4ADE80 ${rankedDisasterTypes[0]?.percentage?.toFixed(2) || 0}% ${
+                                        (rankedDisasterTypes[0]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[1]?.percentage ||
+                                            0)
+                                    }%, /* green-400 (Earthquake) */
+                                    #F87171 ${
+                                        (rankedDisasterTypes[0]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[1]?.percentage ||
+                                            0)
+                                    }% ${
+                                        (rankedDisasterTypes[0]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[1]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[2]?.percentage ||
+                                            0)
+                                    }%, /* red-400 (Typhoon) */
+                                    #FACC15 ${
+                                        (rankedDisasterTypes[0]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[1]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[2]?.percentage ||
+                                            0)
+                                    }% ${
+                                        (rankedDisasterTypes[0]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[1]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[2]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[3]?.percentage ||
+                                            0)
+                                    }%, /* yellow-400 (Fire) */
+                                    #FB923C ${
+                                        (rankedDisasterTypes[0]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[1]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[2]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[3]?.percentage ||
+                                            0)
+                                    }% ${
+                                        (rankedDisasterTypes[0]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[1]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[2]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[3]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[4]?.percentage ||
+                                            0)
+                                    }%, /* orange-400 (Landslide) */
+                                    #C084FC ${
+                                        (rankedDisasterTypes[0]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[1]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[2]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[3]?.percentage ||
+                                            0) +
+                                        (rankedDisasterTypes[4]?.percentage ||
+                                            0)
+                                    }% 100% /* purple-400 (Other) */
                   )`,
                             }}
                         >
@@ -156,43 +182,42 @@ const MidChartRow = () => {
                             Ranking:
                         </h4>
                         <ul className="space-y-2">
-                            {analyticsData.disasterTypes // Legend list uses data from the code
-                                .sort((a, b) => a.rank - b.rank)
-                                .map((type) => {
-                                    let IconComponent;
-                                    switch (type.name.toLowerCase()) {
-                                        case "earthquake":
-                                            IconComponent = Building;
-                                            break;
-                                        case "flood":
-                                            IconComponent = Waves;
-                                            break;
-                                        case "typhoon":
-                                            IconComponent = Wind;
-                                            break;
-                                        case "landslide":
-                                            IconComponent = Mountain;
-                                            break;
-                                        case "fire":
-                                            IconComponent = Flame;
-                                            break;
-                                        default:
-                                            IconComponent = HelpCircle;
-                                    }
-                                    return (
-                                        <li
-                                            key={type.name}
-                                            className="flex justify-between items-center gap-3"
-                                        >
-                                            <span className="truncate pr-1 text-white">
-                                                {type.rank} - {type.name}
-                                            </span>
-                                            {IconComponent && (
-                                                <IconComponent className="w-5 h-5 text-white flex-shrink-0" />
-                                            )}
-                                        </li>
-                                    );
-                                })}
+                            {rankedDisasterTypes.map((type) => {
+                                let IconComponent;
+                                switch (type.name.toLowerCase()) {
+                                    case "earthquake":
+                                        IconComponent = Building;
+                                        break;
+                                    case "flood":
+                                        IconComponent = Waves;
+                                        break;
+                                    case "typhoon":
+                                        IconComponent = Wind;
+                                        break;
+                                    case "landslide":
+                                        IconComponent = Mountain;
+                                        break;
+                                    case "fire":
+                                        IconComponent = Flame;
+                                        break;
+                                    default:
+                                        IconComponent = HelpCircle;
+                                }
+                                return (
+                                    <li
+                                        key={type.name}
+                                        className="flex justify-between items-center gap-3"
+                                    >
+                                        <span className="truncate pr-1 text-white">
+                                            {type.rank} - {type.name} -{" "}
+                                            {type.percentage.toFixed(2)}%
+                                        </span>
+                                        {IconComponent && (
+                                            <IconComponent className="w-5 h-5 text-white flex-shrink-0" />
+                                        )}
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
                 </div>
@@ -201,4 +226,4 @@ const MidChartRow = () => {
     );
 };
 
-export default MidChartRow
+export default MidChartRow;

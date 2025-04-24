@@ -158,6 +158,20 @@ const [aidNeeded, setAidNeeded] = useState('');
     setIsConfirmationOpen(true);
   };
 
+  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 1. Get the raw input value
+    const rawValue = e.target.value;
+
+    // 2. Remove any character that is NOT a digit (0-9)
+    const numericValue = rawValue.replace(/[^0-9]/g, '');
+
+    // 3. Limit the length to 10 digits
+    const limitedValue = numericValue.slice(0, 10);
+
+    // 4. Update the state only with the cleaned, limited numeric value
+    setContactNum(limitedValue); // Updates your existing contactNum state
+  };
+
   const cancelSubmission = () => {
     setIsConfirmationOpen(false);
   };
@@ -397,9 +411,13 @@ const [aidNeeded, setAidNeeded] = useState('');
             </label>
             <input
               type="text"
+              inputMode="numeric" // Explicitly suggest numeric keypad
+              pattern="[0-9]*" //Optional: helps with form validation, reinforces numeric input
+              maxLength={10} // HTML attribute to limit input length
+              placeholder="+63 | 9123456789"
               value={contactNum}
-              onChange={(e) => setContactNum(e.target.value)}
-              className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
+              onChange={handleContactChange}
+              className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none placeholder:text-gray-400"
               required
             />
           </div>
