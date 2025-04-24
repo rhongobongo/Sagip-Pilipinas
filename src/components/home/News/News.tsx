@@ -15,7 +15,57 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
   const [currentView, setCurrentView] = useState<NewsView>('latest'); //current view either "latest" or "donation"
   const scrollTargetRef = useRef<HTMLDivElement>(null);
 
-  // Changes the currentView state and scrolls the target div into view
+  const [latestCurrentPage, setLatestCurrentPage] = useState<number>(1);
+  const [donationCurrentPage, setDonationCurrentPage] = useState<number>(1);
+
+  // --- Function to trigger scroll ---
+  // Encapsulates the scroll logic with a timeout for reliability
+  const triggerScroll = () => {
+     setTimeout(() => {
+        if (scrollTargetRef.current) {
+           scrollTargetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+     }, 0); // Timeout of 0ms defers execution slightly
+  }
+
+  // --- Handlers for page changes from child ---
+  // Updates the correct page state based on which view is active and triggers scroll
+  const handleLatestPageChange = (pageNumber: number) => {
+    // Only update and scroll if page actually changes
+    if (pageNumber !== latestCurrentPage) {
+        setLatestCurrentPage(pageNumber);
+        triggerScroll();
+    }
+  };
+
+  const handleDonationPageChange = (pageNumber: number) => {
+     // Only update and scroll if page actually changes
+    if (pageNumber !== donationCurrentPage) {
+        setDonationCurrentPage(pageNumber);
+        triggerScroll();
+    }
+  };
+
+  // --- Handler to switch views ---
+  // Switches the view state and scrolls to the top.
+  // Resets the page of the view being switched TO back to 1.
+  const showView = (view: NewsView) => {
+    if (view !== currentView) {
+      setCurrentView(view);
+      // Reset the page number for the view we are switching TO
+      if (view === 'latest') {
+          // Reset only if not already 1 to avoid unnecessary trigger
+          if (latestCurrentPage !== 1) setLatestCurrentPage(1);
+      } else {
+          // Reset only if not already 1
+          if (donationCurrentPage !== 1) setDonationCurrentPage(1);
+      }
+      triggerScroll(); // Scroll when view changes
+    }
+  };
+
+
+  /* Changes the currentView state and scrolls the target div into view
   const showView = (view: NewsView) => {
     if (view !== currentView) {
       setCurrentView(view);
@@ -28,10 +78,10 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
         }
       }, 0);
     }
-  };
+  };*/
 
   const latestNewsMinHeight = 'min-h-[1098px]';
-  const donationNewsMinHeight = 'min-h-[1098px]';
+  const donationNewsMinHeight = 'min-h-[1098px]'; 
 
   return (
     <div className="w-full transition-all duration-300">
@@ -62,9 +112,11 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
           <NewsDisplaySection
             key="latest-news"
             newsItems={newsItems} // Pass the latest news data
-            scrollTargetRef={scrollTargetRef}
+            //scrollTargetRef={scrollTargetRef}
             listMinHeightClass={latestNewsMinHeight}
             idPrefix="latest"
+            currentPage={latestCurrentPage}
+            onPageChange={handleLatestPageChange}
           />
         )}
 
@@ -72,9 +124,11 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
           <NewsDisplaySection
             key="donation-news"
             newsItems={donationNewsItems} // Pass the donation news data
-            scrollTargetRef={scrollTargetRef}
+            //scrollTargetRef={scrollTargetRef}
             listMinHeightClass={donationNewsMinHeight}
             idPrefix="donation"
+            currentPage={donationCurrentPage}
+            onPageChange={handleDonationPageChange}
           />
         )}
       </div>
