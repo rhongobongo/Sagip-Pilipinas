@@ -70,9 +70,8 @@ const AnalyticsDashboard: React.FC = async () => {
                     <NavTab
                         label="Review Requests"
                         href="/admin/review-requests"
-                        active
                     />
-                    <NavTab label="Dashboard" href="/admin/analytics" />
+                    <NavTab label="Dashboard" href="/admin/analytics " active/>
                     <NavTab label="News Articles" href="/admin/news" />
                     <NavTab label="Organizations" href="/admin/organizations" />
                     <NavTab label="Volunteers" href="/admin/volunteers" />
