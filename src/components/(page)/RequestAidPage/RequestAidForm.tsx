@@ -29,7 +29,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
   const [calamityLevel, setCalamityLevel] = useState('');
   const [calamityType, setCalamityType] = useState('');
   const [otherCalamity, setOtherCalamity] = useState('');
-  const [aidRequestDesc, setAidRequestDesc] = useState(''); // Renamed state variable
+const [aidNeeded, setAidNeeded] = useState('');
   const [otherAidRequest, setOtherAidRequest] = useState('');
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
@@ -224,6 +224,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
         submissionDate: formattedDate,
         submissionTime: formattedTime,
         coordinates: { latitude: latitude!, longitude: longitude! }, // Use confirmed non-null coords
+        aidNeeded: aidNeeded === 'other' ? otherAidRequest : aidNeeded,
       };
 
       // --- 4. Submit Aid Request to Firestore & Get ID ---
@@ -477,8 +478,8 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
               Aid Needed:
             </label>
             <select
-              value={aidRequestDesc}
-              onChange={(e) => setAidRequestDesc(e.target.value)}
+              value={aidNeeded}
+              onChange={(e) => setAidNeeded(e.target.value)}
               className="w-full px-4 py-2 border-red-400 border-2 rounded-2xl bg-white focus:border-red-600 focus:border-2 focus:outline-none"
               required
             >
@@ -492,7 +493,7 @@ const RequestAidForm: React.FC<RequestFormProps> = ({ pin }) => {
               <option value="other">Other</option>
             </select>
           </div>
-          {aidRequestDesc === 'other' && (
+          {aidNeeded === 'other' && (
             <div className=" items-center mt-2">
               <label className="w-24 text-right mr-3 whitespace-nowrap text-black">
                 Specify Aid:

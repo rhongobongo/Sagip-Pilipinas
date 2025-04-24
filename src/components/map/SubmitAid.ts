@@ -31,6 +31,7 @@ export async function requestAid(aidRequest: RequestPin): Promise<{ message: str
     timestamp: Timestamp.now(),
     submissionDate: aidRequest.submissionDate || null,
     submissionTime: aidRequest.submissionTime || null,
+    aidNeeded: aidRequest.aidNeeded || null,
     // Add any other fields from RequestPin interface if needed
   };
 

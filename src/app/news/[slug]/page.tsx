@@ -142,7 +142,7 @@ export default async function NewsPage({
     contactNumber: newsItemData?.contactNumber || 'Not provided',
     requestDate: newsItemData?.submissionDate || 'Not specified',
     coordinates: getCoords(newsItemData?.coordinates),
-    aidRequested: newsItemData?.aidRequest || 'Details not provided',
+    aidRequested: newsItemData?.aidNeeded|| 'Details not provided',
   };
 
   const formattedDate = newsItem.timestamp
