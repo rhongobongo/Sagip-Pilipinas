@@ -18,7 +18,7 @@ const Navbar = async () => {
     { displayName: 'Home', href: '/' },
     { displayName: 'Map', href: '/map' },
     { displayName: 'Request Aid', href: '/request-aid' },
-    { displayName: 'Learn More', href: '/learnmore' },
+    { displayName: 'About Us', href: '/learnmore' },
   ];
 
   return (
