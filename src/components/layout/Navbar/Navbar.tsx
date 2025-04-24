@@ -28,6 +28,8 @@ const Navbar = async () => {
           <Image
             src="/SGP_LOGO.svg"
             alt="Logo"
+            width={20}
+            height={20}
             className="h-12 w-12 object-contain md:h-16 md:w-16"
           />
           <Link href="/" className="font-bold text-lg text-white md:text-lg">
