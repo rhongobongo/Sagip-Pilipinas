@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-export interface NewsItem {
+export interface DonationItem {
   id: string;
   title: string;
   summary: string;
@@ -12,7 +12,7 @@ export interface NewsItem {
   slug: string;
 }
 
-const NewsCard = ({ item }: { item: NewsItem }) => {
+const NewsCard = ({ item }: { item: DonationItem }) => {
   return (
     <Link href={`/news/${item.slug}`} key={item.id}>
       <div className="border-2 border-black rounded-2xl hover:shadow-[0px_10px_30px_rgba(0,0,0,0.7)] transition-shadow duration-300 bg-[#f3f3f3] p-4">
