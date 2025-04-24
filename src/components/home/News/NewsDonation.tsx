@@ -2,30 +2,35 @@
 
 import React, {
   useState,
+  useEffect,
   useRef,
-  RefObject, // Removed useEffect from here
+  RefObject,
 } from 'react';
 import NewsCard, { NewsItem } from './NewsCard';
 
 interface NewsDisplaySectionProps {
   newsItems: NewsItem[];
-  scrollTargetRef: React.RefObject<HTMLDivElement | null>;
+  //scrollTargetRef: React.RefObject<HTMLDivElement | null>;
   listMinHeightClass: string;
   idPrefix: string;
+  currentPage: number; // Receive current page from parent
+  onPageChange: (pageNumber: number) => void;
 }
 
 const NewsDisplaySection = ({
   newsItems,
-  scrollTargetRef,
+  // scrollTargetRef,
   listMinHeightClass = 'min-h-[1098px]',
   idPrefix,
+  currentPage,
+  onPageChange,
 }: NewsDisplaySectionProps) => {
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  //const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(9);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  // const prevPageRef = useRef<number>(null); // --- Remove this line ---
+  // const prevPageRef = useRef<number>(null);
+  const prevSearchTermRef = useRef<string>('');
 
-  // ... (filtering logic remains the same) ...
   const filteredNews = searchTerm
     ? newsItems.filter((item) => {
         const term = searchTerm.toLowerCase();
@@ -41,12 +46,13 @@ const NewsDisplaySection = ({
   const totalPages = Math.max(1, Math.ceil(filteredNews.length / itemsPerPage));
   // Ensure currentPage resets if filters reduce total pages below current page
   const safeCurrentPage = Math.min(currentPage, totalPages);
-  // Reset to page 1 if search term changes and current page becomes invalid
+
+  /* Reset to page 1 if search term changes and current page becomes invalid
   React.useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(1);
     }
-  }, [totalPages, currentPage]);
+  }, [totalPages, currentPage]); */
 
   const indexOfLastItem = safeCurrentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -54,21 +60,10 @@ const NewsDisplaySection = ({
 
   // --- Modify the paginate function ---
   const paginate = (pageNumber: number) => {
-    const newPage = Math.min(Math.max(1, pageNumber), totalPages);
-
-    // Only update state and scroll if the page number is actually changing
-    if (newPage !== safeCurrentPage) {
-      setCurrentPage(newPage);
-
-      // Use setTimeout to ensure scroll happens after potential re-render
-      setTimeout(() => {
-        if (scrollTargetRef.current) {
-          scrollTargetRef.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-          });
-        }
-      }, 0); // Delay of 0 ms is usually enough
+    const clampedPage = Math.min(Math.max(1, pageNumber), totalPages);
+    // Only call if page actually changes to prevent unnecessary calls/scrolls
+    if (clampedPage !== currentPage) {
+      onPageChange(clampedPage); // Notify parent
     }
   };
 
@@ -105,7 +100,11 @@ const NewsDisplaySection = ({
 
       {/* ... (News card grid JSX remains the same) ... */}
       <div
-        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${listMinHeightClass}`} // Apply min-height consistently or conditionally as needed
+        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6
+        ${
+          // Apply specified min-height class only when on the last page
+          safeCurrentPage === totalPages ? listMinHeightClass : ''
+        }`}
       >
         {currentItems.length > 0 ? (
           currentItems.map((item) => (
