@@ -40,22 +40,22 @@ export default function ForgotPasswordForm() {
   return (
     // Main container: Full height, flex layout, white background, padding
     <div className="flex h-screen w-full bg-white md:p-8 font-sans transition-all duration-300 border-black">
-      {/* Form Side (Left): Half width, dark red background, centered content */}
+      
       <div className="w-full md:w-1/2 bg-red-800 flex justify-center items-center h-full rounded-lg md:rounded-r-none transition-all">
-        {/* Form Content Wrapper: Max width for form, padding */}
+       
         <div className="w-full max-w-md px-8 py-10 transition-all">
-          {/* Form Title */}
+         
           <h2 className="text-3xl font-bold text-white mb-6 text-center">
             Forgot Password
           </h2>
-          {/* Instructions */}
+        
           <p className="text-center text-gray-200 mb-6">
             Enter the email address associated with your account, and we&apos;ll
             send you a link to reset your password.
           </p>
-          {/* Form Element */}
+         
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email Input Group */}
+           
             <div>
               <label
                 htmlFor="email"
@@ -82,13 +82,13 @@ export default function ForgotPasswordForm() {
                 {message}
               </p>
             )}
-            {/* Error Message Area */}
+           
             {error && (
               <p className="text-sm text-red-300 bg-red-900 bg-opacity-50 p-3 rounded-md text-center">
                 {error}
               </p>
             )}
-            {/* Submit Button */}
+            
             <button
               type="submit"
               disabled={isLoading}
@@ -96,7 +96,7 @@ export default function ForgotPasswordForm() {
             >
               {isLoading ? 'Sending...' : 'Send Reset Link'}
             </button>
-            {/* Back to Login Link */}
+            
             <div className="text-center mt-6">
               <Link
                 href="/login"
@@ -108,14 +108,14 @@ export default function ForgotPasswordForm() {
           </form>
         </div>
       </div>
-      {/* Welcome/Info Side (Right): Half width, slightly lighter red, centered content, hidden on smaller screens */}
+      {/* Welcome/Info Side (Right): */}
       <div className="hidden md:flex w-1/2 bg-red-700 flex-col justify-center items-center p-12 rounded-r-lg transition-all">
         <div className="max-w-md text-center">
-          {/* Welcome Heading */}
+          
           <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
             Need to Reset Your Password?
           </h1>
-          {/* Welcome Text */}
+          
           <p className="text-lg text-gray-100">
             No worries! Just enter your email on the left, and we&apos;ll help
             you get back into your Sagip Pilipinas account quickly.
