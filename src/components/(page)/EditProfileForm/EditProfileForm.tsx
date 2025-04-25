@@ -2,6 +2,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { getProfileData } from '@/actions/profileActions';
+// Import the function to fetch organizations (adjust path if necessary)
+import { fetchOrganizations } from '@/lib/APICalls/Organizations/fetchOrganization';
 import OrganizationProfileForm, {
   OrganizationProfile,
 } from './OrganizationProfileForm'; // <-- IMPORT OrganizationProfile
@@ -9,23 +11,27 @@ import VolunteerProfileForm, { VolunteerProfile } from './VolunteerProfileForm';
 
 type UserType = 'volunteer' | 'organization' | 'unknown';
 
+// Define a type for the organization list items
+interface OrganizationOption {
+  id: string;
+  name: string;
+}
+
 interface EditProfileFormProps {
   userId: string;
-  organizations?: { id: string; name: string }[]; // For volunteer org selection
+  // organizations prop is no longer needed here, it will be fetched internally
 }
 
 // Define a union type for the profile state
-type ProfileData = OrganizationProfile | VolunteerProfile; // <-- Define a union type
+type ProfileData = OrganizationProfile | VolunteerProfile;
 
-export default function EditProfileForm({
-  userId,
-  organizations = [],
-}: EditProfileFormProps) {
+export default function EditProfileForm({ userId }: EditProfileFormProps) {
   const [userType, setUserType] = useState<UserType>('unknown');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  // Use the specific union type instead of 'any'
-  const [profile, setProfile] = useState<ProfileData | null>(null); // <-- FIX HERE
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  // Add state for the organizations list
+  const [organizationsList, setOrganizationsList] = useState<OrganizationOption[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,27 +45,51 @@ export default function EditProfileForm({
       setError(null);
 
       try {
-        // Assuming getProfileData returns a profile matching one of the interfaces
-        const result = await getProfileData(userId);
-        if (result.error) {
-          setError(result.error);
+        // Fetch profile data and organizations list concurrently
+        const [profileResult, fetchedOrganizations] = await Promise.all([
+          getProfileData(userId),
+          // Fetch organizations - assumes fetchOrganizations returns { id: string; name: string; ... }[]
+          // Adjust mapping if your fetchOrganizations function returns a different structure
+          fetchOrganizations().then(orgs => orgs.map(org => ({ id: org.userId, name: org.name }))),
+        ]);
+
+        // Set organizations list state
+        setOrganizationsList(fetchedOrganizations || []);
+
+        // Process profile data result
+        if (profileResult.error) {
+          setError(profileResult.error);
           setProfile(null);
           setUserType('unknown');
-        } else if (result.profile) {
-          // Basic check to ensure profile has necessary fields, adjust as needed
-          // TypeScript might still need assertions below depending on getProfileData's return type
-          const fetchedProfile = result.profile as ProfileData; // You might need type assertion here
+        } else if (profileResult.profile) {
+          const fetchedProfile = profileResult.profile as ProfileData; // Keep initial assertion
 
-          const profileWithDefaults: ProfileData = {
-            // Ensure this assignment is type-safe
+          // Create base defaults common to both or potentially existing on both
+          // Initialize profileWithDefaults using fetchedProfile, which is still ProfileData
+          let profileWithDefaults: ProfileData = {
             ...fetchedProfile,
             socialMedia: fetchedProfile.socialMedia || {},
             profileImageUrl: fetchedProfile.profileImageUrl || undefined,
-            // Add defaults for any other potentially missing fields defined in the interfaces
+            // Do NOT add skills here directly as fetchedProfile might be OrganizationProfile
           };
 
+          // --- FIX: Conditionally handle 'skills' based on userType ---
+          if (profileResult.userType === 'volunteer') {
+            // Cast to VolunteerProfile SINCE we checked the type
+            const volunteerProfile = profileWithDefaults as VolunteerProfile;
+            // Ensure skills is an array or default to empty array
+            volunteerProfile.skills = volunteerProfile.skills && Array.isArray(volunteerProfile.skills)
+              ? volunteerProfile.skills
+              : [];
+            // Update the main variable after ensuring skills is correct type
+            profileWithDefaults = volunteerProfile;
+          }
+          // --- END FIX ---
+
+          // Now set the potentially modified profileWithDefaults to state
           setProfile(profileWithDefaults);
-          setUserType(result.userType as UserType); // Assert userType as well if needed
+          setUserType(profileResult.userType as UserType); // Assert userType as well if needed
+
         } else {
           setError('Profile data not found.');
           setProfile(null);
@@ -70,6 +100,7 @@ export default function EditProfileForm({
         console.error(err);
         setProfile(null);
         setUserType('unknown');
+        setOrganizationsList([]); // Reset org list on error too
       } finally {
         setIsLoading(false);
       }
@@ -82,11 +113,19 @@ export default function EditProfileForm({
     return <div className="p-4 text-center">Loading profile...</div>;
   }
 
+  // Display error if profile fetch failed, even if org fetch succeeded
   if (error && !profile) {
     return (
       <div className="p-4 text-red-500">Error loading profile: {error}</div>
     );
   }
+
+  // Display error if only org fetch failed but profile loaded (optional)
+  if (profile && organizationsList.length === 0 && userType === 'volunteer') {
+      // You might want to show a warning or allow proceeding without affiliation change
+      console.warn("Organizations list could not be loaded.");
+  }
+
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -113,7 +152,7 @@ export default function EditProfileForm({
         <VolunteerProfileForm
           userId={userId}
           profile={profile as VolunteerProfile} // Type assertion adds clarity
-          organizations={organizations}
+          organizations={organizationsList} // Pass the fetched organizations list
         />
       )}
 
