@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import ClientMapWrapper from '@/components/map/ClientMapWrapper';
 import * as admin from 'firebase-admin';
 import RespondToAidRequestSection from '@/components/news/RespondToAidRequestSection';
-import ReportAidRequestSection from '@/components/news/ReportAidRequestSection'; // +++ Import the new component
+import ReportAidRequestSection from '@/components/news/ReportAidRequestSection'; 
 import { getAuthTokens } from '@/lib/Next-Firebase-Auth-Edge/NextFirebaseAuthEdge';
 import { cookies } from 'next/headers';
 import ImageCard from '@/components/ui/ImageCard'; // Adjust path as needed
@@ -36,7 +36,6 @@ function deg2rad(deg: number): number {
   return deg * (Math.PI / 180);
 }
 
-// Define more specific type to replace 'any'
 interface GeoData {
   latitude?: number;
   longitude?: number;
@@ -78,14 +77,12 @@ async function getCurrentUserSession(): Promise<{ userId: string | null }> {
   }
 }
 
-// Add this type definition
 type ReportEntry = {
   reason: string;
   reportedBy: string | null;
-  timestamp: Date | admin.firestore.Timestamp; // Allow both JS Date and Firestore Timestamp initially
+  timestamp: Date | admin.firestore.Timestamp; 
 };
 
-// --- Main Page Component ---
 export default async function NewsPage({
   params,
 }: {
@@ -124,7 +121,7 @@ export default async function NewsPage({
     }
   } catch (error) {
     console.error('Error during data fetching:', error);
-    return notFound(); // Or render a specific error component
+    return notFound(); 
   }
 
   // --- Data Processing ---
@@ -187,16 +184,13 @@ export default async function NewsPage({
     newsItem.coordinates &&
     isNearby;
 
-  // +++ Check if the current logged-in user has already reported +++
   let hasUserAlreadyReported = false;
   if (loggedInUserId && Array.isArray(newsItem.reports)) {
     hasUserAlreadyReported = newsItem.reports.some(
-      // FIX: Use the defined ReportEntry type instead of any
       (report: ReportEntry) => report?.reportedBy === loggedInUserId
     );
   }
 
-  // --- Render Page ---
   return (
     <main
       id="main-content-area"
@@ -222,9 +216,7 @@ export default async function NewsPage({
 
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full">
-              {/* Main Content Area */}
               <div className="w-full space-y-6">
-                {/* --- Conditional Send Help Section --- */}
                 {showSendHelpSection && (
                   <RespondToAidRequestSection
                     aidRequestId={newsItem.id}
@@ -234,7 +226,6 @@ export default async function NewsPage({
                 )}
               </div>
 
-              {/* Aid Request Details */}
               <section className="mb-6 rounded-xl p-4 bg-[#8F0022] border border-black">
                 <h2 className="text-xl font-semibold mb-3 text-white tracking wide">
                   REQUEST OVERVIEW
@@ -311,7 +302,6 @@ export default async function NewsPage({
                 </div>
               </section>
 
-              {/* Additional Info / Summary */}
               <section className="mb-6">
                 <h2 className="text-xl font-semibold mb-3 text-white">
                   Summary
@@ -329,7 +319,6 @@ export default async function NewsPage({
               </section>
             </div>
 
-            {/* Sidebar Area */}
             <aside className="w-full md:w-1/3 space-y-6">
               <ImageCard
                 imageUrl={newsItem.imageUrl}
@@ -352,11 +341,10 @@ export default async function NewsPage({
                 </DetailCard>
               )}
               <EmergencyContacts />
-              {/* +++ Add the Report Section Here +++ */}
               <ReportAidRequestSection
                 aidRequestId={newsItem.id}
-                loggedInUserId={loggedInUserId} // Pass the user ID
-                hasUserAlreadyReported={hasUserAlreadyReported} // +++ Pass the check result ++
+                loggedInUserId={loggedInUserId}
+                hasUserAlreadyReported={hasUserAlreadyReported} 
               />{' '}
             </aside>
           </div>
@@ -414,7 +402,6 @@ const DetailItem = ({
   </p>
 );
 
-// ImageCard definition is removed (should be imported)
 
 const EmergencyContacts = () => (
   <DetailCard title="Emergency Contacts">
