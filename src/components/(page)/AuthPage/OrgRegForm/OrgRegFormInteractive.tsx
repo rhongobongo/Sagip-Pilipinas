@@ -7,12 +7,52 @@ import { AidTypeId, aidTypes } from './types';
 import { registerOrganization } from '@/lib/APICalls/Auth/registerOrganization';
 import OrgRegFormFields from './OrgRegFormFields';
 import LocationPickerModal from '@/components/map/LocationPickerModal';
+import { OrgFormData } from './types'; // Import the type for formData
 
 const OrgRegFormInteractive = () => {
   const context = useContext(OrgRegFormContext);
   const [passwordMatchError, setPasswordMatchError] = useState('');
   const [usernameLengthError, setUsernameLengthError] = useState('');
   const successRef = useRef<HTMLDivElement>(null); // Create a ref for the success message
+
+  // Place hooks unconditionally at the top level
+  useEffect(() => {
+    if (context) {
+      // Only run this effect if context is available
+      if (context.formData.password !== context.formData.retypePassword) {
+        setPasswordMatchError('Passwords do not match');
+      } else {
+        setPasswordMatchError('');
+      }
+
+      if (context.formData.acctUsername.length < 6) {
+        setUsernameLengthError('Username must be 6 or more characters');
+      } else {
+        setUsernameLengthError('');
+      }
+    }
+  }, [
+    context?.formData?.password,
+    context?.formData?.retypePassword,
+    context?.formData?.acctUsername,
+  ]);
+
+  useEffect(() => {
+    if (context && context.error?.includes('image')) {
+      // Only run if context and error conditions are met
+      const errorDiv = document.querySelector('.bg-red-100');
+      if (errorDiv) {
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [context, context?.error]);
+
+  useEffect(() => {
+    if (context && context.success && successRef.current) {
+      // Only run if context and success conditions are met
+      successRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [context, context?.success]);
 
   if (!context) {
     return <p className="text-center text-gray-500">Loading form...</p>;
@@ -68,35 +108,6 @@ const OrgRegFormInteractive = () => {
       }));
     }
   };
-
-  useEffect(() => {
-    if (formData.password !== formData.retypePassword) {
-      setPasswordMatchError('Passwords do not match');
-    } else {
-      setPasswordMatchError('');
-    }
-
-    if (formData.acctUsername.length < 6) {
-      setUsernameLengthError('Username must be 6 or more characters');
-    } else {
-      setUsernameLengthError('');
-    }
-  }, [formData.password, formData.retypePassword, formData.acctUsername]);
-
-  useEffect(() => {
-    if (error?.includes('image')) {
-      const errorDiv = document.querySelector('.bg-red-100');
-      if (errorDiv) {
-        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (success && successRef.current) {
-      successRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, [success]);
 
   const validateForm = () => {
     if (!formData.name.trim()) return 'Name is required';
