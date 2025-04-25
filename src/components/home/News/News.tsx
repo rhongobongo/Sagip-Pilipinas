@@ -1,24 +1,26 @@
+// Presumed path: src/components/NewsGrid.tsx (or similar)
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+// Assuming NewsDisplaySection is in NewsDonation.tsx based on previous context
 import NewsDisplaySection from './NewsDonation';
 import { NewsItem } from './NewsCard'; // Assuming NewsCard exports the NewsItem type
 import { DonationReportItem } from '@/types/reportTypes';
 
 interface NewsGridProps {
-  newsItems: NewsItem[];
-  donationNewsItems?: DonationReportItem[];
+  newsItems: NewsItem[]; // For the 'latest' news view
+  donationNewsItems?: DonationReportItem[]; // For the 'donation' view
 }
 type NewsView = 'latest' | 'donation';
 
 const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
-  const [currentView, setCurrentView] = useState<NewsView>('latest'); //current view either "latest" or "donation"
+  const [currentView, setCurrentView] = useState<NewsView>('latest');
   const scrollTargetRef = useRef<HTMLDivElement>(null);
 
   const [latestCurrentPage, setLatestCurrentPage] = useState<number>(1);
   const [donationCurrentPage, setDonationCurrentPage] = useState<number>(1);
 
-  // --- Function to trigger scroll ---
+  // --- Function to trigger scroll --- (Keep as is)
   const triggerScroll = () => {
     setTimeout(() => {
       if (scrollTargetRef.current) {
@@ -30,7 +32,7 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
     }, 0);
   };
 
-  // --- Handlers for page changes from child ---
+  // --- Handlers for page changes from child --- (Keep as is)
   const handleLatestPageChange = (pageNumber: number) => {
     if (pageNumber !== latestCurrentPage) {
       setLatestCurrentPage(pageNumber);
@@ -45,41 +47,34 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
     }
   };
 
+  // --- Function to switch views --- (Keep as is)
   const showView = (view: NewsView) => {
     if (view !== currentView) {
       setCurrentView(view);
+      // Reset pagination when switching views
       if (view === 'latest') {
-        if (latestCurrentPage !== 1) setLatestCurrentPage(1);
+         setLatestCurrentPage(1); // Reset latest page
       } else {
-        if (donationCurrentPage !== 1) setDonationCurrentPage(1);
+         setDonationCurrentPage(1); // Reset donation page
       }
-      triggerScroll();
+      triggerScroll(); // Scroll to top after switching
     }
   };
 
+  // Min height classes (Keep as is)
   const latestNewsMinHeight = 'min-h-[1098px]';
   const donationNewsMinHeight = 'min-h-[1098px]';
 
-  // FIX: Map DonationReportItem[] to NewsItem[]
-  const mappedDonationItems: NewsItem[] = donationNewsItems.map((item) => ({
-    id: item.id, // Use donation ID as the primary ID here
-    slug: item.id, // Use donation ID for slug as well (or aidRequestId if preferred)
-    title: item.title, // Title from the related aid request
-    summary: item.donationSummary || `Donated: ${item.donatedTypes.join(', ')}`, // Create summary
-    imageUrl: item.imageUrl || '/placeholder-donation.jpg', // Use request image or placeholder
-    timestamp: item.donationTimestamp, // Use donation timestamp
-    // These might not directly apply or need default values for donation view
-    calamityType: item.calamityType || 'N/A',
-    calamityLevel: item.calamityLevel || 'N/A',
-    // Add other NewsItem fields if necessary, potentially with default values
-  }));
+  // --- REMOVED the mapping from DonationReportItem[] to NewsItem[] ---
+  // const mappedDonationItems: NewsItem[] = donationNewsItems.map((item) => ({ ... })); // DELETED
 
   return (
     <div className="w-full transition-all duration-300">
       <div
         ref={scrollTargetRef}
-        className="mx-auto p-10 md:p-20 bg-[#B0022A] w-full min-h-[calc(100vh-80px)]"
+        className="mx-auto p-10 md:p-20 bg-[#B0022A] w-full min-h-[calc(100vh-80px)]" // Ensure enough height
       >
+        {/* Header Section with Title and View Switch Button */}
         <div className="flex flex-wrap justify-between items-center w-full pb-4 mb-4 gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-[2px_2px_2px_black]">
             {currentView === 'latest' ? 'Latest News' : 'Donation News'}
@@ -89,37 +84,45 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
             onClick={() =>
               showView(currentView === 'latest' ? 'donation' : 'latest')
             }
-            className="px-4 py-2 bg-white text-[#B0022A] rounded-full transition-colors font-semibold whitespace-nowrap text-sm sm:text-base"
+            className="px-4 py-2 bg-white text-[#B0022A] rounded-full transition-colors font-semibold whitespace-nowrap text-sm sm:text-base hover:bg-gray-200" // Added hover effect
             aria-label={`Switch to ${currentView === 'latest' ? 'Donation News' : 'Latest News'}`}
           >
             {currentView === 'latest'
               ? 'View Donation News'
               : 'View Latest News'}
-            {currentView === 'latest' ? ' →' : ' →'}
+            {' →'} {/* Simple arrow */}
           </button>
         </div>
 
+        {/* Conditional Rendering based on currentView */}
+
+        {/* LATEST NEWS VIEW (Untouched as requested) */}
         {currentView === 'latest' && (
           <NewsDisplaySection
-            key="latest-news"
+            key="latest-news" // Added key for better reconciliation
             newsItems={newsItems} // Pass original NewsItem[]
             listMinHeightClass={latestNewsMinHeight}
             idPrefix="latest"
             currentPage={latestCurrentPage}
             onPageChange={handleLatestPageChange}
-            isDonationView={false}
+            isDonationView={false} // Explicitly set for clarity
           />
         )}
 
+        {/* DONATION NEWS VIEW (Corrected) */}
         {currentView === 'donation' && (
           <NewsDisplaySection
-            key="donation-news"
-            newsItems={mappedDonationItems} // Pass the mapped array
+            key="donation-news" // Added key for better reconciliation
+            // --- PASS THE ORIGINAL DONATION ARRAY ---
+            // This array comes directly from fetchDonations and contains DonationReportItem objects
+            // which include the correctly populated 'donatedTypes' array.
+            newsItems={donationNewsItems}
+            // --- ---
             listMinHeightClass={donationNewsMinHeight}
             idPrefix="donation"
             currentPage={donationCurrentPage}
             onPageChange={handleDonationPageChange}
-            isDonationView={true}
+            isDonationView={true} // Explicitly set for clarity
           />
         )}
       </div>
