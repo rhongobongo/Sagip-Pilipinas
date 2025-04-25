@@ -1,9 +1,8 @@
-// src/components/DonationReportCard.tsx
+
 import Image from 'next/image';
 import Link from 'next/link';
-import type { DonationReportItem } from '@/types/reportTypes'; // Adjust path if needed
+import type { DonationReportItem } from '@/types/reportTypes'; 
 
-// Helper function to format the timestamp (optional)
 const formatDateTime = (isoString: string) => {
   if (!isoString) return 'N/A';
   try {
@@ -20,7 +19,6 @@ const formatDateTime = (isoString: string) => {
 const DonationReportCard = ({ item }: { item: DonationReportItem }) => {
   const linkHref = `/donations/${item.donationId || item.id}`;
 
-  // Construct a dynamic summary
   const summary = `Donation by ${item.organizationName || 'an organization'}. Items: ${item.donatedTypes?.join(', ') || 'various'}. Responding to ${item.calamityType || 'an event'}.`;
 
   return (
@@ -45,13 +43,11 @@ const DonationReportCard = ({ item }: { item: DonationReportItem }) => {
               Level: {item.calamityLevel}
             </div>
           )}
-          {/* Badge for Donation */}
           <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-md">
             Donation Report
           </div>
         </div>
 
-        {/* Content Area */}
         <div className="flex-grow p-1 flex flex-col justify-between">
           <div>
             <h2
@@ -82,7 +78,6 @@ const DonationReportCard = ({ item }: { item: DonationReportItem }) => {
               <span>Request: {formatDateTime(item.requestTimestamp)}</span>
               <span>Donated: {formatDateTime(item.donationTimestamp)}</span>
             </div>
-            {/* Optional: Estimated Drop-off */}
             {item.estimatedDropoffDate && (
               <div className="text-right text-xs text-gray-500 mt-1">
                 Est. Drop-off: {item.estimatedDropoffDate}
