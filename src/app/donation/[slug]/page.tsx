@@ -1,4 +1,4 @@
-// src/app/donations/[slug]/page.tsx
+
 import { db } from '@/lib/Firebase-Admin';
 import { notFound } from 'next/navigation';
 import ImageCard from '@/components/ui/ImageCard';
@@ -11,7 +11,6 @@ import ScrollToMainOnLoad from '@/components/utils/ScrollToMainOnLoad';
 import Link from 'next/link';
 import { IoCloseCircleOutline } from 'react-icons/io5';
 
-// Reuse the existing coordinate interfaces
 interface Coordinates {
   latitude: number;
   longitude: number;
@@ -27,7 +26,6 @@ interface LatLngCoords {
   lng: number;
 }
 
-// Get coordinates helper function
 type CoordinateData = GeoPoint | LatLngCoords | admin.firestore.GeoPoint | null;
 
 function getCoords(data: CoordinateData): Coordinates | null {
@@ -46,7 +44,6 @@ function getCoords(data: CoordinateData): Coordinates | null {
   return null;
 }
 
-// Get the current user session (reused from NewsPage)
 async function getCurrentUserSession(): Promise<{ userId: string | null }> {
   try {
     const cookieStore = await cookies();
@@ -62,7 +59,6 @@ async function getCurrentUserSession(): Promise<{ userId: string | null }> {
   }
 }
 
-// Main Donation Detail Page Component
 export default async function DonationPage({
   params,
 }: {
@@ -74,7 +70,6 @@ export default async function DonationPage({
     return notFound();
   }
 
-  // --- Data Fetching ---
   let donationData: admin.firestore.DocumentData | null = null;
   let linkedAidRequestData: admin.firestore.DocumentData | null = null;
   let organizationData: admin.firestore.DocumentData | null = null;
@@ -124,7 +119,6 @@ export default async function DonationPage({
     ? Object.keys(donationData.donationTypes).filter(type => donationData.donationTypes[type])
     : [];
 
-  // Prepare donation details
   const donationItem = {
     id: slug,
     title: linkedAidRequestData?.shortDesc || 'Donation Details',
@@ -165,7 +159,6 @@ export default async function DonationPage({
         <article>
           <header className="mb-4 text-white">
 
-            {/*for back button na circle*/}
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-3xl font-bold mb-2"> Donation: {donationItem.title}</h1>              <Link
                 href="/" //padulong ni home
@@ -187,9 +180,9 @@ export default async function DonationPage({
           </header>
 
           <div className="flex flex-col md:flex-row gap-6">
-            {/* Main Content Area */}
+           
             <div className="w-full lg:w-2/3">
-              {/* Donation Details */}
+           
               <section className="mb-6 rounded-xl p-4 bg-[#8F0022] border border-black">
                 <h2 className="text-xl font-semibold mb-3 text-white tracking wide">
                   DONATION OVERVIEW
@@ -266,7 +259,6 @@ export default async function DonationPage({
                 </div>
               </section>
 
-              {/* Detailed Donation Items Section */}
               <section className="mb-6 w-full">
                 <h2 className="text-xl font-semibold mb-3 text-white">
                   Donation Details
@@ -294,7 +286,6 @@ export default async function DonationPage({
               </section>
             </div>
 
-            {/* Sidebar Area */}
             <aside className="w-full md:w-1/3 space-y-6">
               <ImageCard
                 imageUrl={donationItem.imageUrl}
