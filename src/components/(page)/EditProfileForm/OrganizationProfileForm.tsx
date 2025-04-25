@@ -102,13 +102,15 @@ const aidTypeFields = {
   ],
 };
 
-
-
 export default function OrganizationProfileForm({
   userId,
   profile,
 }: OrganizationProfileFormProps) {
   // --- State variables (Keep existing, including imagePreview) ---
+  const [contactNumber, setContactNumber] = useState(
+    profile.contactNumber || ''
+  );
+
   const [socialLinks, setSocialLinks] = useState<{
     [platform: string]: string;
   }>(profile.socialMedia || {});
@@ -149,6 +151,13 @@ export default function OrganizationProfileForm({
   );
 
   // --- Handlers (Keep existing non-image handlers) ---
+  const handleContactNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (/^\d{0,10}$/.test(value)) {
+      setContactNumber(value);
+    }
+  };
+
   const handleLocationChange = useCallback((lat: number, lng: number) => {
     setLatitude(lat);
     setLongitude(lng);
@@ -570,7 +579,9 @@ export default function OrganizationProfileForm({
             id="contactNumber"
             name="contactNumber"
             className="w-full p-2 border rounded textbox"
-            defaultValue={profile.contactNumber || ''}
+            value={contactNumber} // Now controlled by state
+            maxLength={10}
+            onChange={handleContactNumberChange} // Using the state update handler
           />
         </div>
         {/* Social Media Links */}
