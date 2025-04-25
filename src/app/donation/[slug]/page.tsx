@@ -136,11 +136,10 @@ export default async function DonationPage({
     id: slug,
     title: linkedAidRequestData?.shortDesc || 'Donation Details',
     donationType: donationTypes.join(', '),
-    imageUrl: linkedAidRequestData?.imageUrl || '/placeholder-donation.jpg',
-    timestamp:
-      donationData?.timestamp instanceof admin.firestore.Timestamp
-        ? donationData.timestamp.toDate().toISOString()
-        : new Date().toISOString(),
+    imageUrl: donationData?.imageUrl || '/placeholder-donation.jpg',
+    timestamp: donationData?.timestamp instanceof admin.firestore.Timestamp
+      ? donationData.timestamp.toDate().toISOString()
+      : new Date().toISOString(),
     estimatedDropoffDate: donationData?.estimatedDropoffDate || 'Not specified',
     calamityType: linkedAidRequestData?.calamityType || 'Not specified',
     calamityLevel: linkedAidRequestData?.calamityLevel || 'Not specified',

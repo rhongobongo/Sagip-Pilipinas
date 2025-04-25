@@ -421,6 +421,7 @@ const DonationPageForm: React.FC<DonationPageFormProps> = ({
 
             // --- (B) Upload Donation Image ---
             if (donationImage && donationUID) {
+                console.log("REACHED");
                 try {
                     console.log("Uploading donation image...");
                     await uploadDonation(donationImage, donationUID);
