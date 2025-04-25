@@ -6,7 +6,7 @@ import { manualAnalyticsUpdater } from "@/lib/APICalls/Admin/manualAnalyticsUpda
 import { fetchAndProcessStats } from "@/lib/APICalls/Admin/getAnalytics";
 import updateOrganizationsWithVolunteerIds from "@/lib/APICalls/Admin/forceUpdateVolOrg";
 import NavTab from "@/components/(page)/Admin/Navbar/Navtab";
-
+import forceUpdateAidRequest from "@/lib/APICalls/Admin/forceUpdateAidRequest";
 export const revalidate = 1500;
 
 interface AverageAidRequests {
@@ -51,6 +51,7 @@ interface OrganizationStockData {
 const AnalyticsDashboard: React.FC = async () => {
     const data = await fetchAndProcessStats();
     manualAnalyticsUpdater();
+    forceUpdateAidRequest();
     return (
         <>
             <div className="bg-red-800 p-6 rounded-lg mb-6 text-white shadow relative overflow-hidden">
