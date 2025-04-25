@@ -39,7 +39,10 @@ const OrgStockInfo = () => {
     <div className="w-full py-4">
       <div className="relative mb-[-1rem] z-10 w-fit">
         <label className="font-bold bg-white rounded-3xl px-4 py-1 border-2 border-[#ef8080]">
-          Type of Aid In Stock:
+          Type of Aid In Stock:{' '}
+          <label htmlFor="optional" className="text-xs opacity-50">
+            optional
+          </label>
         </label>
       </div>
       <div className="flex flex-col bg-white w-full text-black shadow-lg border-2 border-[#ef8080] rounded-lg p-6 pt-8 gap-4">
