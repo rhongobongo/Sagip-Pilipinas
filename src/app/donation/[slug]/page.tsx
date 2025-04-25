@@ -1,4 +1,3 @@
-
 import { db } from '@/lib/Firebase-Admin';
 import { notFound } from 'next/navigation';
 import ImageCard from '@/components/ui/ImageCard';
@@ -33,12 +32,20 @@ function getCoords(data: CoordinateData): Coordinates | null {
   if (data instanceof admin.firestore.GeoPoint) {
     return { latitude: data.latitude, longitude: data.longitude };
   }
-  if ('latitude' in data && 'longitude' in data && 
-      typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+  if (
+    'latitude' in data &&
+    'longitude' in data &&
+    typeof data.latitude === 'number' &&
+    typeof data.longitude === 'number'
+  ) {
     return { latitude: data.latitude, longitude: data.longitude };
   }
-  if ('lat' in data && 'lng' in data &&
-      typeof data.lat === 'number' && typeof data.lng === 'number') {
+  if (
+    'lat' in data &&
+    'lng' in data &&
+    typeof data.lat === 'number' &&
+    typeof data.lng === 'number'
+  ) {
     return { latitude: data.lat, longitude: data.lng };
   }
   return null;
@@ -92,7 +99,9 @@ export default async function DonationPage({
 
     // Fetch linked aid request data if available
     if (donationData.aidRequestId) {
-      const aidRequestRef = db.collection('aidRequest').doc(donationData.aidRequestId);
+      const aidRequestRef = db
+        .collection('aidRequest')
+        .doc(donationData.aidRequestId);
       const aidRequestSnapshot = await aidRequestRef.get();
 
       if (aidRequestSnapshot.exists) {
@@ -102,7 +111,9 @@ export default async function DonationPage({
 
     // Fetch organization data
     if (donationData.organizationId) {
-      const orgRef = db.collection('organizations').doc(donationData.organizationId);
+      const orgRef = db
+        .collection('organizations')
+        .doc(donationData.organizationId);
       const orgSnapshot = await orgRef.get();
 
       if (orgSnapshot.exists) {
@@ -116,7 +127,9 @@ export default async function DonationPage({
 
   // --- Process Donation Data ---
   const donationTypes = donationData?.donationTypes
-    ? Object.keys(donationData.donationTypes).filter(type => donationData.donationTypes[type])
+    ? Object.keys(donationData.donationTypes).filter(
+        (type) => donationData.donationTypes[type]
+      )
     : [];
 
   const donationItem = {
@@ -124,14 +137,21 @@ export default async function DonationPage({
     title: linkedAidRequestData?.shortDesc || 'Donation Details',
     donationType: donationTypes.join(', '),
     imageUrl: linkedAidRequestData?.imageUrl || '/placeholder-donation.jpg',
-    timestamp: donationData?.timestamp instanceof admin.firestore.Timestamp
-      ? donationData.timestamp.toDate().toISOString()
-      : new Date().toISOString(),
+    timestamp:
+      donationData?.timestamp instanceof admin.firestore.Timestamp
+        ? donationData.timestamp.toDate().toISOString()
+        : new Date().toISOString(),
     estimatedDropoffDate: donationData?.estimatedDropoffDate || 'Not specified',
     calamityType: linkedAidRequestData?.calamityType || 'Not specified',
     calamityLevel: linkedAidRequestData?.calamityLevel || 'Not specified',
-    organizationName: organizationData?.name || donationData?.organizationName || 'Anonymous Donor',
-    organizationContact: organizationData?.phoneNumber || donationData?.contactInfo || 'Not provided',
+    organizationName:
+      organizationData?.name ||
+      donationData?.organizationName ||
+      'Anonymous Donor',
+    organizationContactNumber:
+      donationData?.organizationContactNumber || // Read the correct field from donation data
+      organizationData?.contactNumber || // Optional fallback: Read correct field from org data
+      'Not provided',
     coordinates: linkedAidRequestData?.coordinates
       ? getCoords(linkedAidRequestData.coordinates)
       : null,
@@ -141,12 +161,12 @@ export default async function DonationPage({
 
   const formattedDate = donationItem.timestamp
     ? new Date(donationItem.timestamp).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
     : 'Date unavailable';
 
   // --- Render Donation Detail Page ---
@@ -158,9 +178,12 @@ export default async function DonationPage({
       <div className="bg-[#B0022A] p-6 w-full lg:w-3/4 lg:rounded-xl mx-auto lg:h-full">
         <article>
           <header className="mb-4 text-white">
-
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-3xl font-bold mb-2"> Donation: {donationItem.title}</h1>              <Link
+              <h1 className="text-3xl font-bold mb-2">
+                {' '}
+                Donation: {donationItem.title}
+              </h1>{' '}
+              <Link
                 href="/" //padulong ni home
                 className="inline-flex items-center text-white hover:text-gray-300 transition-colors duration-200" // Adjusted hover for icon
                 aria-label="Back to News Feed"
@@ -172,7 +195,10 @@ export default async function DonationPage({
             <p className="text-sm">Donated on: {formattedDate}</p>
             {donationItem.aidRequestId && (
               <p className="text-sm mt-2">
-                <a href={`/news/${donationItem.aidRequestId}`} className="underline hover:text-blue-200">
+                <a
+                  href={`/news/${donationItem.aidRequestId}`}
+                  className="underline hover:text-blue-200"
+                >
                   View Original Aid Request
                 </a>
               </p>
@@ -180,9 +206,7 @@ export default async function DonationPage({
           </header>
 
           <div className="flex flex-col md:flex-row gap-6">
-           
             <div className="w-full lg:w-2/3">
-           
               <section className="mb-6 rounded-xl p-4 bg-[#8F0022] border border-black">
                 <h2 className="text-xl font-semibold mb-3 text-white tracking wide">
                   DONATION OVERVIEW
@@ -193,9 +217,15 @@ export default async function DonationPage({
                     titleStyle={{ fontWeight: 'bold' }}
                     titleColor="#8F0022"
                   >
-                    <DetailItem label="Items Donated" value={donationItem.donationType} />
+                    <DetailItem
+                      label="Items Donated"
+                      value={donationItem.donationType}
+                    />
                     <DetailItem label="Date Donated" value={formattedDate} />
-                    <DetailItem label="Est. Dropoff" value={donationItem.estimatedDropoffDate} />
+                    <DetailItem
+                      label="Est. Dropoff"
+                      value={donationItem.estimatedDropoffDate}
+                    />
                   </DetailCard>
 
                   <DetailCard
@@ -203,8 +233,14 @@ export default async function DonationPage({
                     titleStyle={{ fontWeight: 'bold' }}
                     titleColor="#8F0022"
                   >
-                    <DetailItem label="Organization" value={donationItem.organizationName} />
-                    <DetailItem label="Contact" value={donationItem.organizationContact} />
+                    <DetailItem
+                      label="Organization"
+                      value={donationItem.organizationName}
+                    />
+                    <DetailItem
+                      label="Contact"
+                      value={donationItem.organizationContactNumber}
+                    />
                   </DetailCard>
 
                   {linkedAidRequestData && (
@@ -214,8 +250,14 @@ export default async function DonationPage({
                       titleColor="#8F0022"
                       fullWidth
                     >
-                      <DetailItem label="Calamity Type" value={donationItem.calamityType} />
-                      <DetailItem label="Calamity Level" value={donationItem.calamityLevel} />
+                      <DetailItem
+                        label="Calamity Type"
+                        value={donationItem.calamityType}
+                      />
+                      <DetailItem
+                        label="Calamity Level"
+                        value={donationItem.calamityLevel}
+                      />
                     </DetailCard>
                   )}
 
@@ -228,9 +270,7 @@ export default async function DonationPage({
                     >
                       <DetailItem
                         label="Coordinates"
-                        value={
-                          `${donationItem.coordinates.latitude.toFixed(4)}, ${donationItem.coordinates.longitude.toFixed(4)}`
-                        }
+                        value={`${donationItem.coordinates.latitude.toFixed(4)}, ${donationItem.coordinates.longitude.toFixed(4)}`}
                       />
                       <div className="h-64 w-full border-4 border-black rounded-md overflow-hidden mt-2">
                         <ClientMapWrapper
@@ -267,12 +307,23 @@ export default async function DonationPage({
                   {donationTypes.length > 0 ? (
                     <div className="space-y-4">
                       {donationTypes.map((type) => (
-                        <div key={type} className="border-b pb-3 last:border-b-0">
-                          <h3 className="font-medium text-lg capitalize mb-2">{type}</h3>
+                        <div
+                          key={type}
+                          className="border-b pb-3 last:border-b-0"
+                        >
+                          <h3 className="font-medium text-lg capitalize mb-2">
+                            {type}
+                          </h3>
                           {donationItem.donationDetails[type] && (
                             <div className="ml-4">
-                              {Object.entries(donationItem.donationDetails[type]).map(([key, value]) => (
-                                <DetailItem key={key} label={key} value={value as string} />
+                              {Object.entries(
+                                donationItem.donationDetails[type]
+                              ).map(([key, value]) => (
+                                <DetailItem
+                                  key={key}
+                                  label={key}
+                                  value={value as string}
+                                />
                               ))}
                             </div>
                           )}
@@ -280,7 +331,9 @@ export default async function DonationPage({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-black">No detailed information available for this donation.</p>
+                    <p className="text-black">
+                      No detailed information available for this donation.
+                    </p>
                   )}
                 </DetailCard>
               </section>
@@ -298,7 +351,9 @@ export default async function DonationPage({
                 estimatedDropoff={donationItem.estimatedDropoffDate}
               />
 
-              <ThankYouMessage organizationName={donationItem.organizationName} />
+              <ThankYouMessage
+                organizationName={donationItem.organizationName}
+              />
             </aside>
           </div>
         </article>
@@ -358,7 +413,7 @@ const DetailItem = ({
 const StatusCard = ({
   status,
   formattedDate,
-  estimatedDropoff
+  estimatedDropoff,
 }: {
   status: string;
   formattedDate: string;
@@ -378,10 +433,16 @@ const StatusCard = ({
   </DetailCard>
 );
 
-const ThankYouMessage = ({ organizationName }: { organizationName: string }) => (
+const ThankYouMessage = ({
+  organizationName,
+}: {
+  organizationName: string;
+}) => (
   <DetailCard title="Thank You">
     <p className="text-black text-sm">
-      Special thanks to <span className="font-medium">{organizationName}</span> for their generous donation. This support makes a significant difference in the response efforts.
+      Special thanks to <span className="font-medium">{organizationName}</span>{' '}
+      for their generous donation. This support makes a significant difference
+      in the response efforts.
     </p>
   </DetailCard>
 );
