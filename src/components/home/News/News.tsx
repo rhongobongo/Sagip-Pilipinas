@@ -66,7 +66,7 @@ const NewsGrid = ({ newsItems, donationNewsItems = [] }: NewsGridProps) => {
     slug: item.id, // Use donation ID for slug as well (or aidRequestId if preferred)
     title: item.title, // Title from the related aid request
     summary: item.donationSummary || `Donated: ${item.donatedTypes.join(', ')}`, // Create summary
-    imageUrl: item.requestImageUrl || '/placeholder-donation.jpg', // Use request image or placeholder
+    imageUrl: item.imageUrl || '/placeholder-donation.jpg', // Use request image or placeholder
     timestamp: item.donationTimestamp, // Use donation timestamp
     // These might not directly apply or need default values for donation view
     calamityType: item.calamityType || 'N/A',
