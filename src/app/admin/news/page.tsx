@@ -951,7 +951,7 @@ const NewsArticlePage: React.FC = () => {
           <div className="overflow-x-auto overflow-y-auto max-h-[75vh] custom-red-scrollbar rounded-md overflow-hidden border-2 border-gray-200 shadow-sm">
             {/* Table */}
             <table className="w-full min-w-[1200px] table-auto border-collapse">
-              {' '}
+             {/* Removed the {' '} from here */}
               {/* Increased min-width */}
               <thead className="bg-gray-100 sticky top-0 z-10">
                 <tr>
@@ -1099,7 +1099,7 @@ const NewsArticlePage: React.FC = () => {
                       <td className="px-3 py-3 text-sm text-center whitespace-nowrap align-middle">
                         <button
                           onClick={() => handleEdit(item)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1.5 px-3 rounded-full mr-1.5 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                          className="bg-green-500 hover:bg-blue-600 text-white text-xs font-bold py-1.5 px-3 rounded-full mr-1.5 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
                           aria-label={`Edit request from ${item.requesterName}`}
                         >
                           Edit
